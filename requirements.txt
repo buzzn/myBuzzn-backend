@@ -1,2 +1,4 @@
 flask
+flask_api
+flask_testing
 pylint
