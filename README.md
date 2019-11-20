@@ -2,7 +2,7 @@
 An app to investigate your power consumption habits for *BUZZN* customers.
 
 ## How to run
-We recommend to setup a virtual env for the projects requirements.
+We recommend to setup a virtual env for the projects' requirements.
 ```bash
 cd PROJECT_ROOT
 virtualenv -p `whereis python | cut -d ' ' -f3` .venv
