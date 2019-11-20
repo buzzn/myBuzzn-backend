@@ -39,5 +39,5 @@ python -m unittest
 
 ## Linter
 ```bash
-./.venv/bin/pylint app.py apitests models routes tests util
+pylint app.py apitests models routes tests util
 ```
