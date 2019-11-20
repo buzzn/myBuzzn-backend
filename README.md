@@ -20,7 +20,24 @@ development mode:
 FLASK_DEBUG=1 ./.venv/bin/flask run
 ```
 
+## Project structure
+```
+project root
+├── apitests      # Api tests go here
+├── migrations    # Database migration stuff
+├── models        # Data-Models
+├── routes        # Defines the http api
+├── tests         # Unittests
+├── util          # Misc. db interaction, error handling
+└── app.py        # The app-main.
+```
+
+## Running the tests
+```bash
+python -m unittest
+```
+
 ## Linter
 ```bash
-./.venv/bin/pylint app.py
+./.venv/bin/pylint app.py apitests models routes tests util
 ```
