@@ -18,7 +18,7 @@ If you want the webserver to restart after source code changes, run it in
 development mode:
 ```bash
 FLASK_DEBUG=1 ./.venv/bin/flask run
-````
+```
 
 ## Linter
 ```bash
