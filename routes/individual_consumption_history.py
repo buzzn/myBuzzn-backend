@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify, render_template
-from util.error import Error
 
 
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
