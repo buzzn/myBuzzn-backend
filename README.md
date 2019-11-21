@@ -39,6 +39,17 @@ project root
 └── app.py        # The app-main.
 ```
 
+## Database
+The database structure is created using migrations. A migration is a
+script which transforms the database between two consecutive versions
+(i.e. git revisions) of the app.  The model classes (usually stored in
+`/models`) model the entities used by the app and provide methods to
+load and store them in from/in the database.  To generate the
+according tables given a new model use the _flask migrate_ method:
+`flask db migrate` generates a new migration file in
+`/migrations/versions` to transform the databse structure to meet the models'
+needs. To apply the migrations run `flask db upgrade`.
+
 ## Running the tests
 ```bash
 python -m unittest
