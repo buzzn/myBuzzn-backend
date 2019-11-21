@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request
 
 
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
@@ -16,5 +16,11 @@ def individual_consumption_history():
     consumed at the time) or (204, {}) if there is no history
     :rtype: TODO
     """
+
+    # Get meter ID from database
+
+    # Call discovergy API for the given meter
+
+    # Return value array
 
     return 'Hello MyBuzzn!'
