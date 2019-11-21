@@ -12,6 +12,12 @@ Install the requirements
 ```bash
 pip install -r "requirements.txt"
 ```
+
+Set environment variables
+```bash
+soruce ./setup_testing_envornment.sh
+```
+
 Starting a flask server: `./.venv/bin/flask run`
 
 If you want the webserver to restart after source code changes, run it in
