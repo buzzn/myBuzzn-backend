@@ -1,2 +1,4 @@
 flask
 pylint
+requests
+requests_oauthlib
