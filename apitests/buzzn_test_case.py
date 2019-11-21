@@ -8,6 +8,8 @@ class TestConfig():
     SECRET_KEY = 'testingkey'
     TESTING = True
     LIVESERVER_PORT = 0
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
 class BuzznTestCase(TestCase):
