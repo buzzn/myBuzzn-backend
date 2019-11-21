@@ -1,12 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from util.error import Error
 
 
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
 
-@IndividualConsumptionHistory.route('/individual-consumption-history',
-                                    methods=['GET'])
+
+@IndividualConsumptionHistory.route('/individual-consumption-history')
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval.
     :param str begin: start time of consumption, default is today at 0:00
@@ -18,4 +18,4 @@ def individual_consumption_history():
     :rtype: TODO
     """
 
-    return "Hello MyBUZZN!"
+    return 'Hello MyBuzzn!'
