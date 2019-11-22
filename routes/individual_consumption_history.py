@@ -1,12 +1,14 @@
+from datetime import datetime
+import logging
 from discovergy.discovergy import Discovergy
-from flask import Blueprint
-from datetime import datetime, date
+from flask import Blueprint, jsonify
 
-
+_LOGGER = logging.getLogger(__name__)
 client_name = 'BuzznClient'
 email = 'team@localpool.de'
 password = 'Zebulon_4711'
 meter_id = 'b4234cd4bed143a6b9bd09e347e17d34'
+meter_id = '12345'
 
 
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
@@ -40,8 +42,18 @@ def individual_consumption_history():
     d.login(email, password)
     start = round(datetime.combine(datetime.now(),
                                    datetime.min.time()).timestamp() * 1e3)
-    readings = d.get_readings(meter_id, start, 'three_minutes')
+    result = []
+    empty_result = {}
+    try:
+        readings = d.get_readings(meter_id, start, 'three_minutes')
+        for reading in readings:
+            result.append(float(reading.get('values').get('power')))
 
-    # Return value array
+        # Return result
+        return jsonify(result), 200
 
-    return 'Hello MyBuzzn!'
+    except TypeError as e:
+        _LOGGER.error("Exception: %s", e)
+
+        # Return result
+        return empty_result, 206
