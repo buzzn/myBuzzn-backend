@@ -15,7 +15,7 @@ pip install -r "requirements.txt"
 
 Set environment variables
 ```bash
-source ./setup_testing_envornment.sh
+source ./setup_testing_environment.sh
 ```
 
 Starting a flask server: `./.venv/bin/flask run`
