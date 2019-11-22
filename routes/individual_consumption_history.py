@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import logging
 from discovergy.discovergy import Discovergy
@@ -5,10 +6,6 @@ from flask import Blueprint, jsonify
 
 _LOGGER = logging.getLogger(__name__)
 client_name = 'BuzznClient'
-email = 'team@localpool.de'
-password = 'Zebulon_4711'
-meter_id = 'b4234cd4bed143a6b9bd09e347e17d34'
-meter_id = '12345'
 
 
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
@@ -29,23 +26,22 @@ def individual_consumption_history():
     :rtype: TODO
     """
 
-    # Set meter ID in database
+    # TODO - Set meter ID in database
 
-    # Get meter ID from database
-
-    # Put Discovergy credentials into environment variables
+    # TODO - Get meter ID from database
 
     # Use the given parameters
 
     # Call discovergy API for the given meter
     d = Discovergy(client_name)
-    d.login(email, password)
+    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
     start = round(datetime.combine(datetime.now(),
                                    datetime.min.time()).timestamp() * 1e3)
     result = []
     empty_result = {}
     try:
-        readings = d.get_readings(meter_id, start, 'three_minutes')
+        readings = d.get_readings(
+            os.environ['METER_ID'], start, 'three_minutes')
         for reading in readings:
             result.append(float(reading.get('values').get('power')))
 
