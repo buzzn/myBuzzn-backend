@@ -1,4 +1,6 @@
 flask
-pylint
 requests
 requests_oauthlib
+flask_api
+flask_testing
+pylint

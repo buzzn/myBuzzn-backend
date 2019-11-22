@@ -13,6 +13,12 @@ Install the requirements
 pip install -r "requirements.txt"
 pip install git+https://github.com/buzzn/discovergy.git
 ```
+
+Set environment variables
+```bash
+soruce ./setup_testing_envornment.sh
+```
+
 Starting a flask server: `./.venv/bin/flask run`
 
 If you want the webserver to restart after source code changes, run it in
@@ -42,3 +48,4 @@ python -m unittest
 ```bash
 pylint app.py apitests models routes tests util
 ```
+
