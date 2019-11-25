@@ -21,7 +21,7 @@ def individual_consumption_history():
     datetime.datetime.now()
     :param str resolution: time distance between returned readings with
     possible values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour',
-    'one_day', 'one_week', 'one_month', 'one_year', default is 'three_minutes'
+    'one_day', 'one_week', 'one_month', 'one_year', default is 'one_hour'
     :return: (array of float values where each one stands for the total power
     consumed at the time, 200) or ({}, 206) if there is no history
     :rtype: tuple
@@ -42,17 +42,10 @@ def individual_consumption_history():
     d = Discovergy(client_name)
     d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
     result = {}
-    empty_result = {}
     try:
-        if end is None:
-            readings = d.get_readings(
-                os.environ['METER_ID'], begin, None, tics)
-        else:
-            readings = d.get_readings(
-                os.environ['METER_ID'], begin, end, tics)
+        readings = d.get_readings(os.environ['METER_ID'], begin, end, tics)
         for reading in readings:
             result[reading.get('time')] = reading.get('values').get('power')
-            print(reading)
 
         # Return result
         return jsonify(result), 200
@@ -61,4 +54,4 @@ def individual_consumption_history():
         _LOGGER.error("Exception: %s", e)
 
         # Return result
-        return empty_result, 206
+        return jsonify(result), 206
