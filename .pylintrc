@@ -151,7 +151,8 @@ disable=print-statement,
         wrong-import-position,
         too-few-public-methods,
         ungrouped-imports, 
-        fixme
+        fixme, 
+        too-many-function-args
 
 
 # Enable the message, report, category or checker with the given id(s). You can
