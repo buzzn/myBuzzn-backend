@@ -2,8 +2,7 @@ import os
 from datetime import datetime
 import logging
 from discovergy.discovergy import Discovergy
-from flask import Blueprint, jsonify
-from flask import request
+from flask import Blueprint, jsonify, request
 
 _LOGGER = logging.getLogger(__name__)
 client_name = 'BuzznClient'
@@ -13,7 +12,8 @@ IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
 
 
-@IndividualConsumptionHistory.route('/individual-consumption-history')
+@IndividualConsumptionHistory.route('/individual-consumption-history',
+                                    methods=['GET'])
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval.
     :param str begin: start time of consumption, default is today at 0:00
