@@ -45,9 +45,12 @@ def individual_consumption_history():
     result = []
     empty_result = {}
     try:
-        readings = d.get_readings(os.environ['METER_ID'], start, end,
-                                  'three_minutes') if end is not None else
-        d.get_readings(os.environ['METER_ID'], start, None, 'three_minutes')
+        if end is None:
+            readings = d.get_readings(os.environ['METER_ID'], start, None,
+                                      'three_minutes')
+        else:
+            readings = d.get_readings(
+                os.environ['METER_ID'], start, end, 'three_minutes')
         for reading in readings:
             result.append(float(reading.get('values').get('power')))
 
