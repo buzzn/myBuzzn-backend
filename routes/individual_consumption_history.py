@@ -34,25 +34,25 @@ def individual_consumption_history():
     # Use the given parameters
     start = round(datetime.combine(datetime.now(),
                                    datetime.min.time()).timestamp() * 1e3)
-    print(type(start))
     begin = request.args.get('begin', default=start, type=int)
     end = request.args.get('end', default=None, type=int)
-    tics = request.args.get('tics', default='three_minutes', type=str)
+    tics = request.args.get('tics', default='one_hour', type=str)
 
     # Call discovergy API for the given meter
     d = Discovergy(client_name)
     d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
-    result = []
+    result = {}
     empty_result = {}
     try:
         if end is None:
-            readings = d.get_readings(os.environ['METER_ID'], start, None,
-                                      'three_minutes')
+            readings = d.get_readings(
+                os.environ['METER_ID'], begin, None, tics)
         else:
             readings = d.get_readings(
-                os.environ['METER_ID'], start, end, 'three_minutes')
+                os.environ['METER_ID'], begin, end, tics)
         for reading in readings:
-            result.append(float(reading.get('values').get('power')))
+            result[reading.get('time')] = reading.get('values').get('power')
+            print(reading)
 
         # Return result
         return jsonify(result), 200
