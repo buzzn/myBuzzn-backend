@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 from discovergy.discovergy import Discovergy
 
 
-_LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 client_name = 'BuzznClient'
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
@@ -55,7 +55,7 @@ def individual_consumption_history():
         return jsonify(result), 200
 
     except TypeError as e:
-        _LOGGER.error("Exception: %s", e)
+        logger.error("Exception: %s", e)
 
         # Return result
         return jsonify(result), 206
@@ -99,7 +99,7 @@ def group_consumption_history():
         return jsonify(result), 200
 
     except TypeError as e:
-        _LOGGER.error("Exception: %s", e)
+        logger.error("Exception: %s", e)
 
         # Return result
         return jsonify(result), 206
