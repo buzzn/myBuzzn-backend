@@ -1,16 +1,17 @@
 from os import environ
 
-from flask import Flask
+from setup_app import setup_app
 
 from routes.individual_consumption_history import IndividualConsumptionHistory
 from routes.group_consumption_history import GroupConsumptionHistory
 
-app = Flask(__name__)
 
-# Config
-app.config.update({
-    'SECRET_KEY': environ.get('BUZZN_SECRET_KEY')
-})
+class RunConfig():
+    """Graps app parameters from the environment."""
+    SECRET_KEY = environ.get('BUZZN_SECRET_KEY')
+
+
+app = setup_app(RunConfig())
 
 # Routes
 app.register_blueprint(IndividualConsumptionHistory)
