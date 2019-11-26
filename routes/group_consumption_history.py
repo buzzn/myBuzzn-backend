@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 import logging
 from flask import Blueprint, jsonify, request
 from discovergy.discovergy import Discovergy
@@ -10,7 +12,7 @@ GroupConsumptionHistory = Blueprint('GroupConsumptionHistory', __name__)
 
 @GroupConsumptionHistory.route('/group-consumption-history', methods=['GET'])
 def group_consumption_history():
-    """ Shows the history of consumption of the given time interval. 
+    """ Shows the history of consumption of the given time interval.
     :param int begin: start time of consumption, default is today at 0:00
     :param int end: end time of consumption, default is $now
     :param str tics: time distance between returned readings with possible
@@ -39,11 +41,12 @@ def group_consumption_history():
     produced = {}
     consumed = {}
 
-    try: 
+    try:
         readings = d.get_readings(os.environ['GROUP_METER_ID'], begin, end,
                                   tics)
-        for reading in readings: 
-            produced[reading.get('time')] = reading.get('values').get('energyOut')
+        for reading in readings:
+            produced[reading.get('time')] = reading.get(
+                'values').get('energyOut')
             consumed[reading.get('time')] = reading.get('values').get('power')
 
         # Return result
@@ -51,9 +54,8 @@ def group_consumption_history():
         result["produced"] = produced
         return jsonify(result), 200
 
-    except TypeError as e: 
+    except TypeError as e:
         _LOGGER.error("Exception: %s", e)
 
-        # Return result 
+        # Return result
         return jsonify(result), 206
-
