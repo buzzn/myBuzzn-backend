@@ -5,9 +5,11 @@ from setup_app import setup_app
 from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 
+
 class RunConfig():
     """Graps app parameters from the environment."""
     SECRET_KEY = environ.get('BUZZN_SECRET_KEY')
+    CLIENT_NAME = 'BuzznClient'
 
 
 app = setup_app(RunConfig())
