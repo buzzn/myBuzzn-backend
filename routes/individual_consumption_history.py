@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 import logging
-from discovergy.discovergy import Discovergy
 from flask import Blueprint, jsonify, request
+from discovergy.discovergy import Discovergy
 
 _LOGGER = logging.getLogger(__name__)
 client_name = 'BuzznClient'
@@ -22,7 +22,7 @@ def individual_consumption_history():
     :param str resolution: time distance between returned readings with
     possible values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour',
     'one_day', 'one_week', 'one_month', 'one_year', default is 'one_hour'
-    :return: (a JSON-Object where each meter reading is mapped to its point 
+    :return: (a JSON-Object where each meter reading is mapped to its point
     in time, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
