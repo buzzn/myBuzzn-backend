@@ -29,7 +29,7 @@ def group_consumption_history():
 
     # Use the given parameters
     start = round(datetime.combine(datetime.now(),
-                                   datetime.min.time().timestamp() * 1e3))
+                                   datetime.min.time()).timestamp() * 1e3)
     begin = request.args.get('begin', default=start, type=int)
     end = request.args.get('end', default=None, type=int)
     tics = request.args.get('tics', default='one_hour', type=str)
