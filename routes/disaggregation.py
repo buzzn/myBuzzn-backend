@@ -19,6 +19,15 @@ def read_parameters():
     return begin, end
 
 
+def login():
+    """ Authenticate against the discovergy backend. """
+
+    client_name = app.config['CLIENT_NAME']
+    d = Discovergy(client_name)
+    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    return d
+
+
 @IndividualDisaggregation.route('/individual-disaggregation', methods=['GET'])
 def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
@@ -33,9 +42,7 @@ def individual_disaggregation():
 
     # Call discovergy API for the given meter
     begin, end = read_parameters()
-    client_name = app.config['CLIENT_NAME']
-    d = Discovergy(client_name)
-    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    d = login()
     result = {}
     try:
         readings = d.get_disaggregation(os.environ['METER_ID'], begin, end)
@@ -66,9 +73,7 @@ def group_disaggregation():
 
     # Call discovergy API for the given group meter
     begin, end = read_parameters()
-    client_name = app.config['CLIENT_NAME']
-    d = Discovergy(client_name)
-    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    d = login()
     result = {}
     try:
         readings = d.get_disaggregation(
