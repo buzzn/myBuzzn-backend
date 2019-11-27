@@ -39,8 +39,8 @@ def individual_disaggregation():
     result = {}
     try:
         readings = d.get_disaggregation(os.environ['METER_ID'], begin, end)
-        for reading in readings:
-            result[reading.get('time')] = reading.get('values')
+        for reading in readings.items():
+            result[reading[0]] = reading[1]
 
         # Return result
         return jsonify(result), 200
@@ -73,8 +73,8 @@ def group_disaggregation():
     try:
         readings = d.get_disaggregation(
             os.environ['GROUP_METER_ID'], begin, end)
-        for reading in readings:
-            result[reading.get('time')] = reading.get('values')
+        for reading in readings.items():
+            result[reading[0]] = reading[1]
 
         # Return result
         return jsonify(result), 200
