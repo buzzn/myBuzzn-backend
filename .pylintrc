@@ -152,7 +152,8 @@ disable=print-statement,
         too-few-public-methods,
         ungrouped-imports, 
         fixme, 
-        too-many-function-args
+        too-many-function-args, 
+        duplicate-code
 
 
 # Enable the message, report, category or checker with the given id(s). You can
