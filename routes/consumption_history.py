@@ -6,9 +6,7 @@ from discovergy.discovergy import Discovergy
 
 
 logger = logging.getLogger(__name__)
-
-# TODO - import client name from app
-client_name = 'BuzznClient'
+client_name = os.environ['CLIENT_NAME']
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
 GroupConsumptionHistory = Blueprint('GroupConsumptionHistory', __name__)
