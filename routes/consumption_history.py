@@ -3,10 +3,10 @@ from datetime import datetime
 import logging
 from flask import Blueprint, jsonify, request
 from discovergy.discovergy import Discovergy
+from flask import current_app as app
 
 
 logger = logging.getLogger(__name__)
-client_name = os.environ['CLIENT_NAME']
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
 GroupConsumptionHistory = Blueprint('GroupConsumptionHistory', __name__)
@@ -43,6 +43,7 @@ def individual_consumption_history():
 
     # Call discovergy API for the given meter
     begin, end, tics = read_parameters()
+    client_name = app.config['CLIENT_NAME']
     d = Discovergy(client_name)
     d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
     result = {}
@@ -79,6 +80,7 @@ def group_consumption_history():
 
     # Call discovergy API for the given group meter
     begin, end, tics = read_parameters()
+    client_name = app.config['CLIENT_NAME']
     d = Discovergy(client_name)
     d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
     result = {}
