@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from flask import Blueprint, jsonify, request
 from discovergy.discovergy import Discovergy
@@ -13,8 +13,7 @@ GroupDisaggregation = Blueprint('GroupDisaggregation', __name__)
 
 def read_parameters():
     """ Use the given parameters. """
-    start = round(datetime.combine(datetime.now(),
-                                   datetime.min.time()).timestamp() * 1e3)
+    start = round((datetime.now() - timedelta(hours=48)).timestamp() * 1e3)
     begin = request.args.get('begin', default=start, type=int)
     end = request.args.get('end', default=None, type=int)
     return begin, end
