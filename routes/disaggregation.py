@@ -21,7 +21,11 @@ def read_parameters():
 
 @IndividualDisaggregation.route('/individual-disaggregation', methods=['GET'])
 def individual_disaggregation():
-    """ TODO
+    """ Shows the power curve disaggregation of the given time interval.
+    :param int begin: start time of disaggregation, default is 48h back in time
+    :param in end: end time of disaggregation, default is $now
+    :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
+    :rtype: tuple
     """
 
     # TODO - Set meter id in database
@@ -35,6 +39,40 @@ def individual_disaggregation():
     result = {}
     try:
         readings = d.get_disaggregation(os.environ['METER_ID'], begin, end)
+        for reading in readings:
+            result[reading.get('time')] = reading.get('values')
+
+        # Return result
+        return jsonify(result), 200
+
+    except TypeError as e:
+        logger.error("Exception: %s", e)
+
+        # Return result
+        return jsonify(result), 206
+
+
+@GroupDisaggregation.route('/group-disaggregation', methods=['GET'])
+def group_disaggregation():
+    """ Shows the power curve disaggregation of the given time interval.
+    :param int begin: start time of disaggregation, default is 48h back in time
+    :param int end: end time of disaggregation, default is $now
+    :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
+    :rtype: tuple
+    """
+
+    # TODO - Set group meter id in database
+    # TODO - Get group meter id from database
+
+    # Call discovergy API for the given group meter
+    begin, end = read_parameters()
+    client_name = app.config['CLIENT_NAME']
+    d = Discovergy(client_name)
+    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    result = {}
+    try:
+        readings = d.get_disaggregation(
+            os.environ['GROUP_METER_ID'], begin, end)
         for reading in readings:
             result[reading.get('time')] = reading.get('values')
 
