@@ -2,8 +2,8 @@ import os
 from datetime import datetime, timedelta
 import logging
 from flask import Blueprint, jsonify, request
-from discovergy.discovergy import Discovergy
 from flask import current_app as app
+from discovergy.discovergy import Discovergy
 
 
 logger = logging.getLogger(__name__)
