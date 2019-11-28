@@ -1,6 +1,6 @@
 from flask_api import status
 
-from apitests.buzzn_test_case import BuzznTestCase
+from tests.buzzn_test_case import BuzznTestCase
 from util.error import UNKNOWN_RESSOURCE
 
 

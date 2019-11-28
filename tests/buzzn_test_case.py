@@ -1,5 +1,4 @@
 from flask_testing import TestCase
-
 from setup_app import setup_app
 
 
@@ -8,11 +7,12 @@ class TestConfig():
     SECRET_KEY = 'testingkey'
     TESTING = True
     LIVESERVER_PORT = 0
+    CLIENT_NAME = 'BuzznClient'
 
 
 class BuzznTestCase(TestCase):
-    """Creates apps configures to run buzzn tests."""
+    """Creates app configured to run buzzn tests."""
 
     def create_app(self):
-        config = TestConfig()
-        return setup_app(config)
+        app = setup_app(TestConfig())
+        return app
