@@ -1,17 +1,13 @@
-from flask_jwt_extended import (JWTManager, jwt_required)
+from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from flask_api import status
 from flask import Flask
 
 from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
 from routes.disaggregation import GroupDisaggregation
-from routes.create_user import CreateUser
 from routes.set_password import SetPassword
 from routes.login import Login
-
-from models.user import User
 
 from util.database import db
 from util.error import UNKNOWN_RESOURCE
