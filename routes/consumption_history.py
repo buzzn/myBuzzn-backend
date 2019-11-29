@@ -29,7 +29,7 @@ def read_parameters():
 @IndividualConsumptionHistory.route('/individual-consumption-history',
                                     methods=['GET'])
 def individual_consumption_history():
-    """ Shows the history of consumption of the given time interval.
+    """ Shows the history of consumption of the given time interval in mW.
     :param int begin: start time of consumption, default is today at 0:00
     :param int end: end time of consumption, default is
     datetime.datetime.now()
@@ -67,7 +67,7 @@ def individual_consumption_history():
 
 @GroupConsumptionHistory.route('/group-consumption-history', methods=['GET'])
 def group_consumption_history():
-    """ Shows the history of consumption of the given time interval.
+    """ Shows the history of consumption of the given time interval in mW.
     :param int begin: start time of consumption, default is today at 0:00
     :param int end: end time of consumption, default is $now
     :param str tics: time distance between returned readings with possible
