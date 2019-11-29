@@ -15,6 +15,9 @@ GroupConsumptionHistory = Blueprint('GroupConsumptionHistory', __name__)
 def read_parameters():
     """ Use the given parameters. """
 
+    # Calculate the minimal time of "today", i.e. 00:00 am, as unix timestamp
+    # as integer with milliseconds precision. The timestamp format is required
+    # by the discovergy API, cf. https://api.discovergy.com/docs/
     start = round(datetime.combine(datetime.now(),
                                    datetime.min.time()).timestamp() * 1e3)
     begin = request.args.get('begin', default=start, type=int)
