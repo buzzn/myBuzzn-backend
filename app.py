@@ -6,7 +6,8 @@ class RunConfig():
     """Grabs app parameters from the environment."""
     SECRET_KEY = environ.get('BUZZN_SECRET_KEY')
     CLIENT_NAME = 'BuzznClient'
-
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = environ.get('BUZZN_SQLALCHEMY_DATABASE_URI')
 
 app = setup_app(RunConfig())
 
