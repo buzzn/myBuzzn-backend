@@ -11,6 +11,7 @@ source .venv/bin/activate
 Install the requirements
 ```bash
 pip install -r "requirements.txt"
+pip install git+https://github.com/buzzn/discovergy.git
 ```
 
 Set environment variables
@@ -42,12 +43,12 @@ project root
 The database structure is created using migrations. A migration is a
 script which transforms the database between two consecutive versions
 (i.e. git revisions) of the app.  The model classes (usually stored in
-`/models`) map the entities used by the app and provide methods to
+`/models`) model the entities used by the app and provide methods to
 load and store them in from/in the database.  To generate the
 according tables given a new model use the _flask migrate_ method:
 `flask db migrate` generates a new migration file in
-`/migrations/versions` to alter the database structure to the models' needs.
-To apply the migrations run `flask db upgrade`.
+`/migrations/versions` to transform the databse structure to meet the models'
+needs. To apply the migrations run `flask db upgrade`.
 
 ## Running the tests
 ```bash

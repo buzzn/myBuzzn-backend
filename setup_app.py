@@ -3,25 +3,25 @@ from flask_migrate import Migrate
 from flask_api import status
 from flask import Flask
 
+from routes.consumption_history import IndividualConsumptionHistory
+from routes.consumption_history import GroupConsumptionHistory
+from routes.disaggregation import IndividualDisaggregation
+from routes.disaggregation import GroupDisaggregation
 from routes.create_user import CreateUser
 from routes.set_password import SetPassword
 from routes.login import Login
-from util.database import db
-from flask import Flask
+
 from models.user import User
 
-from util.error import UNKNOWN_RESSOURCE
+from util.database import db
+from util.error import UNKNOWN_RESOURCE
 
 
 def setup_app(app_config):
     """Create an app using the given config.
-
-    Arguments:
-        app_config {object} -- An object containing all the environmental
-        parameters.
-
-    Returns:
-        flask app -- The created app, ready to run.
+    :param object app_config: An object containing all the environmental
+    parameters.
+    :return: The created app, ready to run.
     """
     app = Flask(__name__)
     app.config.from_object(app_config)
@@ -44,24 +44,19 @@ def setup_app(app_config):
     JWTManager(app)
 
     # Routes are called by the user, there are actually used.
-    #pylint: disable=unused-variable
-    @app.errorhandler(404)
-    def not_found(error):
-        return (UNKNOWN_RESSOURCE.to_json(),
-                error.code)
-
+    # Register routes
+    app.register_blueprint(IndividualConsumptionHistory)
+    app.register_blueprint(GroupConsumptionHistory)
+    app.register_blueprint(IndividualDisaggregation)
+    app.register_blueprint(GroupDisaggregation)
     app.register_blueprint(Login)
     app.register_blueprint(SetPassword)
 
-    @app.route('/protected')
-    @jwt_required
-    def protected():
-        return 'got me'
+    # Routes are called by the user, so they are actually used.
+    #pylint: disable=unused-variable
+    @app.errorhandler(404)
+    def not_found(error):
+        return (UNKNOWN_RESOURCE.to_json(),
+                error.code)
 
-    @app.route('/users')
-    def users():
-        return '\n'.join(x.get_name() + " " + str(x.get_activation_token())
-                     + " " + str(x.get_status()) + " " +
-                     str(x.get_role()) + " "
-                     + str(x._password) for x in User.query.all())
     return app
