@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 import logging
 from flask import Blueprint, jsonify, request
-from flask_status import status
+from flask_api import status
 from flask import current_app as app
 from discovergy.discovergy import Discovergy
 
