@@ -37,7 +37,7 @@ def individual_consumption_history():
     in time, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
-
+    # pylint: disable=fixme
     # TODO - Set meter ID in database
     # TODO - Get meter ID from database
 
@@ -75,6 +75,7 @@ def group_consumption_history():
     :rtype: tuple
     """
 
+    # pylint: disable=fixme
     # TODO - Set group meter ID in database
     # TODO - Get group meter ID from database
 
