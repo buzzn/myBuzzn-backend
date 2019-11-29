@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 import logging
 from flask import Blueprint, jsonify, request
+from flask_status import status
 from flask import current_app as app
 from discovergy.discovergy import Discovergy
 
@@ -55,13 +56,13 @@ def individual_disaggregation():
             result[reading[0]] = reading[1]
 
         # Return result
-        return jsonify(result), 200
+        return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:
         logger.error("Exception: %s", e)
 
         # Return result
-        return jsonify(result), 206
+        return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
 
 
 @GroupDisaggregation.route('/group-disaggregation', methods=['GET'])
@@ -88,10 +89,10 @@ def group_disaggregation():
             result[reading[0]] = reading[1]
 
         # Return result
-        return jsonify(result), 200
+        return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:
         logger.error("Exception: %s", e)
 
         # Return result
-        return jsonify(result), 206
+        return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
