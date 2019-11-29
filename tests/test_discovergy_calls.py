@@ -3,14 +3,16 @@ from flask_api import status
 from tests.buzzn_test_case import BuzznTestCase
 
 
-READINGS = [{'time': 1574244000000, 'values': {'power': 0, 'power3': -27279,
-                                               'energyOut': 0, 'power1': 0,
-                                               'energy': 2180256872214000,
-                                               'power2': -2437}},
-            {'time': 1574247600000, 'values': {'power': 0, 'power3': -25192,
-                                               'energyOut': 0, 'power1': 0,
-                                               'energy': 2180256872214000,
-                                               'power2': -2443}}]
+DEFAULT_READINGS = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
+                                                       'energyOut': 0, 'power1': 0,
+                                                       'energy': 2180256872214000,
+                                                       'power2': -2437}},
+                    {'time': 1574985600000, 'values': {'power': 0, 'power3': -27279,
+                                                       'energyOut': 0, 'power1': 0,
+                                                       'energy': 2180256872214000,
+                                                       'power2': -2437}}]
+EMPTY_READINGS = {}
+DEFAULT_RESPONSE = b'{"1574982000000":0,"1574985600000":0}\n'
 
 
 class IndividualConsumptionHistoryTestCase(BuzznTestCase):
@@ -20,9 +22,45 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=READINGS)
-    def test_route_exists(self, login, get_readings):
-        """ Check whether route '/individual-consumption-history' exists. """
+                return_value=DEFAULT_READINGS)
+    def test_individual_consumption_history(self, login, get_readings):
+        """ Unit tests for individual_consumption_history(). """
 
+        # Check if route exists
         response = self.client.get('/individual-consumption-history')
+
+        # Check response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check response content
+        self.assertTrue(isinstance(response.data, bytes))
+        self.assertEqual(response.data, DEFAULT_RESPONSE)
+
+        # Check erroneous input
+        response_wrong_timestamp_format = self.client.get(
+            '/individual-consumption-history?begin=123')
+        response_wrong_parameter = self.client.get(
+            '/individual-consumption-history?tocs=five_minutes')
+
+        # Check response content
+        self.assertEqual(
+            response_wrong_timestamp_format.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_wrong_parameter.status_code,
+                         status.HTTP_200_OK)
+
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
+    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+                return_value=EMPTY_READINGS, side_effect=TypeError)
+    def test_erroneous_tics_format(self, login, get_readings):
+        """ Check handling of erroneous tics format. """
+
+        response = self.client.get(
+            '/individual-consumption-history?tics=five_minutes')
+
+        # Check response status
+        self.assertEqual(response.status_code, status.HTTP_206_PARTIAL_CONTENT)
+
+        # Check response content
+        self.assertEqual(response.data, b'{}\n')
