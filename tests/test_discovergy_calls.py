@@ -1,20 +1,15 @@
-# import json
-# from flask_api import status
+from unittest import mock
 from tests.buzzn_test_case import BuzznTestCase
-# from routes.consumption_history import IndividualConsumptionHistory
-# from routes.consumption_history import GroupConsumptionHistory
-# from routes.disaggregation import IndividualDisaggregation
-# from routes.disaggregation import GroupDisaggregation
 
 
 class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     """ Unit tests for route IndividualConsumptionHistory. """
 
-    def setup(self):
-        self.app = self.create_app()
-
-    def test_route_exists(self):
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
+    def test_route_exists(self, login):
         """ Check whether route '/individual-consumption-history' exists. """
 
         # response = self.client.get('/individual-consumption-history')
-        # self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response.status_code, 206)

@@ -11,6 +11,7 @@ source .venv/bin/activate
 Install the requirements
 ```bash
 pip install -r "requirements.txt"
+pip install git+https://github.com/buzzn/discovergy.git
 ```
 
 Set environment variables
