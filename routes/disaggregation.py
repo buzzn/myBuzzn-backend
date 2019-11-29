@@ -13,6 +13,10 @@ GroupDisaggregation = Blueprint('GroupDisaggregation', __name__)
 
 def read_parameters():
     """ Use the given parameters. """
+
+    # Calculate the minimal time of "today", i.e. 00:00 am, as unix timestamp
+    # as integer with milliseconds precision. The timestamp format is required
+    # by the discovergy API, cf. https://api.discovergy.com/docs/
     start = round((datetime.now() - timedelta(hours=48)).timestamp() * 1e3)
     begin = request.args.get('begin', default=start, type=int)
     end = request.args.get('end', default=None, type=int)
@@ -37,6 +41,7 @@ def individual_disaggregation():
     :rtype: tuple
     """
 
+    # pylint: disable=fixme
     # TODO - Set meter id in database
     # TODO - Get meter id from database
 
@@ -68,6 +73,7 @@ def group_disaggregation():
     :rtype: tuple
     """
 
+    # pylint: disable=fixme
     # TODO - Set group meter id in database
     # TODO - Get group meter id from database
 
