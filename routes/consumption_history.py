@@ -5,12 +5,17 @@ from datetime import datetime
 # imports. Likewise, we want the logger in each module for now.
 # pylint: disable=duplicate-code
 import logging
+# pylint: disable=duplicate-code
 from flask import Blueprint, jsonify, request
+# pylint: disable=duplicate-code
 from flask_api import status
+# pylint: disable=duplicate-code
 from flask import current_app as app
+# pylint: disable=duplicate-code
 from discovergy.discovergy import Discovergy
 
 
+# pylint: disable=duplicate-code
 logger = logging.getLogger(__name__)
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
