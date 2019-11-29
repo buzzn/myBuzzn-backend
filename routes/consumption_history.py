@@ -1,5 +1,9 @@
 import os
 from datetime import datetime
+
+# We want to structure our routes in different modules and therefore use equal
+# imports. Likewise, we want the logger in each module for now.
+# pylint: disable=duplicate-code
 import logging
 from flask import Blueprint, jsonify, request
 from flask_api import status
