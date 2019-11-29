@@ -3,4 +3,3 @@ export BUZZN_SECRET_KEY='71bcbbdc14063727b6a65cd97bbd284189f2d9d02a0a6bfafe75449
 export EMAIL='test@test.com'
 export PASSWORD='test123'
 export BUZZN_SQLALCHEMY_DATABASE_URI='sqlite:///mybuzzn.db'
-
