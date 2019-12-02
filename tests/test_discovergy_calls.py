@@ -3,16 +3,30 @@ from flask_api import status
 from tests.buzzn_test_case import BuzznTestCase
 
 
-DEFAULT_READINGS = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
-                                                       'energyOut': 0, 'power1': 0,
-                                                       'energy': 2180256872214000,
-                                                       'power2': -2437}},
-                    {'time': 1574985600000, 'values': {'power': 0, 'power3': -27279,
-                                                       'energyOut': 0, 'power1': 0,
-                                                       'energy': 2180256872214000,
-                                                       'power2': -2437}}]
-EMPTY_READINGS = {}
-DEFAULT_RESPONSE = b'{"1574982000000":0,"1574985600000":0}\n'
+CONSUMPTION = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
+                                                  'energyOut': 0, 'power1': 0,
+                                                  'energy': 2180256872214000,
+                                                  'power2': -2437}},
+               {'time': 1574985600000, 'values': {'power': 0, 'power3': -27279,
+                                                  'energyOut': 0, 'power1': 0,
+                                                  'energy': 2180256872214000,
+                                                  'power2': -2437}}]
+EMPTY_RESPONSE = {}
+INDIVIDUAL_CONSUMPTION = b'{"1574982000000":0,"1574985600000":0}\n'
+DISAGGREGATION = {
+    "1575111600000": {
+        "Durchlauferhitzer-1": 0,
+        "Grundlast-1": 50000000
+    },
+    "1575112500000": {
+        "Durchlauferhitzer-1": 0,
+        "Grundlast-1": 50000000
+    }
+}
+
+# byte objects cannot be line-split
+# pylint: disable=line-too-long
+INDIVIDUAL_DISAGGREGATION = b'{"1575111600000":{"Durchlauferhitzer-1":0,"Grundlast-1":50000000},"1575112500000":{"Durchlauferhitzer-1":0,"Grundlast-1":50000000}}\n'
 
 
 class IndividualConsumptionHistoryTestCase(BuzznTestCase):
@@ -22,7 +36,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=DEFAULT_READINGS)
+                return_value=CONSUMPTION)
     def test_individual_consumption_history(self, login, get_readings):
         """ Unit tests for individual_consumption_history(). """
 
@@ -34,7 +48,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(response.data, DEFAULT_RESPONSE)
+        self.assertEqual(response.data, INDIVIDUAL_CONSUMPTION)
 
         # Check erroneous input
         response_wrong_timestamp_format = self.client.get(
@@ -52,7 +66,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=EMPTY_READINGS, side_effect=ValueError)
+                return_value=EMPTY_RESPONSE, side_effect=ValueError)
     def test_erroneous_tics_format(self, login, get_readings):
         """ Check handling of erroneous tics format. """
 
@@ -64,3 +78,43 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check response content
         self.assertEqual(response.data, b'{}\n')
+
+
+class GroupConsumptionHistoryTestCase(BuzznTestCase):
+    """ Unit tests for route GroupConsumptionHistory. """
+
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
+    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+                return_value=CONSUMPTION)
+    def test_group_consumption_history(self, login, get_readings):
+        """ Unit tests for group_consumption_history()."""
+
+        # Check if route exists
+        response = self.client.get('/group-consumption-history')
+
+        # Check response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class IndividualDisaggregation(BuzznTestCase):
+    """ Unit tests for IndividualDisaggregation. """
+
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
+    @mock.patch('discovergy.discovergy.Discovergy.get_disaggregation',
+                return_value=DISAGGREGATION)
+    def test_individual_disaggregation(self, login, disaggregation):
+        """ Unit tests for individual_disaggregation(). """
+
+        # Check if route exists
+        response = self.client.get('/individual-disaggregation')
+
+        # Check response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check response content
+        self.assertTrue(isinstance(response.data, bytes))
+        self.assertEqual(response.data, INDIVIDUAL_DISAGGREGATION)
