@@ -52,7 +52,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=EMPTY_READINGS, side_effect=TypeError)
+                return_value=EMPTY_READINGS, side_effect=ValueError)
     def test_erroneous_tics_format(self, login, get_readings):
         """ Check handling of erroneous tics format. """
 
