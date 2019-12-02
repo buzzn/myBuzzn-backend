@@ -11,12 +11,14 @@ CONSUMPTION = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
                                                   'energyOut': 0, 'power1': 0,
                                                   'energy': 2180256872214000,
                                                   'power2': -2437}}]
-EMPTY_RESPONSE = {}
+EMPTY_CONSUMPTION = {}
 INDIVIDUAL_CONSUMPTION = b'{"1574982000000":0,"1574985600000":0}\n'
+EMPTY_INDIVIDUAL_CONSUMPTION = b'{}\n'
 
 # byte objects cannot be line-split
 # pylint: disable=line-too-long
 GROUP_CONSUMPTION = b'{"consumed":{"1574982000000":0,"1574985600000":0},"produced":{"1574982000000":0,"1574985600000":0}}\n'
+EMPTY_GROUP_CONSUMPTION = b'{"consumed":{},"produced":{}}\n'
 DISAGGREGATION = {
     "1575111600000": {
         "Durchlauferhitzer-1": 0,
@@ -70,7 +72,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=EMPTY_RESPONSE, side_effect=ValueError)
+                return_value=EMPTY_CONSUMPTION, side_effect=ValueError)
     def test_erroneous_tics_format(self, login, get_readings):
         """ Check handling of erroneous tics format. """
 
@@ -81,7 +83,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
         self.assertEqual(response.status_code, status.HTTP_206_PARTIAL_CONTENT)
 
         # Check response content
-        self.assertEqual(response.data, b'{}\n')
+        self.assertEqual(response.data, EMPTY_INDIVIDUAL_CONSUMPTION)
 
 
 class GroupConsumptionHistoryTestCase(BuzznTestCase):
@@ -116,6 +118,44 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             response_wrong_timestamp_format.status_code, status.HTTP_200_OK)
         self.assertEqual(response_wrong_parameter.status_code,
                          status.HTTP_200_OK)
+
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
+    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+                return_value=EMPTY_CONSUMPTION)
+    def test_erroneous_tics_format(self, login, get_readings):
+        """ Check handling of erroneous tics format. """
+
+        response = self.client.get(
+            '/group-consumption-history?tics=five_minutes')
+
+        # Check response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check response content
+        self.assertEqual(response.data, EMPTY_GROUP_CONSUMPTION)
+
+
+class ConsumptionHistory(BuzznTestCase):
+    """ Unit tests for common functionalities of IndividualConsumptionHistory
+    and GroupConsumptionHistory. """
+
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
+    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+                return_value=EMPTY_CONSUMPTION)
+    def test_consumption(self, login, get_readings):
+        """ Check handling of erroneous parameters. """
+
+        # Check routes in question
+        for route in '/individual-consumption-history', '/group-consumption-history':
+
+            response_wrong_timestamp_format = self.client.get(
+                route + '?begin=123.123')
+            response_wrong_parameter = self.client.get(
+                route + '?and=1575284400000')
 
 
 class IndividualDisaggregation(BuzznTestCase):
