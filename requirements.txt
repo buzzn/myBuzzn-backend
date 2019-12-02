@@ -2,5 +2,7 @@ flask
 requests
 requests_oauthlib
 flask_api
+flask_migrate
+flask_sqlalchemy
 flask_testing
 pylint

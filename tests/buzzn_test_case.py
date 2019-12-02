@@ -8,6 +8,8 @@ class TestConfig():
     TESTING = True
     LIVESERVER_PORT = 0
     CLIENT_NAME = 'BuzznClient'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
 class BuzznTestCase(TestCase):

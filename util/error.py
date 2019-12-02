@@ -9,4 +9,4 @@ class Error:
     def to_json(self):
         return json.dumps(self.__dict__)
 
-UNKNOWN_RESSOURCE = Error('Unknown ressource', 'This ressource is not available.')
+UNKNOWN_RESOURCE = Error('Unknown resource', 'This resource is not available.')
