@@ -68,8 +68,8 @@ def individual_consumption_history():
         # Return result
         return jsonify(result), status.HTTP_200_OK
 
-    except TypeError as e:
-        logger.error("Exception: %s", e)
+    except ValueError as e:
+        logger.error("%s", e)
 
         # Return result
         return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
@@ -115,7 +115,7 @@ def group_consumption_history():
         return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:
-        logger.error("Exception: %s", e)
+        logger.error("%s", e)
 
         # Return result
         return jsonify(result), status.HTTP_206_PARTIAL_CONTENT

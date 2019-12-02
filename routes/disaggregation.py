@@ -59,7 +59,7 @@ def individual_disaggregation():
         return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:
-        logger.error("Exception: %s", e)
+        logger.error("%s", e)
 
         # Return result
         return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
@@ -92,7 +92,7 @@ def group_disaggregation():
         return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:
-        logger.error("Exception: %s", e)
+        logger.error("%s", e)
 
         # Return result
         return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
