@@ -13,6 +13,10 @@ CONSUMPTION = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
                                                   'power2': -2437}}]
 EMPTY_RESPONSE = {}
 INDIVIDUAL_CONSUMPTION = b'{"1574982000000":0,"1574985600000":0}\n'
+
+# byte objects cannot be line-split
+# pylint: disable=line-too-long
+GROUP_CONSUMPTION = b'{"consumed":{"1574982000000":0,"1574985600000":0},"produced":{"1574982000000":0,"1574985600000":0}}\n'
 DISAGGREGATION = {
     "1575111600000": {
         "Durchlauferhitzer-1": 0,
@@ -52,7 +56,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check erroneous input
         response_wrong_timestamp_format = self.client.get(
-            '/individual-consumption-history?begin=123')
+            '/individual-consumption-history?begin=123.123')
         response_wrong_parameter = self.client.get(
             '/individual-consumption-history?tocs=five_minutes')
 
@@ -96,6 +100,22 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check response content
+        self.assertTrue(isinstance(response.data, bytes))
+        self.assertEqual(response.data, GROUP_CONSUMPTION)
+
+        # Check erroneous input
+        response_wrong_timestamp_format = self.client.get(
+            '/group-consumption-history?begin=123.123')
+        response_wrong_parameter = self.client.get(
+            '/group-consumption-history?and=1575284400000')
+
+        # Check response content
+        self.assertEqual(
+            response_wrong_timestamp_format.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_wrong_parameter.status_code,
+                         status.HTTP_200_OK)
 
 
 class IndividualDisaggregation(BuzznTestCase):
