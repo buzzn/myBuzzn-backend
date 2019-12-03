@@ -1,0 +1,14 @@
+{% extends "password/layout.html" %}
+{% block head %}
+{{super()}}
+<title>Passwort ändern</title>
+{% endblock %}
+
+{% block body %}
+<p>{{message}}</p>
+<form action="/password/reset/{{passwordResetToken}}" method="POST">
+  <label>Passwort</label><input type="password" name="password" /><br />
+  <label>Passwort-Wiederhoung</label><input type="password" name="passwordRepeat" /><br />
+  <button type="submit">Passwort ändern</button>
+</form>
+{% endblock %}

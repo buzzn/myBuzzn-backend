@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 
-from models.user import User, ActiveType
+from models.user import User, StateType
 from util.error import Error
 
 Login = Blueprint('Login', __name__)
@@ -31,7 +31,7 @@ def login():
         return Error('Unknown credentials',
                      'Try again with proper username/password.').to_json(), 401
 
-    if not targetUser.active == ActiveType.ACTIVE:
+    if not targetUser.active == StateType.ACTIVE:
         return Error('User not active', 'Can not login.').to_json(), 403
 
     access_token = create_access_token(identity=targetUser.name)
