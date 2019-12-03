@@ -60,17 +60,27 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_erroneous_tics_format(self, login, get_readings):
-        """ Check handling of erroneous tics format. """
+    def test_parameters(self, login, get_readings):
+        """ Check handling of erroneous parameters. """
 
-        response = self.client.get(
-            '/individual-consumption-history?tics=five_minutes')
+        response_timestamp_format = self.client.get(
+            '/individual-consumption-history?begin=123.123')
+        response_parameter = self.client.get(
+            '/individual-consumption-history?and=1575284400000')
+        response_tics_format = self.client.get(
+            'individual-consumption-history?tics=five_minutes')
 
         # Check response status
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_timestamp_format.status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(response_parameter.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_tics_format.status_code, status.HTTP_200_OK)
 
         # Check response content
-        self.assertEqual(response.data, EMPTY_RESPONSE_BYTES)
+        self.assertEqual(response_timestamp_format.data,
+                         EMPTY_RESPONSE_BYTES)
+        self.assertEqual(response_parameter.data, EMPTY_RESPONSE_BYTES)
+        self.assertEqual(response_tics_format.data, EMPTY_RESPONSE_BYTES)
 
 
 class GroupConsumptionHistoryTestCase(BuzznTestCase):
@@ -99,7 +109,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
                 return_value=EMPTY_RESPONSE)
     def test_parameters(self, login, get_readings):
-        """ Check handling of erroneous parameters. """
+        """ Test handling of erroneous parameters. """
 
         response_timestamp_format = self.client.get(
             '/group-consumption-history?begin=123.123')
@@ -166,24 +176,28 @@ class GroupDisaggregation(BuzznTestCase):
 
 
 class Disaggregation(BuzznTestCase):
-    """ Unit tests for common functionalities of IndividualDisaggregation
-    and GroupDisaggregation. """
+    """ Unit test for common funcionalities of IndividualDisaggregation and
+    GroupDisaggregation. """
 
-    # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+    @mock.patch('discovergy.discovergy.Discovergy.get_disaggregation',
                 return_value=EMPTY_RESPONSE)
-    def test_disaggregation(self, login, disaggregation):
-        """ Check handling of erroneous parameters. """
+    def test_parameters(self, login, disaggregation):
+        """ Test handling of erroneous parameters. """
 
-        # Check routes in question
-        # for route in '/individual-disaggregation', '/group-disaggregation':
+        for route in '/individual-disaggregation', '/group-disaggregation':
+            response_timestamp_format = self.client.get(
+                route + '?begin=123.123')
+            response_parameter = self.client.get(route + '?and=1575284400000')
 
-        # Check erroneous input
-        # response_wrong_timestamp_format = self.client.get(route + '?begin=123.123')
-        # response_wrong_parameter = self.client.get(route + '?and=1575284400000')
+            # Check response status
+            self.assertEqual(
+                response_timestamp_format.status_code, status.HTTP_200_OK)
+            self.assertEqual(response_parameter.status_code,
+                             status.HTTP_200_OK)
 
-        # Check response content
-        # self.assertEqual(response_wrong_timestamp_format.status_code, status.HTTP_200_OK)
-        # self.assertEqual(response_wrong_parameter.status_code, status.HTTP_200_OK)
+            # Check response content
+            self.assertEqual(response_timestamp_format.data,
+                             EMPTY_RESPONSE_BYTES)
+            self.assertEqual(response_parameter.data, EMPTY_RESPONSE_BYTES)
