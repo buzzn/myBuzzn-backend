@@ -13,12 +13,18 @@ class TestConfig():
     CLIENT_NAME = 'BuzznClient'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    PASSWORD_SALT = bcrypt.gensalt()
-
+    PASSWORD_SALT = bcrypt.gensalt().hex()
+    BUZZN_SMTP_SERVER = 'BUZZN_SMTP_SERVER'
+    BUZZN_SMTP_SERVER_PORT = '456'
+    BUZZN_EMAIL = 'team@buzzn.net'
+    BUZZN_EMAIL_PASSWORD = 'BUZZN_EMAIL_PASSWORD'
+    BUZZN_BASE_URL = 'localhost:5000'
+    BUZZN_MAILER = 'stdout'
 
 class BuzznTestCase(TestCase):
     """Creates app configured to run buzzn tests."""
     def setUp(self):
+        db.drop_all()
         db.create_all()
 
     def create_app(self):
