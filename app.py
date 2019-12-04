@@ -1,4 +1,6 @@
 from os import environ
+from discovergy.discovergy import Discovergy
+from websocket import Websocket
 from setup_app import setup_app
 
 
@@ -9,8 +11,10 @@ class RunConfig():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = environ.get('BUZZN_SQLALCHEMY_DATABASE_URI')
 
-app = setup_app(RunConfig())
 
+app = setup_app(RunConfig())
+d = Discovergy(app.config['CLIENT_NAME'])
 
 if __name__ == "__main__":
-    app.run()
+    websocket = Websocket(app, "eventlet", d)
+    websocket.socketio.run(app)
