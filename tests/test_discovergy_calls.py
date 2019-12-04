@@ -1,3 +1,4 @@
+import ast
 from unittest import mock
 from flask_api import status
 from tests.buzzn_test_case import BuzznTestCase
@@ -12,13 +13,14 @@ CONSUMPTION = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
                                                   'energy': 2180256872214000,
                                                   'power2': -2437}}]
 EMPTY_RESPONSE = {}
-INDIVIDUAL_CONSUMPTION = b'{"1574982000000":0,"1574985600000":0}\n'
-EMPTY_RESPONSE_BYTES = b'{}\n'
+INDIVIDUAL_CONSUMPTION = {'1574982000000': 0, '1574985600000': 0}
+EMPTY_RESPONSE_BYTES = {}
 
 # byte objects cannot be line-split
 # pylint: disable=line-too-long
-GROUP_CONSUMPTION = b'{"consumed":{"1574982000000":0,"1574985600000":0},"produced":{"1574982000000":0,"1574985600000":0}}\n'
-EMPTY_GROUP_CONSUMPTION = b'{"consumed":{},"produced":{}}\n'
+GROUP_CONSUMPTION = {'consumed': {'1574982000000': 0, '1574985600000': 0}, 'produced': {
+    '1574982000000': 0, '1574985600000': 0}}
+EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
 DISAGGREGATION = {
     "1575111600000": {
         "Durchlauferhitzer-1": 0,
@@ -54,7 +56,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(response.data, INDIVIDUAL_CONSUMPTION)
+        self.assertEqual(ast.literal_eval(
+            response.data.decode('utf-8')), INDIVIDUAL_CONSUMPTION)
 
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
@@ -77,10 +80,12 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
         self.assertEqual(response_tics_format.status_code, status.HTTP_200_OK)
 
         # Check response content
-        self.assertEqual(response_timestamp_format.data,
+        self.assertEqual(ast.literal_eval(response_timestamp_format.data.decode('utf-8')),
                          EMPTY_RESPONSE_BYTES)
-        self.assertEqual(response_parameter.data, EMPTY_RESPONSE_BYTES)
-        self.assertEqual(response_tics_format.data, EMPTY_RESPONSE_BYTES)
+        self.assertEqual(ast.literal_eval(
+            response_parameter.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+        self.assertEqual(ast.literal_eval(
+            response_tics_format.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
 
 
 class GroupConsumptionHistoryTestCase(BuzznTestCase):
@@ -102,7 +107,8 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(response.data, GROUP_CONSUMPTION)
+        self.assertEqual(ast.literal_eval(
+            response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
@@ -125,10 +131,12 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         self.assertEqual(response_tics_format.status_code, status.HTTP_200_OK)
 
         # Check response content
-        self.assertEqual(response_timestamp_format.data,
+        self.assertEqual(ast.literal_eval(response_timestamp_format.data.decode('utf-8')),
                          EMPTY_GROUP_CONSUMPTION)
-        self.assertEqual(response_parameter.data, EMPTY_GROUP_CONSUMPTION)
-        self.assertEqual(response_tics_format.data, EMPTY_GROUP_CONSUMPTION)
+        self.assertEqual(ast.literal_eval(
+            response_parameter.data.decode('utf-8')), EMPTY_GROUP_CONSUMPTION)
+        self.assertEqual(ast.literal_eval(
+            response_tics_format.data.decode('utf-8')), EMPTY_GROUP_CONSUMPTION)
 
 
 class IndividualDisaggregation(BuzznTestCase):
@@ -172,7 +180,8 @@ class GroupDisaggregation(BuzznTestCase):
 
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(response.data, EMPTY_RESPONSE_BYTES)
+        self.assertEqual(ast.literal_eval(
+            response.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
 
 
 class Disaggregation(BuzznTestCase):
@@ -198,6 +207,7 @@ class Disaggregation(BuzznTestCase):
                              status.HTTP_200_OK)
 
             # Check response content
-            self.assertEqual(response_timestamp_format.data,
+            self.assertEqual(ast.literal_eval(response_timestamp_format.data.decode('utf-8')),
                              EMPTY_RESPONSE_BYTES)
-            self.assertEqual(response_parameter.data, EMPTY_RESPONSE_BYTES)
+            self.assertEqual(ast.literal_eval(
+                response_parameter.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
