@@ -1,9 +1,15 @@
+from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 from flask import Flask
+
 from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
 from routes.disaggregation import GroupDisaggregation
+from routes.set_password import SetPassword
+from routes.login import Login
 
+from util.database import db
 from util.error import UNKNOWN_RESOURCE
 
 
@@ -26,11 +32,21 @@ def setup_app(app_config):
 
     app.response_class = JsonDefault
 
+    # Models
+    db.init_app(app)
+    Migrate(app, db)
+
+    # Login stuff
+    JWTManager(app)
+
+    # Routes are called by the user, there are actually used.
     # Register routes
     app.register_blueprint(IndividualConsumptionHistory)
     app.register_blueprint(GroupConsumptionHistory)
     app.register_blueprint(IndividualDisaggregation)
     app.register_blueprint(GroupDisaggregation)
+    app.register_blueprint(Login)
+    app.register_blueprint(SetPassword)
 
     # Routes are called by the user, so they are actually used.
     #pylint: disable=unused-variable
