@@ -42,6 +42,8 @@ project root
 ```
 
 ## Database
+To access the database, the app reads the database's address from the
+environment variable `BUZZN_SQLALCHEMY_DATABASE_URI`.
 The database structure is created using migrations. A migration is a
 script which transforms the database between two consecutive versions
 (i.e. git revisions) of the app.  The model classes (usually stored in
@@ -66,4 +68,3 @@ python -m unittest
 ```bash
 pylint app.py apitests models routes tests util
 ```
-

@@ -1,7 +1,9 @@
+bcrypt
 flask
 requests
 requests_oauthlib
 flask_api
+flask_jwt_extended
 flask_migrate
 flask_sqlalchemy
 flask_testing
