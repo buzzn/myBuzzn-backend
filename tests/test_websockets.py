@@ -139,3 +139,9 @@ class WebsocketTestCase(BuzznTestCase):
         websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
         self_sufficiency = websocket.self_sufficiency(
             METER_ID, INHABITANTS, FLAT_SIZE)
+
+        # Check return type
+        self.assertTrue(isinstance(self_sufficiency, float))
+
+        # Check return value
+        self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
