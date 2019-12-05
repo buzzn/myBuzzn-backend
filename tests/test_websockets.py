@@ -1,8 +1,7 @@
 from unittest import mock
-from unittest import skip
+from discovergy.discovergy import Discovergy
 from tests.buzzn_test_case import BuzznTestCase
 from websocket import Websocket
-from discovergy.discovergy import Discovergy
 
 
 METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
@@ -131,8 +130,6 @@ class WebsocketTestCase(BuzznTestCase):
                 return_value=INDIVIDUAL_FIRST_READING)
     @mock.patch('discovergy.discovergy.Discovergy.get_last_reading',
                 return_value=INDIVIDUAL_LAST_READING)
-    # pylint does not get the required argument from the @mock.patch decorator
-    # pylint: disable=unused-argument
     def test_self_sufficiency(self, socketio, get_readings, get_last_reading):
         """ Unit tests for function self_sufficiency(). """
 
