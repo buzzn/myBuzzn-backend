@@ -108,7 +108,7 @@ class WebsocketTestCase(BuzznTestCase):
 
         websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
         data = websocket.create_data(METER_ID, GROUP_METER_ID, USER_ID,
-                                     GROUP_METER_IDS)
+                                     GROUP_METER_IDS, INHABITANTS, FLAT_SIZE)
 
         # Check return type
         self.assertTrue(isinstance(data, dict))

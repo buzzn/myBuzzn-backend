@@ -62,8 +62,20 @@ class Websocket:
             # Return result
             return 0.0
 
-    def create_data(self, meter_id, group_meter_id, user_id, group_meter_ids):
-        """ Creates a data package with the latest discovergy readings. """
+    def create_data(self, meter_id, group_meter_id, user_id, group_meter_ids,
+                    inhabitants, flat_size):
+        """ Creates a data package with the latest discovergy readings. 
+        :param str meter_id: the user's meter id
+        :param str group_meter_id: the meter id of the user's group
+        :param int user_id: the user's id
+        :param dict group_meter_ids: the user's fellow group members' ids
+        mapped to their meter ids
+        :param int inhabitants: number of people in the user's flat
+        :param float flat_size: the user's flat size
+        :return: {str => int, str => int, str => int, str => float, str => {str
+        => int, str => int}}
+        :rtype: dict
+        """
 
         now = round(datetime.now().timestamp() * 1e3)
         try:
@@ -80,12 +92,11 @@ class Websocket:
                 usersConsumption.append(dict(id=user.get('id'),
                                              consumption=reading.get('values').get('energy')))
 
-            self.self_sufficiency(user_id, meter_id)
             return dict(date=now,
                         groupConsumption=groupConsumption,
                         groupProduction=groupProduction,
                         selfSufficiency=self.self_sufficiency(
-                            user_id, meter_id),
+                            meter_id, inhabitants, flat_size),
                         usersConsumption=usersConsumption)
 
         except Exception as e:
