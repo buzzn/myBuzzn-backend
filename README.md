@@ -32,7 +32,6 @@ FLASK_DEBUG=1 ./.venv/bin/flask run
 ## Project structure
 ```
 project root
-├── apitests      # Api tests go here
 ├── migrations    # Database migration stuff
 ├── models        # Data-Models
 ├── routes        # Defines the http api
