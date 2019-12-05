@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 # TODO - Set/get people in flat in/from database
 # TODO - Set/get flat size in/from database
 # TODO - discovergy login
+# TODO - get BASEURL from app context
+BASEURL = 'http://localhost:5000'
 
 
 class Websocket:
@@ -102,3 +104,16 @@ class Websocket:
         except Exception as e:
             logger.error("Exception: %s", e)
             return {}
+
+    def background_thread(self):
+        """ Emit server-generated live data every 60s to the clients. """
+        while True:
+            self.socketio.sleep(60)
+
+            # TODO - get all user accounts with parameters
+            live_data = self.generate_data()
+
+            # TODO - emit correct response
+            self.socketio.emit('my_response',
+                               {'data': live_data},
+                               namespace='/ws:' + BASEURL + '/live')
