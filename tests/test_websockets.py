@@ -1,6 +1,9 @@
 from unittest import mock
+from unittest import skip
 from tests.buzzn_test_case import BuzznTestCase
 from websocket import Websocket
+from discovergy.discovergy import Discovergy
+
 
 METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
 GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
@@ -77,27 +80,62 @@ GROUPMEMBER2_LAST_READING = {
 }
 DATA = {
     "date": 1575540829887,
-    "groupConsumption": 3520150977541000,
+    "groupConsumption": 3520052364335000,
     "groupProduction": 0,
-    "selfSufficiency": 0.5,
-    "usersConsumption": [{"id": 3, "consumption": 1931131646000},
-                         {"id": 1, "consumption": 186720209342000},
-                         {"id": 2, "consumption": 1490956772802000}]
+    "selfSufficiency": 6.225875925992823e-10,
+    "usersConsumption": [{"id": 3, "consumption": 1931041534000},
+                         {"id": 1, "consumption": 186728851677000},
+                         {"id": 2, "consumption": 1491013650297000}]
 }
+RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
+                 GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
+INHABITANTS = 2
+FLAT_SIZE = 60.0
+SELF_SUFFICIENCY = 6.225875925992823e-10
 
 
 class WebsocketTestCase(BuzznTestCase):
     """ Unit tests for class Websocket. """
 
+    # pylint does not understand the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('discovergy.discovergy.Discovergy.get_last_reading',
-                side_effect=[GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
-                             GROUPMEMBER1_LAST_READING,
-                             GROUPMEMBER2_LAST_READING])
-    def test_create_data(self, socketio, get_last_reading):
+                side_effect=RETURN_VALUES)
+    @mock.patch('websocket.Websocket.self_sufficiency',
+                return_value=SELF_SUFFICIENCY)
+    def test_create_data(self, socketio, get_last_reading, self_sufficiency):
         """ Unit tests for function create_data(). """
 
-        # websocket = Websocket()
-        # Check return type
+        websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
+        data = websocket.create_data(METER_ID, GROUP_METER_ID, USER_ID,
+                                     GROUP_METER_IDS)
 
-        # Check return value
+        # Check return type
+        self.assertTrue(isinstance(data, dict))
+
+        # Check return values
+        for param in 'groupConsumption', 'groupProduction', 'selfSufficiency':
+            self.assertEqual(data.get(param), DATA.get(param))
+
+        for item1, item2 in zip(data.get('usersConsumption'),
+                                DATA.get('usersConsumption')):
+            self.assertEqual(item1.get('id'), item2.get('id'))
+            self.assertEqual(item1.get('consumption'),
+                             item2.get('consumption'))
+
+    # pylint does not understand the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    @mock.patch('flask_socketio.SocketIO')
+    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+                return_value=INDIVIDUAL_FIRST_READING)
+    @mock.patch('discovergy.discovergy.Discovergy.get_last_reading',
+                return_value=INDIVIDUAL_LAST_READING)
+    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint: disable=unused-argument
+    def test_self_sufficiency(self, socketio, get_readings, get_last_reading):
+        """ Unit tests for function self_sufficiency(). """
+
+        websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
+        self_sufficiency = websocket.self_sufficiency(
+            METER_ID, INHABITANTS, FLAT_SIZE)
