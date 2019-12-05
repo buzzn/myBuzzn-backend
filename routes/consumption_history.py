@@ -68,7 +68,7 @@ def individual_consumption_history():
         # Return result
         return jsonify(result), status.HTTP_200_OK
 
-    except TypeError as e:
+    except ValueError as e:
         logger.error("Exception: %s", e)
 
         # Return result

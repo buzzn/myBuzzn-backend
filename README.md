@@ -13,10 +13,12 @@ Install the requirements
 pip install -r "requirements.txt"
 pip install git+https://github.com/buzzn/discovergy.git
 ```
-
-Set environment variables
+The following environment variables need to be set: 
 ```bash
-source ./setup_testing_environment.sh
+EMAIL 
+PASSWORD
+BUZZN_SQLALCHEMY_DATABASE_URI
+BUZZN_SECRET_KEY
 ```
 
 Starting a flask server: `./.venv/bin/flask run`
@@ -51,6 +53,11 @@ according tables given a new model use the _flask migrate_ method:
 needs. To apply the migrations run `flask db upgrade`.
 
 ## Running the tests
+Set environment variables
+```bash
+source ./setup_testing_environment.sh
+```
+Run tests
 ```bash
 python -m unittest
 ```
