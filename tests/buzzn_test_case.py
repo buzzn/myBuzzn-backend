@@ -4,6 +4,7 @@ from flask_testing import TestCase
 from setup_app import setup_app
 from util.database import db
 
+
 class TestConfig():
     """The config to be used in the test cases"""
     SECRET_KEY = 'testingkey'
@@ -16,7 +17,7 @@ class TestConfig():
 
 
 class BuzznTestCase(TestCase):
-    """Creates apps configures to run buzzn tests."""
+    """Creates app configured to run buzzn tests."""
     def setUp(self):
         db.create_all()
 

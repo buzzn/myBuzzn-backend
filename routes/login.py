@@ -11,11 +11,10 @@ Login = Blueprint('Login', __name__)
 @Login.route('/login', methods=['POST'])
 def login():
     """Performs a login for the given user credentials.
-    Parameters:
-      String -- user: The user's name to login.
-      String -- password: The user's password in plaintext to login.
-    Returns:
-      200: If the login was successfull.
+    :param str user: The user's name to login.
+    :param str password: The user's password in plaintext to login.
+    :returns:
+      200: If the login was successful.
       401: If either user name was not found or password does not match.
       404: If the useraccount is not active.
     """
@@ -23,12 +22,10 @@ def login():
     user_requested = j['user']
     password_requested = j['password']
 
-    targetUsers = User.query.filter_by(name=user_requested).all()
-    if not any(targetUsers):
+    targetUser = User.query.filter_by(name=user_requested).first()
+    if targetUser is None:
         return Error('Unknown credentials',
                      'Try again with proper username/password.').to_json(), 401
-
-    targetUser = targetUsers[0]
 
     if not targetUser.check_password(password_requested):
         return Error('Unknown credentials',

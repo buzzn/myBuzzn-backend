@@ -5,7 +5,7 @@ from util.database import db
 
 
 class RoleType(Enum):
-    """Indicates the role of a user account. This may privilige the user for
+    """Indicates the role of a user account. This may privilege the user for
     specific actions.
     """
     LOCAL_POWER_TAKER = 'Local powertaker in a local pool'
@@ -21,10 +21,7 @@ class ActiveType(Enum):
 
 
 class User(db.Model):
-    """Represents an user account in the backend.
-
-    Arguments:
-        db {class} -- Db related stuff to crud an instance of this class.
+    """Represents a user account in the backend.
     """
     @staticmethod
     def NAME_MAX_LENGTH():
@@ -36,14 +33,11 @@ class User(db.Model):
 
     @staticmethod
     def generate_password_hash(target):
-        """Generates a password hash for the given password using app's
+        """Generates a password hash for the given password using the app's
         spassword salt.
-
-        Arguments:
-            target {String} -- The plaintext password to generate the hash for
-
-        Returns:
-            String -- The hash.
+        :param str target: The plaintext password to generate the hash for
+        :return: The hashed password.
+        :rtype: str
         """
         return bcrypt.hashpw(target.encode('utf-8'),
                              current_app.config['PASSWORD_SALT'])
@@ -56,11 +50,9 @@ class User(db.Model):
     _role = db.Column(db.Enum(RoleType))
 
     def __init__(self, name, activation_token):
-        """Creates a new useraccount and sets its state into pending.
-
-        Arguments:
-            name {String} -- The user's name.
-            activation_token {String} -- Token to activate the account.
+        """Creates a new user account and sets its state to pending.
+        :param str name: The user's name.
+        :param str activation_token: Token to activate the account.
         """
         self._name = name
         self._activation_token = activation_token
@@ -84,29 +76,24 @@ class User(db.Model):
 
     def is_active(self):
         """Returns a value indicating whether this account is active.
-
-        Returns:
-            Boolean -- True, if this account is active, false otherwise.
+        :return: True, if this account is active, False otherwise.
+        :rtype: bool
         """
         return self._status == ActiveType.ACTIVE
 
     def check_password(self, password_to_check):
         """Checks whether the given password matches the user's.
-
-        Arguments:
-            password_to_check {String} -- Password in plaintext.
-
-        Returns:
-            Boolean -- True if the passwort matches, false otherwise.
+        :param str password_to_check: Password in plaintext.
+        :return: True if the passwort matches, False otherwise.
+        :rtype: bool
         """
         return bcrypt.checkpw(User.generate_password_hash(password_to_check),
                               self._password)
 
     def set_password(self, newPassword):
         """Sets the user's password.
-
-        Arguments:
-            newPassword {String} -- The new password in plaintext.
+        :param self:
+        :param newPassword: The new password in plaintext.
         """
         self._password = User.generate_password_hash(newPassword)
 
