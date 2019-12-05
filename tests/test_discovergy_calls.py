@@ -17,9 +17,8 @@ INDIVIDUAL_CONSUMPTION = {'1574982000000': 0, '1574985600000': 0}
 EMPTY_RESPONSE_BYTES = {}
 GROUP_CONSUMPTION = {'consumed': {'1574982000000': 0,
                                   '1574985600000': 0},
-                     'produced': {
-    '1574982000000': 0,
-    '1574985600000': 0}}
+                     'produced': {'1574982000000': 0,
+                                  '1574985600000': 0}}
 EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
 
 DISAGGREGATION = {"1575111600000": {"Durchlauferhitzer-1": 0,
