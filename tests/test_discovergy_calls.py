@@ -15,26 +15,21 @@ CONSUMPTION = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
 EMPTY_RESPONSE = {}
 INDIVIDUAL_CONSUMPTION = {'1574982000000': 0, '1574985600000': 0}
 EMPTY_RESPONSE_BYTES = {}
-
-# byte objects cannot be line-split
-# pylint: disable=line-too-long
-GROUP_CONSUMPTION = {'consumed': {'1574982000000': 0, '1574985600000': 0}, 'produced': {
-    '1574982000000': 0, '1574985600000': 0}}
+GROUP_CONSUMPTION = {'consumed': {'1574982000000': 0,
+                                  '1574985600000': 0},
+                     'produced': {
+    '1574982000000': 0,
+    '1574985600000': 0}}
 EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
-DISAGGREGATION = {
-    "1575111600000": {
-        "Durchlauferhitzer-1": 0,
-        "Grundlast-1": 50000000
-    },
-    "1575112500000": {
-        "Durchlauferhitzer-1": 0,
-        "Grundlast-1": 50000000
-    }
-}
 
-# byte objects cannot be line-split
-# pylint: disable=line-too-long
-INDIVIDUAL_DISAGGREGATION = b'{"1575111600000":{"Durchlauferhitzer-1":0,"Grundlast-1":50000000},"1575112500000":{"Durchlauferhitzer-1":0,"Grundlast-1":50000000}}\n'
+DISAGGREGATION = {"1575111600000": {"Durchlauferhitzer-1": 0,
+                                    "Grundlast-1": 50000000},
+                  "1575112500000": {"Durchlauferhitzer-1": 0,
+                                    "Grundlast-1": 50000000}}
+INDIVIDUAL_DISAGGREGATION = {'1575111600000': {'Durchlauferhitzer-1': 0,
+                                               'Grundlast-1': 50000000},
+                             '1575112500000': {'Durchlauferhitzer-1': 0,
+                                               'Grundlast-1': 50000000}}
 
 
 class IndividualConsumptionHistoryTestCase(BuzznTestCase):
@@ -158,7 +153,8 @@ class IndividualDisaggregation(BuzznTestCase):
 
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(response.data, INDIVIDUAL_DISAGGREGATION)
+        self.assertEqual(ast.literal_eval(
+            response.data.decode('utf-8')), INDIVIDUAL_DISAGGREGATION)
 
 
 class GroupDisaggregation(BuzznTestCase):
