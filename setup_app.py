@@ -36,9 +36,9 @@ def setup_app(app_config):
     db.init_app(app)
 
     # Flask migrate needs those to create migrations files.
-    #pylint: disable=import-outside-toplevel,unused-import
+    # pylint: disable=import-outside-toplevel,unused-import
     from models.user import User
-    from models.user import Group
+    from models.group import Group
     Migrate(app, db)
 
     # Login stuff
