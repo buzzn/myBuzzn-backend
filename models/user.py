@@ -51,7 +51,7 @@ class User(db.Model):
     _meter_id = db.Column(db.String(32), unique=True)
     _inhabitants = db.Column(db.Integer)
     _flat_size = db.Column(db.Float)
-    _group = db.Column(db.String(333))
+    _group = db.Column(db.String(100))
 
     def __init__(self, name, activation_token, meter_id, group):
         """Creates a new user account and sets its state to pending.
