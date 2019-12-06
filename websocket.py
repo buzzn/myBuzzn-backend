@@ -28,6 +28,9 @@ class Websocket:
         self.socketio = SocketIO(app, async_mode=self._async_mode)
         self.d = d
 
+        # TODO - fill self.users with users from database
+        self.users = []
+
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value the past year as a value
         between 0 and 1 where 1 is optimal and 0 is worst. Self-sufficiency is
@@ -64,13 +67,13 @@ class Websocket:
             # Return result
             return 0.0
 
-    def create_data(self, meter_id, group_meter_id, user_id, group_meter_ids,
+    def create_data(self, meter_id, group_meter_id, user_id, group_users,
                     inhabitants, flat_size):
-        """ Creates a data package with the latest discovergy readings. 
+        """ Creates a data package with the latest discovergy readings.
         :param str meter_id: the user's meter id
         :param str group_meter_id: the meter id of the user's group
         :param int user_id: the user's id
-        :param dict group_meter_ids: the user's fellow group members' ids
+        :param dict group_users: the user's fellow group members' ids
         mapped to their meter ids
         :param int inhabitants: number of people in the user's flat
         :param float flat_size: the user's flat size
@@ -82,21 +85,21 @@ class Websocket:
         now = round(datetime.now().timestamp() * 1e3)
         try:
             group_last_reading = self.d.get_last_reading(group_meter_id)
-            groupConsumption = group_last_reading.get('values').get('energy')
-            groupProduction = group_last_reading.get('values').get('energyOut')
             individual_last_reading = self.d.get_last_reading(meter_id)
             usersConsumption = []
             usersConsumption.append(dict(id=user_id,
                                          consumption=individual_last_reading.
                                          get('values').get('energy')))
-            for user in group_meter_ids:
+            for user in group_users:
                 reading = self.d.get_last_reading(user.get('meter_id'))
                 usersConsumption.append(dict(id=user.get('id'),
                                              consumption=reading.get('values').get('energy')))
 
             return dict(date=now,
-                        groupConsumption=groupConsumption,
-                        groupProduction=groupProduction,
+                        groupConsumption=group_last_reading.get(
+                            'values').get('energy'),
+                        groupProduction=group_last_reading.get(
+                            'values').get('energyOut'),
                         selfSufficiency=self.self_sufficiency(
                             meter_id, inhabitants, flat_size),
                         usersConsumption=usersConsumption)
@@ -110,10 +113,14 @@ class Websocket:
         while True:
             self.socketio.sleep(60)
 
-            # TODO - get all user accounts with parameters
-            live_data = self.generate_data()
-
-            # TODO - emit correct response
-            self.socketio.emit('my_response',
-                               {'data': live_data},
-                               namespace='/ws:' + BASEURL + '/live')
+            # TODO - set/get users with parameters in/from database
+            for user in self.users:
+                live_data = self.generate_data(user.meter_id,
+                                               user.group_meter_id,
+                                               user.user_id,
+                                               user.group_users,
+                                               user.inhabitants,
+                                               user.flat_size)
+                self.socketio.emit('live_data',
+                                   {'data': live_data},
+                                   namespace='/ws:' + BASEURL + '/live')
