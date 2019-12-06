@@ -48,7 +48,7 @@ class User(db.Model):
     _password = db.Column(db.String(333))
     _status = db.Column(db.Enum(ActiveType))
     _role = db.Column(db.Enum(RoleType))
-    _meter_id = db.Column(db.String(32), unique=True)
+    _meter_id = db.Column(db.String(32))
     _inhabitants = db.Column(db.Integer)
     _flat_size = db.Column(db.Float)
     _group = db.Column(db.String(100))
