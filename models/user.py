@@ -53,15 +53,19 @@ class User(db.Model):
     _flat_size = db.Column(db.Float)
     _group = db.Column(db.String(333))
 
-    def __init__(self, name, activation_token):
+    def __init__(self, name, activation_token, meter_id, group):
         """Creates a new user account and sets its state to pending.
         :param str name: The user's name.
         :param str activation_token: Token to activate the account.
+        :param str meter_id: the user's meter id
+        :parem str group: the user's group
         """
         self._name = name
         self._activation_token = activation_token
         self._status = ActiveType.ACTIVATION_PENDING
         self._role = RoleType.LOCAL_POWER_TAKER
+        self._meter_id = meter_id
+        self._group = group
 
     def get_id(self):
         return self._id
@@ -77,6 +81,24 @@ class User(db.Model):
 
     def get_role(self):
         return self._role
+
+    def get_meter_id(self):
+        return self._meter_id
+
+    def set_inhabitants(self, inhabitants):
+        self._inhabitants = inhabitants
+
+    def get_inhabitants(self):
+        return self._inhabitants
+
+    def set_flat_size(self, flat_size):
+        self._flat_size = flat_size
+
+    def get_flat_size(self):
+        return self._flat_size
+
+    def get_group(self):
+        return self._group
 
     def is_active(self):
         """Returns a value indicating whether this account is active.
