@@ -9,7 +9,7 @@ class Group(db.Model):
     def NAME_MAX_LENGTH():
         return 100
 
-    _name = db.Column(db.String(100), unique=True)
+    _name = db.Column(db.String(100), unique=True, primary_key=True)
     _group_meter_id = db.Column(db.String(32), unique=True)
     _members = db.Column(db.ARRAY(db.Integer()))
 
