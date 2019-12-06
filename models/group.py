@@ -13,7 +13,7 @@ class Group(db.Model):
     _name = db.Column(db.String(100), unique=True)
     _group_meter_id = db.Column(db.String(32), unique=True)
 
-    def __init__(self, name, group_meter_id, members):
+    def __init__(self, name, group_meter_id):
         """ Creates a new energy group.
         :param str name: the group name
         :param str meter_id: the group's meter id for the common energy
@@ -21,7 +21,6 @@ class Group(db.Model):
         """
         self._name = name
         self._group_meter_id = group_meter_id
-        self._members = members
 
     def get_name(self):
         return self._name
