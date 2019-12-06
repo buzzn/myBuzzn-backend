@@ -13,8 +13,6 @@ logger = logging.getLogger(__name__)
 # TODO - Set/get people in flat in/from database
 # TODO - Set/get flat size in/from database
 # TODO - discovergy login
-# TODO - get BASEURL from app context
-BASEURL = 'http://localhost:5000'
 
 
 class Websocket:
@@ -123,4 +121,4 @@ class Websocket:
                                                user.flat_size)
                 self.socketio.emit('live_data',
                                    {'data': live_data},
-                                   namespace='/ws:' + BASEURL + '/live')
+                                   namespace='ws:/live')
