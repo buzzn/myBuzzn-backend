@@ -48,6 +48,10 @@ class User(db.Model):
     _password = db.Column(db.String(333))
     _status = db.Column(db.Enum(ActiveType))
     _role = db.Column(db.Enum(RoleType))
+    _meter_id = db.Column(db.String(32), unique=True)
+    _inhabitants = db.Column(db.Integer)
+    _flat_size = db.Column(db.Float)
+    _group = db.Column(db.String(333))
 
     def __init__(self, name, activation_token):
         """Creates a new user account and sets its state to pending.
