@@ -1,6 +1,7 @@
 from enum import Enum
 import bcrypt
 from flask import current_app
+from sqlalchemy import ForeignKey
 from util.database import db
 
 
@@ -51,21 +52,21 @@ class User(db.Model):
     _meter_id = db.Column(db.String(32))
     _inhabitants = db.Column(db.Integer)
     _flat_size = db.Column(db.Float)
-    _group = db.Column(db.String(100))
+    _group_id = db.Column(db.Integer, ForeignKey('group._id'))
 
-    def __init__(self, name, activation_token, meter_id, group):
+    def __init__(self, name, activation_token, meter_id, group_id):
         """Creates a new user account and sets its state to pending.
         :param str name: The user's name.
         :param str activation_token: Token to activate the account.
         :param str meter_id: the user's meter id
-        :parem str group: the user's group
+        :parem int group: the user's group id
         """
         self._name = name
         self._activation_token = activation_token
         self._status = ActiveType.ACTIVATION_PENDING
         self._role = RoleType.LOCAL_POWER_TAKER
         self._meter_id = meter_id
-        self._group = group
+        self._group_id = group_id
 
     def get_id(self):
         return self._id
