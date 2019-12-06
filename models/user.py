@@ -59,7 +59,7 @@ class User(db.Model):
         :param str name: The user's name.
         :param str activation_token: Token to activate the account.
         :param str meter_id: the user's meter id
-        :parem int group: the user's group id
+        :parem int group_id: the user's group id
         """
         self._name = name
         self._activation_token = activation_token
