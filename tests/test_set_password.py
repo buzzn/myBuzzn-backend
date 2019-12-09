@@ -11,12 +11,16 @@ from util.database import db
 class SetPasswordTest(BuzznTestCase):
     """Checks if users can be created."""
 
-    def test_user_does_not_exist(self):
-        """Expect an error on a set password request for a not existing user
-        name"""
+    def setUp(self):
+        super().setUp()
+
         db.session.add(User(GenderType.MALE, "SomeUser", "User@Some.net",
                             "SomeToken", "SomeMeterId", "SomeGroup"))
         db.session.commit()
+
+    def test_user_does_not_exist(self):
+        """Expect an error on a set password request for a not existing user
+        name"""
         response = self.client.post(
             '/set-password', data=json.dumps({'user': 'SomeOtherUser',
                                               'token': 'SomeOtherToken',
@@ -28,11 +32,8 @@ class SetPasswordTest(BuzznTestCase):
     def test_token_does_not_match(self):
         """Expect an error if a set password request is called with a not
         existing token."""
-        db.session.add(User(GenderType.MALE, "SomeOtherUser", "User@Some.net",
-                            "SomeToken", "SomeMeterId", "SomeGroup"))
-        db.session.commit()
         response = self.client.post('/set-password', data=json.dumps({
-            'user': 'SomeOtherUser',
+            'user': 'SomeUser',
             'token': 'Wrong token',
             'password': 'SomePassword'
         }))
@@ -40,11 +41,9 @@ class SetPasswordTest(BuzznTestCase):
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json, Errors.WRONG_TOKEN.__dict__)
 
+
     def test_no_activation_pending(self):
         """Expect an error if an account is activated for the seconds time."""
-        db.session.add(User(GenderType.MALE, "SomeUser", "User@Some.net",
-                            "SomeToken", "SomeMeterId", "SomeGroup"))
-        db.session.commit()
         response = self.client.post('/set-password', data=json.dumps({
             'user': 'SomeUser',
             'token': 'SomeToken',
@@ -68,9 +67,6 @@ class SetPasswordTest(BuzznTestCase):
     def test_correct_data_should_set_password(self):
         """Check whether correctly provided parameters do activate an account
         """
-        db.session.add(User(GenderType.MALE, "SomeUser", "User@Some.net",
-                            "SomeToken", "SomeMeterId", "SomeGroup"))
-        db.session.commit()
         response = self.client.post('/set-password', data=json.dumps({
             'user': 'SomeUser',
             'token': 'SomeToken',
