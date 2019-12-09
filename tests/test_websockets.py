@@ -8,11 +8,8 @@ from util.database import db
 from websocket import Websocket
 
 
-METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
-GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
-USER_ID = 3
-GROUP_METER_IDS = [{"id": 1, "meter_id": '52d7c87f8c26433dbd095048ad30c8cf'},
-                   {"id": 2, "meter_id": '117154df05874f41bfdaebcae6abfe98'}]
+GROUP_METER_IDS = [{"id": 2, "meter_id": '52d7c87f8c26433dbd095048ad30c8cf'},
+                   {"id": 3, "meter_id": '117154df05874f41bfdaebcae6abfe98'}]
 GROUP_LAST_READING = {
     'time': 1575539067000,
     'values': {
@@ -86,9 +83,9 @@ DATA = {
     "groupConsumption": 3520052364335000,
     "groupProduction": 0,
     "selfSufficiency": 6.225875925992823e-10,
-    "usersConsumption": [{"id": 3, "consumption": 1931041534000},
-                         {"id": 1, "consumption": 186728851677000},
-                         {"id": 2, "consumption": 1491013650297000}]
+    "usersConsumption": [{"id": 1, "consumption": 1931041534000},
+                         {"id": 2, "consumption": 186728851677000},
+                         {"id": 3, "consumption": 1491013650297000}]
 }
 RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
                  GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
@@ -100,7 +97,7 @@ SELF_SUFFICIENCY = 6.225875925992823e-10
 class WebsocketTestCase(BuzznTestCase):
     """ Unit tests for class Websocket. """
 
-    def setup(self):
+    def setUp(self):
         """ Create a test user and a test group in the test database. """
 
         db.create_all()
@@ -121,7 +118,14 @@ class WebsocketTestCase(BuzznTestCase):
         """ Unit tests for function create_data(). """
 
         websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
-        data = websocket.create_data(METER_ID, GROUP_METER_ID, USER_ID,
+        test_user = db.session.query(
+            User).filter_by(_name='TestUser').first()
+        test_group = db.session.query(
+            Group).filter_by(_name='TestGroup').first()
+        meter_id = test_user._meter_id
+        group_meter_id = test_group._group_meter_id
+        user_id = test_user._id
+        data = websocket.create_data(meter_id, group_meter_id, user_id,
                                      GROUP_METER_IDS, INHABITANTS, FLAT_SIZE)
 
         # Check return type
@@ -130,7 +134,6 @@ class WebsocketTestCase(BuzznTestCase):
         # Check return values
         for param in 'groupConsumption', 'groupProduction', 'selfSufficiency':
             self.assertEqual(data.get(param), DATA.get(param))
-
         for item1, item2 in zip(data.get('usersConsumption'),
                                 DATA.get('usersConsumption')):
             self.assertEqual(item1.get('id'), item2.get('id'))
@@ -148,8 +151,11 @@ class WebsocketTestCase(BuzznTestCase):
         """ Unit tests for function self_sufficiency(). """
 
         websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
+        test_user = db.session.query(
+            User).filter_by(_name='TestUser').first()
+        meter_id = test_user._meter_id
         self_sufficiency = websocket.self_sufficiency(
-            METER_ID, INHABITANTS, FLAT_SIZE)
+            meter_id, INHABITANTS, FLAT_SIZE)
 
         # Check return type
         self.assertTrue(isinstance(self_sufficiency, float))
