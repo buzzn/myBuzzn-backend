@@ -1,6 +1,10 @@
 from unittest import mock
 from discovergy.discovergy import Discovergy
+from models.user import User
+from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
+from util.database import db
+from util.database import db
 from websocket import Websocket
 
 
@@ -95,6 +99,16 @@ SELF_SUFFICIENCY = 6.225875925992823e-10
 
 class WebsocketTestCase(BuzznTestCase):
     """ Unit tests for class Websocket. """
+
+    def setup(self):
+        """ Create a test user and a test group in the test database. """
+
+        db.create_all()
+        db.session.add(User('TestUser', 'TestToken',
+                            'b4234cd4bed143a6b9bd09e347e17d34', 1))
+        db.session.add(Group('TestGroup',
+                             '269e682dbfd74a569ff4561b6416c999'))
+        db.session.commit()
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
