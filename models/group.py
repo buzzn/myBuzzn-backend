@@ -27,6 +27,3 @@ class Group(db.Model):
 
     def get_group_meter_id(self):
         return self._group_meter_id
-
-    def get_members(self):
-        return self._members
