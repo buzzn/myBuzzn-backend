@@ -33,7 +33,7 @@ class SetPasswordTest(BuzznTestCase):
 
         target_user = User(GenderType.MALE, "SomeUser", "User@Some.net",
                            "SomeToken", "SomeMeterId", "SomeGroup")
-        target_user.set_state(StateType.DISABLED)
+        target_user.set_state(StateType.DEACTIVATED)
         db.session.add(target_user)
         db.session.commit()
 
@@ -43,7 +43,7 @@ class SetPasswordTest(BuzznTestCase):
         self.assertEqual(response.status_code,
                          status.HTTP_400_BAD_REQUEST)
 
-        self.assertEqual(response.json, Errors.DISABLED_USER.__dict__)
+        self.assertEqual(response.json, Errors.DEACTIVATED_USER.__dict__)
 
     def test_request_password_proper_user(self):
         """Expect on a new password request from a active user account
@@ -60,12 +60,12 @@ class SetPasswordTest(BuzznTestCase):
         self.assertEqual(response.status_code,
                          status.HTTP_201_CREATED)
 
-        target_user = User.query.filter_by(_name="SomeUser").first()
+        target_user = User.query.filter_by(name="SomeUser").first()
         self.assertTrue(
-            target_user.get_password_reset_token_expiries() > datetime.now())
-        self.assertEqual(target_user.get_state(),
+            target_user.password_reset_token_expires > datetime.now())
+        self.assertEqual(target_user.state,
                          StateType.PASSWORT_RESET_PENDING)
-        self.assertIsNotNone(target_user.get_password_reset_token())
+        self.assertIsNotNone(target_user.password_reset_token)
         self.assert_template_used('password/reset_password_mail.txt')
 
     def test_unknown_token(self):

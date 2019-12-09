@@ -15,37 +15,37 @@ ResetPassword = Blueprint('ResetPassword', __name__)
 
 class Errors:
     UNKNOWN_USER = Error('Unknown user', 'No user found')
-    DISABLED_USER = Error('User account disabled',
-                          'Can not request new password for disabled account.')
+    DEACTIVATED_USER = Error('User account deactivated',
+                             'Can not request new password for deactivated account.')
 
 
 @ResetPassword.route('/password/request-reset-token', methods=['POST'])
 def request_password_reset_token():
     """Requests a new password token. Sends a mail to the user's mail address.
-    :param user: The user's mail address.
+    :param str user: The user's mail address.
     """
     j = request.get_json(force=True)
     user_requested = j['user']
 
     # Disabled user accounts can not request for a new password.
-    target_user = User.query.filter_by(_mail=user_requested).first()
+    target_user = User.query.filter_by(mail=user_requested).first()
 
     if target_user is None:
         return Errors.UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
-    if target_user.get_state() == StateType.DISABLED:
-        return Errors.DISABLED_USER.to_json(), status.HTTP_400_BAD_REQUEST
+    if target_user.state == StateType.DEACTIVATED:
+        return Errors.DEACTIVATED_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
     target_user.generate_password_request_token()
 
     send_mail(
-        target_user.get_mail(),
+        target_user.mail,
         render_template("password/reset_password_mail.txt",
                         greeting=get_opening_greeting(target_user),
                         Wlink="{}/password/reset/{}".format(
                             app.config['BUZZN_BASE_URL'],
-                            target_user.get_password_reset_token())
-                        ))
+                            target_user.password_reset_token
+                        )))
 
     db.session.commit()
     return '', status.HTTP_201_CREATED
@@ -61,9 +61,9 @@ def reset_password(token):
 def do_password(token):
     """Resets the password of the user account according to the given token.
 
-    :param token: The account with this token will set the password.
-    :param password: The new password in plaintext.
-    :param passwordRepeat: The repeated password in plaintext.
+    :param str token: The account with this token will set the password.
+    :param str password: The new password in plaintext.
+    :param str passwordRepeat: The repeated password in plaintext.
     """
     password_reset_token = token
     requested_password = request.form['password']
@@ -71,7 +71,7 @@ def do_password(token):
 
     # Only pending states can be used.
     target_user = User.query.filter_by(
-        _password_reset_token=password_reset_token).first()
+        password_reset_token=password_reset_token).first()
 
     if target_user is None:
         return Response(render_template('password/failure.html',
@@ -81,7 +81,7 @@ def do_password(token):
                                                  'angefordert haben und nehmen sie '
                                                  'immer die aktuelle.')))
 
-    if target_user.get_state() == StateType.PASSWORT_RESET_PENDING:
+    if target_user.state == StateType.PASSWORT_RESET_PENDING:
         return Response(render_template('password/failure.html',
                                         message='User has no pending password reset.'))
 

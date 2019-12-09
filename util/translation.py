@@ -2,9 +2,8 @@ from models.user import GenderType
 
 def get_opening_greeting(user):
     """Creates an opening greeting string according to the users gender.
-    :param user: The user to salute.
-    :type user: str
+    :param str: The user to salute.
     """
-    if user.get_gender() == GenderType.FEMALE:
-        return "Sehr geehrte Frau {}".format(user.get_name())
-    return "Sehr geehrter Herr {}".format(user.get_name())
+    if user.gender == GenderType.FEMALE:
+        return "Sehr geehrte Frau {}".format(user.name)
+    return "Sehr geehrter Herr {}".format(user.name)

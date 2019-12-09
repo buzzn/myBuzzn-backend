@@ -13,12 +13,20 @@ Install the requirements
 pip install -r "requirements.txt"
 pip install git+https://github.com/buzzn/discovergy.git
 ```
-The following environment variables need to be set: 
+The following environment variables need to be set:
 ```bash
-EMAIL 
+EMAIL
 PASSWORD
-BUZZN_SQLALCHEMY_DATABASE_URI
-BUZZN_SECRET_KEY
+BUZZN_SQLALCHEMY_DATABASE_URI    # Indicates where the database is stored
+BUZZN_SECRET_KEY                 # Security ussues like session data
+BUZZN_PASSWORD_SALT              # The salt for the users' passwords
+BUZZN_SMTP_SERVER                # SMTP server to use for sending mails
+BUZZN_EMAIL                      # The email used to send mails from the backend
+BUZZN_EMAIL_PASSWORD             # Mailpassword of the mailaccount
+BUZZN_BASE_URL                   # Baseurl of the backend i.e. address.
+                                 # Everyhing which needs to be in front of the
+                                 # api calls. Example mybuzzn-backend.buzzn.net
+
 ```
 
 Starting a flask server: `./.venv/bin/flask run`
