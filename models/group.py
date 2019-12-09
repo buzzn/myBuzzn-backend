@@ -17,8 +17,8 @@ class Group(db.Model):
         """ Creates a new energy group.
         :param str name: the group name
         :param str meter_id: the group's meter id for the common energy
-        :param [str] members: the group's members' ids, i.e. their user ids
         """
+
         self._name = name
         self._group_meter_id = group_meter_id
 
