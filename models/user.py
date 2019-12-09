@@ -67,8 +67,6 @@ class User(db.Model):
         self._role = RoleType.LOCAL_POWER_TAKER
         self._meter_id = meter_id
         self._group_id = group_id
-        print(self.NAME_MAX_LENGTH())
-        print(self.PASSWORD_MAX_LENGTH())
 
     def get_id(self):
         return self._id
