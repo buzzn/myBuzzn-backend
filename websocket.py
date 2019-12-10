@@ -28,7 +28,7 @@ def get_parameters(user_id):
     """
     user = db.session.query(User).filter_by(id=user_id).first()
     group = db.session.query(Group).filter_by(id=user.group_id).first()
-    return user.meter_id
+    return user.meter_id, group.group_meter_id, user.inhabitants, user.flat_size
 
 
 class Websocket:
