@@ -126,7 +126,7 @@ class WebsocketTestCase(BuzznTestCase):
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         test_group = db.session.query(
-            Group).filter_by(_name='TestGroup').first()
+            Group).filter_by(name='TestGroup').first()
         group_member2 = db.session.query(User).filter_by(name='judith').first()
         group_member3 = db.session.query(User).filter_by(name='danny').first()
         group_meter_ids = [{'id': group_member2.id, 'meter_id':
@@ -135,7 +135,7 @@ class WebsocketTestCase(BuzznTestCase):
                                                       group_member3.meter_id}]
 
         data = websocket.create_data(test_user.meter_id,
-                                     test_group._group_meter_id, test_user.id,
+                                     test_group.group_meter_id, test_user.id,
                                      group_meter_ids, test_user.inhabitants,
                                      test_user.flat_size)
 
