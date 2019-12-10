@@ -10,3 +10,4 @@ flask_sqlalchemy
 flask_socketio
 flask_testing
 pylint
+blinker

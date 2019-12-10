@@ -1,8 +1,20 @@
+from datetime import datetime, timedelta
 from enum import Enum
+import secrets
+
 import bcrypt
-from flask import current_app
+from flask import current_app as app
 from sqlalchemy import ForeignKey
 from util.database import db
+
+PASSWORD_MAX_LENGTH = 7
+
+
+class GenderType(Enum):
+    """Indicates the user's gender.
+    """
+    FEMALE = 'The gender considered for women'
+    MALE = 'The gender considered for men'
 
 
 class RoleType(Enum):
@@ -13,14 +25,16 @@ class RoleType(Enum):
     ADMINISTRATOR = 'Administrator'
 
 
-class ActiveType(Enum):
+class StateType(Enum):
     """Indicates the user account's state in its lifecycle.
     """
     ACTIVATION_PENDING = 'User activation pending.'
+    PASSWORT_RESET_PENDING = 'User requested a password change'
     ACTIVE = 'User account is active.'
-    DISABLED = 'User account is disabled'
+    DEACTIVATED = 'User account is deactivated'
 
-
+# Maybe setters should not count as public.
+#pylint: disable=too-many-public-methods
 class User(db.Model):
     """Represents a user account in the backend.
     """
@@ -41,72 +55,59 @@ class User(db.Model):
         :rtype: str
         """
         return bcrypt.hashpw(target.encode('utf-8'),
-                             current_app.config['PASSWORD_SALT'])
+                             bytes.fromhex(app.config['PASSWORD_SALT']))
 
-    _id = db.Column(db.Integer, primary_key=True)
-    _name = db.Column(db.String(33), unique=True)
-    _activation_token = db.Column(db.String(33), unique=True)
-    _password = db.Column(db.String(333))
-    _status = db.Column(db.Enum(ActiveType))
-    _role = db.Column(db.Enum(RoleType))
-    _meter_id = db.Column(db.String(32))
-    _inhabitants = db.Column(db.Integer)
-    _flat_size = db.Column(db.Float)
-    _group_id = db.Column(db.Integer, ForeignKey('group._id'))
+    @staticmethod
+    def check_password_length(new_password):
+        """Checks whether the given password matches the password length
+            condition.
+        :param str new_password: password to check in plaintext
+        :returns: True if the given password is too long, False otherwise.
+        :rtype: bool
+        """
+        return len(new_password) > PASSWORD_MAX_LENGTH
 
-    def __init__(self, name, activation_token, meter_id, group_id):
+    id = db.Column(db.Integer, primary_key=True)
+    gender = db.Column(db.Enum(GenderType))
+    name = db.Column(db.String(33), unique=True)
+    mail = db.Column(db.String(33))
+    activation_token = db.Column(db.String(33), unique=True)
+    password = db.Column(db.String(333))
+    state = db.Column(db.Enum(StateType))
+    role = db.Column(db.Enum(RoleType))
+    meter_id = db.Column(db.String(32))
+    inhabitants = db.Column(db.Integer)
+    flat_size = db.Column(db.Float)
+    group_id = db.Column(db.Integer, ForeignKey('group._id'))
+    password_reset_token = db.Column(db.String(33), unique=True)
+    password_reset_token_expires = db.Column(db.DateTime)
+
+    # Plain value constructor, too many arguments is ok here
+    #pylint: disable=too-many-arguments
+    def __init__(self, gender, name, mail, activation_token, meter_id, group_id):
         """Creates a new user account and sets its state to pending.
+        :param gender: The user's gender.
         :param str name: The user's name.
+        :param str name: The user's mail address.
         :param str activation_token: Token to activate the account.
         :param str meter_id: the user's meter id
-        :parem int group_id: the user's group id
+        :param int group_id: the user's group id
         """
-        self._name = name
-        self._activation_token = activation_token
-        self._status = ActiveType.ACTIVATION_PENDING
-        self._role = RoleType.LOCAL_POWER_TAKER
-        self._meter_id = meter_id
-        self._group_id = group_id
-
-    def get_id(self):
-        return self._id
-
-    def get_name(self):
-        return self._name
-
-    def get_activation_token(self):
-        return self._activation_token
-
-    def get_status(self):
-        return self._status
-
-    def get_role(self):
-        return self._role
-
-    def get_meter_id(self):
-        return self._meter_id
-
-    def set_inhabitants(self, inhabitants):
-        self._inhabitants = inhabitants
-
-    def get_inhabitants(self):
-        return self._inhabitants
-
-    def set_flat_size(self, flat_size):
-        self._flat_size = flat_size
-
-    def get_flat_size(self):
-        return self._flat_size
-
-    def get_group(self):
-        return self._group
+        self.gender = gender
+        self.name = name
+        self.mail = mail
+        self.activation_token = activation_token
+        self.state = StateType.ACTIVATION_PENDING
+        self.role = RoleType.LOCAL_POWER_TAKER
+        self.meter_id = meter_id
+        self.group_id = group_id
 
     def is_active(self):
         """Returns a value indicating whether this account is active.
         :return: True, if this account is active, False otherwise.
         :rtype: bool
         """
-        return self._status == ActiveType.ACTIVE
+        return self.state == StateType.ACTIVE
 
     def check_password(self, password_to_check):
         """Checks whether the given password matches the user's.
@@ -115,16 +116,34 @@ class User(db.Model):
         :rtype: bool
         """
         return bcrypt.checkpw(User.generate_password_hash(password_to_check),
-                              self._password)
+                              self.password)
 
     def set_password(self, newPassword):
         """Sets the user's password.
         :param self:
         :param newPassword: The new password in plaintext.
         """
-        self._password = User.generate_password_hash(newPassword)
+        self.password = User.generate_password_hash(newPassword)
+
+    def set_role(self, newRole):
+        self.role = newRole
+
+    def set_name(self, newName):
+        self.name = newName
+
+    def set_state(self, new_state):
+        self.state = new_state
+
+    def generate_password_request_token(self):
+        """Generats a new password reset token and sets the password token
+        expiry date.
+        :returns: The created token.
+        :rtype: str"""
+        self.password_reset_token = secrets.token_hex(33)
+        self.password_reset_token_expires = datetime.now() + timedelta(days=1)
+        self.state = StateType.PASSWORT_RESET_PENDING
 
     def activate(self):
         """Activates the account if it is pending."""
-        if self._status == ActiveType.ACTIVATION_PENDING:
-            self._status = ActiveType.ACTIVE
+        if self.state == StateType.ACTIVATION_PENDING:
+            self.state = StateType.ACTIVE

@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from flask_api import status
 
-from models.user import User, ActiveType
+from models.user import User, StateType
 from util.error import Error
 from util.database import db
 
@@ -18,7 +18,7 @@ class Errors:
 
 
 @SetPassword.route('/set-password', methods=['POST'])
-def setPassword():
+def set_password():
     """Set the password for an user who's activation is still pending.
     :param str user: The target user's name.
     :param str token: The target user's token.
@@ -33,21 +33,21 @@ def setPassword():
     token = j['token']
     password_requested = j['password']
 
-    targetUser = User.query.filter_by(_name=user_requested).first()
+    targetUser = User.query.filter_by(name=user_requested).first()
 
     if targetUser is None:
-        return Errors.UNKNOWN_USER.to_json(), status.HTTP_404_NOT_FOUND
+        return Errors.UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
-    if targetUser.get_activation_token() != token:
+    if targetUser.activation_token != token:
         return Errors.WRONG_TOKEN.to_json(), status.HTTP_400_BAD_REQUEST
 
-    if targetUser.get_status() != ActiveType.ACTIVATION_PENDING:
+    if targetUser.state != StateType.ACTIVATION_PENDING:
         return Errors.NO_ACTIVATION_PENDING.to_json(), status.HTTP_400_BAD_REQUEST
 
     if len(password_requested) < 8:
         return Errors.PASSWORD_TOO_SHORT.to_json(), status.HTTP_400_BAD_REQUEST
 
-    targetUser.set_password(password_requested)
+    targetUser.password = password_requested
     targetUser.activate()
 
     db.session.commit()
