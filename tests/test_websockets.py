@@ -8,8 +8,6 @@ from util.database import db
 from websocket import Websocket
 
 
-GROUP_METER_IDS = [{"id": 2, "meter_id": '52d7c87f8c26433dbd095048ad30c8cf'},
-                   {"id": 3, "meter_id": '117154df05874f41bfdaebcae6abfe98'}]
 GROUP_LAST_READING = {
     'time': 1575539067000,
     'values': {
