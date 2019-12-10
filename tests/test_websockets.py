@@ -100,9 +100,15 @@ class WebsocketTestCase(BuzznTestCase):
     def setUp(self):
         """ Create a test user and a test group in the test database. """
 
+        db.drop_all()
         db.create_all()
         db.session.add(User(GenderType.MALE, 'TestUser', 'test@test.net', 'TestToken',
                             'b4234cd4bed143a6b9bd09e347e17d34', 1))
+        db.session.add(User(GenderType.FEMALE, 'judith', 'judith@buzzn.net',
+                            'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
+                            1))
+        db.session.add(User(GenderType.MALE, 'danny', 'danny@buzzn.net',
+                            'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
         db.session.commit()
@@ -122,11 +128,16 @@ class WebsocketTestCase(BuzznTestCase):
             User).filter_by(name='TestUser').first()
         test_group = db.session.query(
             Group).filter_by(_name='TestGroup').first()
-        meter_id = test_user.meter_id
-        group_meter_id = test_group._group_meter_id
-        user_id = test_user.id
-        data = websocket.create_data(meter_id, group_meter_id, user_id,
-                                     GROUP_METER_IDS, INHABITANTS, FLAT_SIZE)
+        group_member2 = db.session.query(User).filter_by(name='judith').first()
+        group_member3 = db.session.query(User).filter_by(name='danny').first()
+        group_meter_ids = [{'id': group_member2.id, 'meter_id':
+                            group_member2.meter_id}, {'id': group_member3.id,
+                                                      'meter_id':
+                                                      group_member3.meter_id}]
+
+        data = websocket.create_data(test_user.meter_id,
+                                     test_group._group_meter_id, test_user.id,
+                                     group_meter_ids, INHABITANTS, FLAT_SIZE)
 
         # Check return type
         self.assertTrue(isinstance(data, dict))
