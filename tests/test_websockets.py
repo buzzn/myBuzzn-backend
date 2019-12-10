@@ -1,6 +1,6 @@
 from unittest import mock
 from discovergy.discovergy import Discovergy
-from models.user import User
+from models.user import User, GenderType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
@@ -101,7 +101,7 @@ class WebsocketTestCase(BuzznTestCase):
         """ Create a test user and a test group in the test database. """
 
         db.create_all()
-        db.session.add(User('TestUser', 'TestToken',
+        db.session.add(User(GenderType.MALE, 'TestUser', 'test@test.net', 'TestToken',
                             'b4234cd4bed143a6b9bd09e347e17d34', 1))
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
@@ -119,12 +119,12 @@ class WebsocketTestCase(BuzznTestCase):
 
         websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
         test_user = db.session.query(
-            User).filter_by(_name='TestUser').first()
+            User).filter_by(name='TestUser').first()
         test_group = db.session.query(
             Group).filter_by(_name='TestGroup').first()
-        meter_id = test_user._meter_id
+        meter_id = test_user.meter_id
         group_meter_id = test_group._group_meter_id
-        user_id = test_user._id
+        user_id = test_user.id
         data = websocket.create_data(meter_id, group_meter_id, user_id,
                                      GROUP_METER_IDS, INHABITANTS, FLAT_SIZE)
 
@@ -152,8 +152,8 @@ class WebsocketTestCase(BuzznTestCase):
 
         websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
         test_user = db.session.query(
-            User).filter_by(_name='TestUser').first()
-        meter_id = test_user._meter_id
+            User).filter_by(name='TestUser').first()
+        meter_id = test_user.meter_id
         self_sufficiency = websocket.self_sufficiency(
             meter_id, INHABITANTS, FLAT_SIZE)
 
