@@ -4,8 +4,7 @@ from models.user import User, GenderType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.database import db
-from websocket import Websocket
+import websocket
 
 
 GROUP_LAST_READING = {
@@ -122,7 +121,8 @@ class WebsocketTestCase(BuzznTestCase):
     def test_create_data(self, socketio, get_last_reading, self_sufficiency):
         """ Unit tests for function create_data(). """
 
-        websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
+        ws = websocket.Websocket(
+            None, 'eventlet', Discovergy('TestClient'))
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         test_group = db.session.query(
@@ -134,10 +134,10 @@ class WebsocketTestCase(BuzznTestCase):
                                                       'meter_id':
                                                       group_member3.meter_id}]
 
-        data = websocket.create_data(test_user.meter_id,
-                                     test_group.group_meter_id, test_user.id,
-                                     group_meter_ids, test_user.inhabitants,
-                                     test_user.flat_size)
+        data = ws.create_data(test_user.meter_id,
+                              test_group.group_meter_id, test_user.id,
+                              group_meter_ids, test_user.inhabitants,
+                              test_user.flat_size)
 
         # Check return type
         self.assertTrue(isinstance(data, dict))
@@ -161,11 +161,12 @@ class WebsocketTestCase(BuzznTestCase):
     def test_self_sufficiency(self, socketio, get_readings, get_last_reading):
         """ Unit tests for function self_sufficiency(). """
 
-        websocket = Websocket(None, "eventlet", Discovergy('TestClient'))
+        ws = websocket.Websocket(
+            None, 'eventlet', Discovergy('TestClient'))
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         meter_id = test_user.meter_id
-        self_sufficiency = websocket.self_sufficiency(
+        self_sufficiency = ws.self_sufficiency(
             meter_id, test_user.inhabitants, test_user.flat_size)
 
         # Check return type
@@ -173,3 +174,9 @@ class WebsocketTestCase(BuzznTestCase):
 
         # Check return value
         self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
+
+    def test_get_parameters(self):
+        """ Unit tests for function get_parameters(). """
+
+        result = websocket.get_parameters(1)
+        print(result)

@@ -2,6 +2,9 @@ import logging
 from threading import Lock
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO
+from models.user import User, GenderType
+from models.group import Group
+from util.database import db
 
 
 logger = logging.getLogger(__name__)
@@ -13,6 +16,19 @@ logger = logging.getLogger(__name__)
 # TODO - Set/get people in flat in/from database
 # TODO - Set/get flat size in/from database
 # TODO - discovergy login
+
+
+def get_parameters(user_id):
+    """ Get the parameters from the database to create data packet for the
+    given user.
+    :param int user_id: the user's id
+    :return: meter_id, group_meter_id, [{str => int, str => str}, ...],
+    inhabitants, flat_size
+    :rtype: tuple
+    """
+    user = db.session.query(User).filter_by(id=user_id).first()
+    group = db.session.query(Group).filter_by(id=user.group_id).first()
+    return user.meter_id
 
 
 class Websocket:
