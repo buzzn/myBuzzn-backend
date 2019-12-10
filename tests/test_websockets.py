@@ -87,8 +87,6 @@ DATA = {
 }
 RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
                  GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
-INHABITANTS = 2
-FLAT_SIZE = 60.0
 SELF_SUFFICIENCY = 6.225875925992823e-10
 
 
@@ -100,8 +98,11 @@ class WebsocketTestCase(BuzznTestCase):
 
         db.drop_all()
         db.create_all()
-        db.session.add(User(GenderType.MALE, 'TestUser', 'test@test.net', 'TestToken',
-                            'b4234cd4bed143a6b9bd09e347e17d34', 1))
+        test_user = User(GenderType.MALE, 'TestUser', 'test@test.net', 'TestToken',
+                         'b4234cd4bed143a6b9bd09e347e17d34', 1)
+        test_user.flat_size = 60.0
+        test_user.inhabitants = 2
+        db.session.add(test_user)
         db.session.add(User(GenderType.FEMALE, 'judith', 'judith@buzzn.net',
                             'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
                             1))
@@ -135,7 +136,8 @@ class WebsocketTestCase(BuzznTestCase):
 
         data = websocket.create_data(test_user.meter_id,
                                      test_group._group_meter_id, test_user.id,
-                                     group_meter_ids, INHABITANTS, FLAT_SIZE)
+                                     group_meter_ids, test_user.inhabitants,
+                                     test_user.flat_size)
 
         # Check return type
         self.assertTrue(isinstance(data, dict))
@@ -164,7 +166,7 @@ class WebsocketTestCase(BuzznTestCase):
             User).filter_by(name='TestUser').first()
         meter_id = test_user.meter_id
         self_sufficiency = websocket.self_sufficiency(
-            meter_id, INHABITANTS, FLAT_SIZE)
+            meter_id, test_user.inhabitants, test_user.flat_size)
 
         # Check return type
         self.assertTrue(isinstance(self_sufficiency, float))
