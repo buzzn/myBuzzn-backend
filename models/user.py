@@ -95,7 +95,7 @@ class User(db.Model):
         """
         self.gender = gender
         self.name = name
-        self.mail = mail
+        self.mail = mail.lower()
         self.activation_token = activation_token
         self.state = StateType.ACTIVATION_PENDING
         self.role = RoleType.LOCAL_POWER_TAKER
@@ -115,7 +115,7 @@ class User(db.Model):
         :return: True if the passwort matches, False otherwise.
         :rtype: bool
         """
-        return bcrypt.checkpw(User.generate_password_hash(password_to_check),
+        return bcrypt.checkpw(password_to_check.encode('utf-8'),
                               self.password)
 
     def set_password(self, newPassword):

@@ -1,0 +1,27 @@
+{% extends "admin/layout.html" %}
+
+{% block body %}
+<h1 class="title">Create a new group</h1>
+<form method="POST" action="{{target}}">
+  <input name="csrf_token" type="hidden" value="{{ csrf_token }}">
+  <div class="field">
+    <label>name</label>
+    <div class="control">
+      <input type="text" name="name" value="{{name}}" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label>group meter id</label>
+    <div class="control">
+      <input type="text" name="meter" value="{{meter}}" />
+    </div>
+  </div><input type="hidden" name="id" value="{{id}}" />
+  <button type="submit" class="button is-success">
+      <span class="icon is-small">
+        <i class="fas fa-check"></i>
+      </span>
+      <span>Save</span>
+    </button>
+</form>
+{% endblock %}

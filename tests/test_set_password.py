@@ -22,7 +22,7 @@ class SetPasswordTest(BuzznTestCase):
         """Expect an error on a set password request for a not existing user
         name"""
         response = self.client.post(
-            '/set-password', data=json.dumps({'user': 'SomeOtherUser',
+            '/set-password', data=json.dumps({'user': 'Other_User@Some.net',
                                               'token': 'SomeOtherToken',
                                               'password': 'SomePassword'}))
         self.assertEqual(response.status_code,
@@ -33,7 +33,7 @@ class SetPasswordTest(BuzznTestCase):
         """Expect an error if a set password request is called with a not
         existing token."""
         response = self.client.post('/set-password', data=json.dumps({
-            'user': 'SomeUser',
+            'user': 'User@Some.net',
             'token': 'Wrong token',
             'password': 'SomePassword'
         }))
@@ -45,7 +45,7 @@ class SetPasswordTest(BuzznTestCase):
     def test_no_activation_pending(self):
         """Expect an error if an account is activated for the seconds time."""
         response = self.client.post('/set-password', data=json.dumps({
-            'user': 'SomeUser',
+            'user': 'User@Some.net',
             'token': 'SomeToken',
             'password': 'SomePassword'
         }))
@@ -56,7 +56,7 @@ class SetPasswordTest(BuzznTestCase):
 
         # Let's do this again
         response = self.client.post('/set-password', data=json.dumps({
-            'user': 'SomeUser',
+            'user': 'User@Some.net',
             'token': 'SomeToken',
             'password': 'SomePassword'
         }))
@@ -68,7 +68,7 @@ class SetPasswordTest(BuzznTestCase):
         """Check whether correctly provided parameters do activate an account
         """
         response = self.client.post('/set-password', data=json.dumps({
-            'user': 'SomeUser',
+            'user': 'User@Some.net',
             'token': 'SomeToken',
             'password': 'SomePassword'
         }))
