@@ -7,6 +7,7 @@ from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
 from routes.disaggregation import GroupDisaggregation
+from routes.profile import Profile
 from routes.set_password import SetPassword
 from routes.reset_password import ResetPassword
 from routes.login import Login
@@ -61,6 +62,7 @@ def setup_app(app_config):
     app.register_blueprint(IndividualDisaggregation)
     app.register_blueprint(GroupDisaggregation)
     app.register_blueprint(Login)
+    app.register_blueprint(Profile)
     app.register_blueprint(ResetPassword)
     app.register_blueprint(SetPassword)
     app.register_blueprint(Admin)
