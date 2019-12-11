@@ -10,3 +10,4 @@ class Error:
         return json.dumps(self.__dict__)
 
 UNKNOWN_RESOURCE = Error('Unknown resource', 'This resource is not available.')
+UNKNOWN_USER = Error('Unknown user', 'This user is not known.')
