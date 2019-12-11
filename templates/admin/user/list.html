@@ -1,0 +1,32 @@
+{% extends "admin/layout.html" %}
+
+{% block body %}
+<h1 class="title">Users</h1><a class="create" href="/admin/user/create">Create new User</a>
+<table class="table">
+    <thead>
+        <th>Gender</th>
+        <th>Name</th>
+        <th>Mail</th>
+        <th>Role</th>
+        <th>Meter</th>
+        <th>Group</th>
+        <th>State</th>
+    </thead>
+    {% for user in users %}
+    <tr>
+        <td>{{user.gender.value}}</td>
+        <td>{{user.name}}</td>
+        <td>{{user.mail}}</td>
+        <td>{{user.role.value}}</td>
+        <td>{{user.meter_id}}</td>
+        <td>{{user.group_id}}</td>
+        <td>{{user.state.value}}</td>
+        <td>
+            <a href='/admin/user/update?id={{user.id}}'>Edit</a>
+            <a onClick='return confirm("Really delete user?")'
+                href='/admin/user/delete?id={{user.id}}'>Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

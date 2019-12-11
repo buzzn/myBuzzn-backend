@@ -1,8 +1,8 @@
 
 
 from flask import render_template, Blueprint, Response, request
-from flask_api import status
 from flask import current_app as app
+from flask_api import status
 
 from models.user import User, StateType, PASSWORD_MAX_LENGTH
 from util.database import db
@@ -25,7 +25,7 @@ def request_password_reset_token():
     :param str user: The user's mail address.
     """
     j = request.get_json(force=True)
-    user_requested = j['user']
+    user_requested = j['user'].lower()
 
     # Disabled user accounts can not request for a new password.
     target_user = User.query.filter_by(mail=user_requested).first()
