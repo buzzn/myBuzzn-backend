@@ -2,20 +2,12 @@ import logging
 from threading import Lock
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO
-from models.user import User, GenderType
+from models.user import User
 from models.group import Group
 from util.database import db
 
 
 logger = logging.getLogger(__name__)
-
-# pylint: disable=fixme
-# TODO - Set/get user ID in/from database (user)
-# TODO - Set/get group meter IDs in/from database (other users and their meter
-# IDs from group)
-# TODO - Set/get people in flat in/from database
-# TODO - Set/get flat size in/from database
-# TODO - discovergy login
 
 
 def get_parameters(user_id):
@@ -28,7 +20,13 @@ def get_parameters(user_id):
     """
     user = db.session.query(User).filter_by(id=user_id).first()
     group = db.session.query(Group).filter_by(id=user.group_id).first()
-    return user.meter_id, group.group_meter_id, user.inhabitants, user.flat_size
+    group_users = db.session.query(User).filter_by(
+        group_id=user.group_id).filter(User.id.isnot(user_id)).all()
+    group_members = []
+    for group_user in group_users:
+        group_members.append(
+            dict(id=group_user.id, meter_id=group_user.meter_id))
+    return user.meter_id, group.group_meter_id, group_members, user.inhabitants, user.flat_size
 
 
 class Websocket:
@@ -41,9 +39,7 @@ class Websocket:
         self.thread_lock = Lock()
         self.socketio = SocketIO(app, async_mode=self._async_mode)
         self.d = d
-
-        # TODO - fill self.users with users from database
-        self.users = []
+        self.users = db.session.query(User).all()
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value the past year as a value
@@ -81,16 +77,11 @@ class Websocket:
             # Return result
             return 0.0
 
-    def create_data(self, meter_id, group_meter_id, user_id, group_users,
-                    inhabitants, flat_size):
+    # pylint: disable=fixme
+    # TODO - Set/get user ID in/from database (user)
+    def create_data(self, user_id):
         """ Creates a data package with the latest discovergy readings.
-        :param str meter_id: the user's meter id
-        :param str group_meter_id: the meter id of the user's group
         :param int user_id: the user's id
-        :param dict group_users: the user's fellow group members' ids
-        mapped to their meter ids
-        :param int inhabitants: number of people in the user's flat
-        :param float flat_size: the user's flat size
         :return: {str => int, str => int, str => int, str => float, str => {str
         => int, str => int}}
         :rtype: dict
@@ -98,15 +89,17 @@ class Websocket:
 
         now = round(datetime.now().timestamp() * 1e3)
         try:
+            meter_id, group_meter_id, group_members, inhabitants, flat_size = get_parameters(
+                user_id)
             group_last_reading = self.d.get_last_reading(group_meter_id)
             individual_last_reading = self.d.get_last_reading(meter_id)
             usersConsumption = []
             usersConsumption.append(dict(id=user_id,
                                          consumption=individual_last_reading.
                                          get('values').get('energy')))
-            for user in group_users:
-                reading = self.d.get_last_reading(user.get('meter_id'))
-                usersConsumption.append(dict(id=user.get('id'),
+            for member in group_members:
+                reading = self.d.get_last_reading(member.get('meter_id'))
+                usersConsumption.append(dict(id=member.get('id'),
                                              consumption=reading.get('values').get('energy')))
 
             return dict(date=now,
@@ -127,14 +120,8 @@ class Websocket:
         while True:
             self.socketio.sleep(60)
 
-            # TODO - set/get users with parameters in/from database
             for user in self.users:
-                live_data = self.generate_data(user.meter_id,
-                                               user.group_meter_id,
-                                               user.user_id,
-                                               user.group_users,
-                                               user.inhabitants,
-                                               user.flat_size)
+                live_data = self.generate_data(user.id)
                 self.socketio.emit('live_data',
                                    {'data': live_data},
                                    namespace='ws:/live')

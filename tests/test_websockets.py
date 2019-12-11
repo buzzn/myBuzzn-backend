@@ -87,6 +87,15 @@ DATA = {
 RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
                  GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
 SELF_SUFFICIENCY = 6.225875925992823e-10
+GROUP_MEMBERS = [{'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf'}, {
+    'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98'}]
+METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
+GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
+INHABITANTS = 2
+FLAT_SIZE = 60.0
+
+# pylint: disable=fixme
+# TODO - discovergy login
 
 
 class WebsocketTestCase(BuzznTestCase):
@@ -125,19 +134,7 @@ class WebsocketTestCase(BuzznTestCase):
             None, 'eventlet', Discovergy('TestClient'))
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
-        test_group = db.session.query(
-            Group).filter_by(name='TestGroup').first()
-        group_member2 = db.session.query(User).filter_by(name='judith').first()
-        group_member3 = db.session.query(User).filter_by(name='danny').first()
-        group_meter_ids = [{'id': group_member2.id, 'meter_id':
-                            group_member2.meter_id}, {'id': group_member3.id,
-                                                      'meter_id':
-                                                      group_member3.meter_id}]
-
-        data = ws.create_data(test_user.meter_id,
-                              test_group.group_meter_id, test_user.id,
-                              group_meter_ids, test_user.inhabitants,
-                              test_user.flat_size)
+        data = ws.create_data(test_user.id)
 
         # Check return type
         self.assertTrue(isinstance(data, dict))
@@ -179,4 +176,13 @@ class WebsocketTestCase(BuzznTestCase):
         """ Unit tests for function get_parameters(). """
 
         result = websocket.get_parameters(1)
-        print(result)
+
+        # Check result values
+        self.assertEqual(result[0], METER_ID)
+        self.assertEqual(result[1], GROUP_METER_ID)
+        self.assertEqual(result[2], GROUP_MEMBERS)
+        self.assertEqual(result[3], INHABITANTS)
+        self.assertEqual(result[4], FLAT_SIZE)
+
+        # Check result type
+        self.assertTrue(isinstance(result, tuple))
