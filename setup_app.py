@@ -9,7 +9,6 @@ from routes.disaggregation import IndividualDisaggregation
 from routes.disaggregation import GroupDisaggregation
 from routes.set_password import SetPassword
 from routes.reset_password import ResetPassword
-from routes.profile import Profile
 from routes.login import Login
 
 from util.database import db
@@ -25,7 +24,7 @@ def setup_app(app_config):
     app = Flask(__name__)
     app.config.from_object(app_config)
     # Look for jwt token in the headers and the cookies, the headers are used
-    # by the app; the cookies by the admin ui.
+    # by the app; the cookies by the admin UI.
     app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
 
     # Enable csrf double submit protection. See this for a thorough

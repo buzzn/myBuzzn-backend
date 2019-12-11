@@ -39,7 +39,7 @@ def favicon():
 
 @Admin.route('/admin/login', methods=['POST'])
 def do_admin_login():
-    """Logs in the given user.
+    """Log-in for the given user..
     :param str email: The mail which is used to identify the user.
     :param str password: The user's password.
     """
@@ -72,10 +72,10 @@ def admin_login():
 
 @Admin.route('/admin/logout')
 def logout():
-    """Performs a logout on the current user.
+    """Performs a logout for the current user.
     """
     resp = Response(render_template('admin/login.html',
-                                    message='Your session has been destroyed.'))
+                                    message='Your session has been canceled.'))
     unset_jwt_cookies(resp)
     return resp
 
@@ -91,12 +91,13 @@ def admin():
 @Admin.route('/admin/user/create', methods=['POST'])
 @admin_required
 def do_user_create():
-    """Creates a new user. Generats a password token. Does not send a mail.
+    """Generates a new user. Generats a password token. Does not send a mail.
     :param str gender: The new user's gender.
     :param str name: The new user's name.
-    :param str mail:The new user's mail.
+    :param str mail: The new user's mail.
     :param str meter_id: The new user's meter id.
     :param str group_id: The new user's group id.
+    :param str role: The new user's role.
     """
     target = User(
         request.form['gender'],
@@ -114,6 +115,8 @@ def do_user_create():
 @admin_required
 def request_user_create():
     """Returns a form to create a new user.
+    The form contains an csrf_token to prevent cross side attacks.
+    And some preselected values.
     """
     return Response(render_template('admin/user/create-update.html',
                                     csrf_token=(get_raw_jwt() or {}).get("csrf"),
@@ -187,8 +190,8 @@ def request_user_update():
 @Admin.route('/admin/user/delete', methods=['GET'])
 @admin_required
 def user_delete():
-    """Deletes an user.
-    :param str id: The id to identify the user to update.
+    """Deletes a user.
+    :param str id: The id to identify the user to delete.
     """
     target_user = User.query.filter_by(id=request.args['id']).first()
     if target_user is None:
@@ -213,8 +216,8 @@ def user_list(message=''):
 @admin_required
 def do_group_create():
     """Creates a group.
-    :param str name: The new groups name.
-    :param str meter: The new groups meter.
+    :param str name: The new group's name.
+    :param str meter: The new group's meter id.
     """
     target_group = Group(request.form['name'], request.form['meter'])
     db.session.add(target_group)
