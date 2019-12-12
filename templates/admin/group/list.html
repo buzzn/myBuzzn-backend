@@ -1,0 +1,24 @@
+{% extends "admin/layout.html" %}
+
+{% block body %}
+<h1 class="title">Group List</h1><a class="create" href="/admin/group/create">Create new Group</a>
+<table class="table">
+    <thead>
+        <th>id</th>
+        <th>name</th>
+        <th>meter</th>
+    </thead>
+    {% for group in groups %}
+    <tr>
+        <td>{{group._id}}</td>
+        <td>{{group._name}}</td>
+        <td>{{group._group_meter_id}}</td>
+        <td>
+            <a href='/admin/group/update?id={{group._id}}'>Edit</a>
+            <a onClick='return confirm("Really delete group?")'
+              href='/admin/group/delete?id={{group._id}}'>Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

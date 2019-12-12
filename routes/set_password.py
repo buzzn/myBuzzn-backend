@@ -29,11 +29,11 @@ def set_password():
         404: If the user is not found.
     """
     j = request.get_json(force=True)
-    user_requested = j['user']
+    user_requested = j['user'].lower()
     token = j['token']
     password_requested = j['password']
 
-    targetUser = User.query.filter_by(name=user_requested).first()
+    targetUser = User.query.filter_by(mail=user_requested).first()
 
     if targetUser is None:
         return Errors.UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST

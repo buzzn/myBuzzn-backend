@@ -40,7 +40,6 @@ class Websocket:
         self.socketio = SocketIO(app, async_mode=self._async_mode)
         self.d = d
         self.users = None
-        # self.users = db.session.query(User).all()
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value the past year as a value

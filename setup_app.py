@@ -2,6 +2,7 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask import Flask
 
+from routes.admin import Admin
 from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
@@ -22,6 +23,14 @@ def setup_app(app_config):
     """
     app = Flask(__name__)
     app.config.from_object(app_config)
+    # Look for jwt token in the headers and the cookies, the headers are used
+    # by the app; the cookies by the admin UI.
+    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
+
+    # Enable csrf double submit protection. See this for a thorough
+    # explanation: http://www.redotheweb.com/2015/11/09/api-security.html
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+    app.config['JWT_CSRF_CHECK_FORM'] = True
 
     class JsonDefault(app.response_class):
         """This is a backend talking json, so json should be the default
@@ -54,6 +63,7 @@ def setup_app(app_config):
     app.register_blueprint(Login)
     app.register_blueprint(ResetPassword)
     app.register_blueprint(SetPassword)
+    app.register_blueprint(Admin)
 
     # Routes are called by the user, so they are actually used.
     #pylint: disable=unused-variable
