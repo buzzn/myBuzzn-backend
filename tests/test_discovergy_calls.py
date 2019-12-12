@@ -1,6 +1,6 @@
 import ast
 import json
-from unittest import mock, skip
+from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
 from models.group import Group
