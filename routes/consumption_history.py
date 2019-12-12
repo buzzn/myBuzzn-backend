@@ -16,9 +16,13 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask import current_app as app
 # pylint: disable=duplicate-code
 from discovergy.discovergy import Discovergy
+# pylint: disable=duplicate-code
 from models.group import Group
+# pylint: disable=duplicate-code
 from models.user import User
+# pylint: disable=duplicate-code
 from util.database import db
+# pylint: disable=duplicate-code
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 
 
@@ -37,8 +41,11 @@ def login_required(fn):
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        # pylint: disable=duplicate-code
         verify_jwt_in_request()
+        # pylint: disable=duplicate-code
         user_id = get_jwt_identity()
+        # pylint: disable=duplicate-code
         target_user = User.query.filter_by(id=user_id).first()
         if target_user is None:
             return redirect('/admin/login', code=403)
