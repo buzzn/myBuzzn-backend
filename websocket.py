@@ -39,7 +39,8 @@ class Websocket:
         self.thread_lock = Lock()
         self.socketio = SocketIO(app, async_mode=self._async_mode)
         self.d = d
-        self.users = db.session.query(User).all()
+        # self.users = db.session.query(User).all()
+        self.users = None
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value the past year as a value
@@ -119,6 +120,7 @@ class Websocket:
         """ Emit server-generated live data every 60s to the clients. """
         while True:
             self.socketio.sleep(60)
+            self.users = db.session.query(User).all()
 
             for user in self.users:
                 live_data = self.generate_data(user.id)
