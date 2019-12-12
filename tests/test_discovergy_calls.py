@@ -1,6 +1,6 @@
 import ast
 import json
-from unittest import mock
+from unittest import mock, skip
 from flask_api import status
 from models.user import User, GenderType, StateType
 from models.group import Group
@@ -200,6 +200,16 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 class IndividualDisaggregation(BuzznTestCase):
     """ Unit tests for IndividualDisaggregation. """
 
+    def setUp(self):
+        super().setUp()
+        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+                                "SomeToken", "SomeMeterId", "SomeGroup")
+        self.target_user.set_password("some_password")
+        self.target_user.state = StateType.ACTIVE
+        self.target_user.meter_id = '269e682dbfd74a569ff4561b6416c999'
+        db.session.add(self.target_user)
+        db.session.commit()
+
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
@@ -209,7 +219,11 @@ class IndividualDisaggregation(BuzznTestCase):
         """ Unit tests for individual_disaggregation(). """
 
         # Check if route exists
-        response = self.client.get('/individual-disaggregation')
+        login_request = self.client.post('/login',
+                                         data=json.dumps({'user': 'User@Some.net',
+                                                          'password': 'some_password'}))
+        response = self.client.get('/individual-disaggregation', headers={
+            'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
 
         # Check response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -223,6 +237,20 @@ class IndividualDisaggregation(BuzznTestCase):
 class GroupDisaggregation(BuzznTestCase):
     """ Unit tests for GroupDisaggregation. """
 
+    def setUp(self):
+        super().setUp()
+        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+                                "SomeToken", "SomeMeterId", "SomeGroup")
+        self.target_user.set_password("some_password")
+        self.target_user.state = StateType.ACTIVE
+        self.target_user.meter_id = '269e682dbfd74a569ff4561b6416c999'
+        self.target_user.group_id = 1
+        db.session.add(self.target_user)
+        self.target_group = Group(
+            "SomeGroup", 'b4234cd4bed143a6b9bd09e347e17d34')
+        db.session.add(self.target_group)
+        db.session.commit()
+
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
@@ -232,7 +260,11 @@ class GroupDisaggregation(BuzznTestCase):
         """ Unit tests for group_disaggregation(). """
 
         # Check if route exists
-        response = self.client.get('/group-disaggregation')
+        login_request = self.client.post('/login',
+                                         data=json.dumps({'user': 'User@Some.net',
+                                                          'password': 'some_password'}))
+        response = self.client.get('/group-disaggregation', headers={
+            'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
 
         # Check response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -247,6 +279,20 @@ class Disaggregation(BuzznTestCase):
     """ Unit test for common funcionalities of IndividualDisaggregation and
     GroupDisaggregation. """
 
+    def setUp(self):
+        super().setUp()
+        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+                                "SomeToken", "SomeMeterId", "SomeGroup")
+        self.target_user.set_password("some_password")
+        self.target_user.state = StateType.ACTIVE
+        self.target_user.meter_id = '269e682dbfd74a569ff4561b6416c999'
+        self.target_user.group_id = 1
+        db.session.add(self.target_user)
+        self.target_group = Group(
+            "SomeGroup", 'b4234cd4bed143a6b9bd09e347e17d34')
+        db.session.add(self.target_group)
+        db.session.commit()
+
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_disaggregation',
@@ -254,10 +300,18 @@ class Disaggregation(BuzznTestCase):
     def test_parameters(self, login, disaggregation):
         """ Test handling of erroneous parameters. """
 
+        login_request = self.client.post('/login',
+                                         data=json.dumps({'user': 'User@Some.net',
+                                                          'password': 'some_password'}))
+
         for route in '/individual-disaggregation', '/group-disaggregation':
             response_timestamp_format = self.client.get(
-                route + '?begin=123.123')
-            response_parameter = self.client.get(route + '?and=1575284400000')
+                route + '?begin=123.123', headers={'Authorization':
+                                                   'Bearer {}'.
+                                                   format(login_request.json["sessionToken"])})
+
+            response_parameter = self.client.get(route + '?and=1575284400000', headers={
+                'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
 
             # Check response status
             self.assertEqual(
@@ -266,7 +320,7 @@ class Disaggregation(BuzznTestCase):
                              status.HTTP_200_OK)
 
             # Check response content
-            self.assertEqual(ast.literal_eval(response_timestamp_format.data.decode('utf-8')),
-                             EMPTY_RESPONSE_BYTES)
+            self.assertEqual(ast.literal_eval(
+                response_timestamp_format.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
             self.assertEqual(ast.literal_eval(
                 response_parameter.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
