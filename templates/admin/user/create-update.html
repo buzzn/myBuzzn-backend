@@ -1,0 +1,83 @@
+{% extends "admin/layout.html" %}
+
+{% block body %}
+<h1 class="title">Create a new user</h1>
+<form method="POST" action="{{target}}">
+  <input class="input" name="csrf_token" type="hidden" value="{{ csrf_token }}">
+
+  <div class="field">
+    <label>Gender</label>
+    <div class="control">
+      <div class="select">
+        <select name="gender">
+          {% for g in genders %}
+          <option {% if gender.name==g.name %} selected {% endif %} value={{g.name}}>{{g.value}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>name</label>
+    <div class="control">
+      <input class="input" type="text" name="name" value="{{name}}" />
+    </div>
+  </div>
+  <div class="field">
+    <label>email</label>
+    <div class="control">
+      <input class="input" type="email" name="mail" value="{{mail}}" />
+    </div>
+  </div>
+  <div class="field">
+    <label>meter</label>
+    <div class="control">
+      <input class="input" type="text" name="meter_id" value="{{meter_id}}" />
+    </div>
+  </div>
+  <div class="field">
+    <label>group</label>
+    <div class="control">
+      <div class="select">
+        <select name="group_id">
+          {% for g in groups %}
+          <option {% if g._id==group_id %} selected {% endif %} value="{{g._id}}">{{g._name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>role</label>
+    <div class="control">
+      <div class="select">
+        <select name="role">
+          {% for r in roles %}
+          <option {% if r.name==role.name %} selected {% endif %} value="{{r.name}}">{{r.value}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>state</label>
+    <div class="control">
+      <div class="select">
+        <select name="state">
+          {% for s in states %}
+          <option {% if s.name==state.name %} selected {% endif %} value="{{s.name}}">{{s.value}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <input class="input" type="hidden" name="id" value="{{id}}" />
+  <br>
+  <button type="submit" class="button is-success">
+    <span class="icon is-small">
+      <i class="fas fa-check"></i>
+    </span>
+    <span>Save</span>
+  </button>
+</form>
+{% endblock %}

@@ -1,5 +1,6 @@
 
 from flask import Blueprint, request, jsonify
+from flask_api import status
 from flask_jwt_extended import create_access_token
 
 from models.user import User, StateType
@@ -19,20 +20,22 @@ def login():
       404: If the useraccount is not active.
     """
     j = request.get_json(force=True)
-    user_requested = j['user']
+    user_requested = j['user'].lower()
     password_requested = j['password']
 
-    targetUser = User.query.filter_by(name=user_requested).first()
-    if targetUser is None:
-        return Error('Unknown credentials',
-                     'Try again with proper username/password.').to_json(), 401
+    target_user = User.query.filter_by(mail=user_requested).first()
+    if target_user is None:
+        return (Error('Unknown credentials',
+                      'Try again with proper username/password.').to_json(),
+                status.HTTP_401_UNAUTHORIZED)
 
-    if not targetUser.check_password(password_requested):
-        return Error('Unknown credentials',
-                     'Try again with proper username/password.').to_json(), 401
+    if not target_user.check_password(password_requested):
+        return (Error('Unknown credentials',
+                      'Try again with proper username/password.').to_json(),
+                status.HTTP_401_UNAUTHORIZED)
 
-    if not targetUser.active == StateType.ACTIVE:
-        return Error('User not active', 'Can not login.').to_json(), 403
+    if not target_user.state == StateType.ACTIVE:
+        return Error('User not active', 'Can not login.').to_json(), status.HTTP_403_FORBIDDEN
 
-    access_token = create_access_token(identity=targetUser.name)
-    return jsonify(sessionToken=access_token), 200
+    access_token = create_access_token(identity=target_user.id)
+    return jsonify(sessionToken=access_token), status.HTTP_200_OK

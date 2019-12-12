@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html language="de">
+
+<head>
+  <link rel="shortcut icon" href="" />
+  <style type="text/css">
+    * {
+      font-family: "Open Sans", sans-serif;
+    }
+
+    a.create { margin-right:0}
+
+    nav {
+      background-color: rgb(226, 9, 125);
+      overflow: hidden;
+      font-size: 16px;
+      height: 27px;
+      line-height: 24px;
+      font-weight: 400;
+      text-align: center;
+      width: 50vw;
+      margin: auto;
+    }
+
+    nav a {
+      float: left;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      background-color: rgb(226, 9, 125);
+      width: 225px;
+    }
+
+    section {
+      width: 50vw;
+      margin: auto;
+    }
+
+    a {
+      color: #009EE2;
+      text-decoration: none;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+
+</head>
+
+<body>
+  <nav>
+    <a href="/admin/user">User Management</a>
+    <a href="/admin/group">Group Management</a>
+    <a href="/admin/logout">Logout</a>
+  </nav>
+  <section>
+    {{message}}
+    {% block body %}
+    {% endblock %}
+  </section>
+</body>
+
+</html>
