@@ -114,15 +114,3 @@ class Websocket:
         except Exception as e:
             logger.error("Exception: %s", e)
             return {}
-
-    def background_thread(self):
-        """ Emit server-generated live data every 60s to the clients. """
-        while True:
-            self.socketio.sleep(60)
-            self.users = db.session.query(User).all()
-
-            for user in self.users:
-                live_data = self.generate_data(user.id)
-                self.socketio.emit('live_data',
-                                   {'data': live_data},
-                                   namespace='ws:/live')
