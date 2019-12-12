@@ -10,7 +10,7 @@ from models.group import Group
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
-from util.login import login_required
+from util.login import login_required, get_parameters
 
 
 logger = logging.getLogger(__name__)
@@ -83,11 +83,9 @@ def group_disaggregation():
     :rtype: tuple
     """
 
-    user_id = get_jwt_identity()
-    user = db.session.query(User).filter_by(id=user_id).first()
+    user, group = get_parameters()
     if user is None:
         return UNKNOWN_USER
-    group = db.session.query(Group).filter_by(_id=user.group_id).first()
     if group is None:
         return UNKNOWN_GROUP
 

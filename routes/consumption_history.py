@@ -24,7 +24,7 @@ from util.database import db
 # pylint: disable=duplicate-code
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 # pylint: disable=duplicate-code
-from util.login import login_required
+from util.login import login_required, get_parameters
 
 
 # pylint: disable=duplicate-code
@@ -104,11 +104,9 @@ def group_consumption_history():
     :rtype: tuple
     """
 
-    user_id = get_jwt_identity()
-    user = db.session.query(User).filter_by(id=user_id).first()
+    user, group = get_parameters()
     if user is None:
         return UNKNOWN_USER
-    group = db.session.query(Group).filter_by(_id=user.group_id).first()
     if group is None:
         return UNKNOWN_GROUP
 
