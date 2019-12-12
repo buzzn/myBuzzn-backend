@@ -22,14 +22,14 @@ class ProfileTestCase(BuzznTestCase):
     def test_get_profile(self):
         """Expect HTTP_200_OK if a user requests his profile.
         """
-        response = self.client.post('/login',
-                                    data=json.dumps({'user': 'User@Some.net',
-                                                     'password': 'some_password'}))
+        login_request = self.client.post('/login',
+                                         data=json.dumps({'user': 'User@Some.net',
+                                                          'password': 'some_password'}))
 
         response = self.client.get(
             '/profile',
             headers={'Authorization': 'Bearer {}'.format(
-                response.json["sessionToken"])})
+                login_request.json["sessionToken"])})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json['name'], 'SomeUser')
@@ -37,13 +37,13 @@ class ProfileTestCase(BuzznTestCase):
     def test_set_profile(self):
         """Expect a change in the profile if a new one is provided.
         """
-        response = self.client.post('/login',
-                                    data=json.dumps({'user': 'User@Some.net',
-                                                     'password': 'some_password'}))
+        login_request = self.client.post('/login',
+                                         data=json.dumps({'user': 'User@Some.net',
+                                                          'password': 'some_password'}))
 
         response = self.client.put(
             '/profile',
-            headers={'Authorization': 'Bearer {}'.format(response.json["sessionToken"])},
+            headers={'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])},
             data=json.dumps({'name': 'NewName',
                              'flatSize': 33,
                              'inhabitants': 4}))
