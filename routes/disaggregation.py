@@ -6,7 +6,6 @@ from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from flask import current_app as app
 from discovergy.discovergy import Discovergy
-from models.group import Group
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP

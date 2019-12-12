@@ -16,8 +16,6 @@ from flask import current_app as app
 # pylint: disable=duplicate-code
 from discovergy.discovergy import Discovergy
 # pylint: disable=duplicate-code
-from models.group import Group
-# pylint: disable=duplicate-code
 from models.user import User
 # pylint: disable=duplicate-code
 from util.database import db
@@ -104,9 +102,12 @@ def group_consumption_history():
     :rtype: tuple
     """
 
+    # pylint: disable=duplicate-code
     user, group = get_parameters()
+    # pylint: disable=duplicate-code
     if user is None:
         return UNKNOWN_USER
+    # pylint: disable=duplicate-code
     if group is None:
         return UNKNOWN_GROUP
 
