@@ -35,8 +35,6 @@ class StateType(Enum):
 
 # Maybe setters should not count as public.
 #pylint: disable=too-many-public-methods
-
-
 class User(db.Model):
     """Represents a user account in the backend.
     """
