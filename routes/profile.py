@@ -41,7 +41,7 @@ def put_profile():
         return UNKNOWN_USER
 
     j = request.get_json(force=True)
-    target_user.flat_size = int(j['flatSize'])
+    target_user.flat_size = float(j['flatSize'])
     target_user.inhabitants = int(j['inhabitants'])
     target_user.name = j['name']
 
