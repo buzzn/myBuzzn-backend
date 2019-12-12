@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import logging
 from flask import Blueprint, jsonify, request
 from flask_api import status
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import current_app as app
 from discovergy.discovergy import Discovergy
 
@@ -45,6 +46,7 @@ def individual_disaggregation():
     # pylint: disable=fixme
     # TODO - Set meter id in database
     # TODO - Get meter id from database
+    user_id = get_jwt_identity()
 
     # Call discovergy API for the given meter
     begin, end = read_parameters()
@@ -77,6 +79,7 @@ def group_disaggregation():
     # pylint: disable=fixme
     # TODO - Set group meter id in database
     # TODO - Get group meter id from database
+    user_id = get_jwt_identity()
 
     # Call discovergy API for the given group meter
     begin, end = read_parameters()
