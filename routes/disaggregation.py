@@ -1,43 +1,21 @@
 import os
-from functools import wraps
 from datetime import datetime, timedelta
 import logging
-from flask import Blueprint, jsonify, request, redirect
+from flask import Blueprint, jsonify, request
 from flask_api import status
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 from flask import current_app as app
 from discovergy.discovergy import Discovergy
 from models.group import Group
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
+from util.login import login_required
 
 
 logger = logging.getLogger(__name__)
 IndividualDisaggregation = Blueprint('IndividualDisaggregation', __name__)
 GroupDisaggregation = Blueprint('GroupDisaggregation', __name__)
-
-
-def login_required(fn):
-    """ Wraps a function and injects a login check before each call. Redirects
-    to the login page if the current user is not logged in.
-    :param fn: the function to wrap.
-    """
-
-    # pylint: disable=duplicate-code
-    @wraps(fn)
-    # pylint: disable=duplicate-code
-    def wrapper(*args, **kwargs):
-        # pylint: disable=duplicate-code
-        verify_jwt_in_request()
-        # pylint: disable=duplicate-code
-        user_id = get_jwt_identity()
-        # pylint: disable=duplicate-code
-        target_user = User.query.filter_by(id=user_id).first()
-        if target_user is None:
-            return redirect('/admin/login', code=403)
-        return fn(*args, **kwargs)
-    return wrapper
 
 
 def read_parameters():

@@ -1,5 +1,4 @@
 import os
-from functools import wraps
 from datetime import datetime
 
 # We want to structure our routes in different modules and therefore use equal
@@ -7,11 +6,11 @@ from datetime import datetime
 # pylint: disable=duplicate-code
 import logging
 # pylint: disable=duplicate-code
-from flask import Blueprint, jsonify, request, redirect
+from flask import Blueprint, jsonify, request
 # pylint: disable=duplicate-code
 from flask_api import status
 # pylint: disable=duplicate-code
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 # pylint: disable=duplicate-code
 from flask import current_app as app
 # pylint: disable=duplicate-code
@@ -24,6 +23,8 @@ from models.user import User
 from util.database import db
 # pylint: disable=duplicate-code
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
+# pylint: disable=duplicate-code
+from util.login import login_required
 
 
 # pylint: disable=duplicate-code
@@ -31,26 +32,6 @@ logger = logging.getLogger(__name__)
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
 GroupConsumptionHistory = Blueprint('GroupConsumptionHistory', __name__)
-
-
-def login_required(fn):
-    """ Wraps a function and injects a login check before each call. Redirects
-    to the login page if the current user is not logged in.
-    :param fn: the function to wrap.
-    """
-
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        # pylint: disable=duplicate-code
-        verify_jwt_in_request()
-        # pylint: disable=duplicate-code
-        user_id = get_jwt_identity()
-        # pylint: disable=duplicate-code
-        target_user = User.query.filter_by(id=user_id).first()
-        if target_user is None:
-            return redirect('/admin/login', code=403)
-        return fn(*args, **kwargs)
-    return wrapper
 
 
 def read_parameters():
