@@ -77,8 +77,6 @@ class Websocket:
             # Return result
             return 0.0
 
-    # pylint: disable=fixme
-    # TODO - Set/get user ID in/from database (user)
     def create_data(self, user_id):
         """ Creates a data package with the latest discovergy readings.
         :param int user_id: the user's id
@@ -87,7 +85,7 @@ class Websocket:
         :rtype: dict
         """
 
-        now = round(datetime.now().timestamp() * 1e3)
+        now = round(datetime.now().timestamp() * 2e3)
         try:
             meter_id, group_meter_id, group_members, inhabitants, flat_size = get_parameters(
                 user_id)

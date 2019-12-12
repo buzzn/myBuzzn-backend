@@ -1,6 +1,7 @@
+import json
 from unittest import mock
 from discovergy.discovergy import Discovergy
-from models.user import User, GenderType
+from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
@@ -110,6 +111,8 @@ class WebsocketTestCase(BuzznTestCase):
                          'b4234cd4bed143a6b9bd09e347e17d34', 1)
         test_user.flat_size = 60.0
         test_user.inhabitants = 2
+        test_user.set_password('some_password')
+        test_user.state = StateType.ACTIVE
         db.session.add(test_user)
         db.session.add(User(GenderType.FEMALE, 'judith', 'judith@buzzn.net',
                             'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
@@ -119,6 +122,8 @@ class WebsocketTestCase(BuzznTestCase):
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
         db.session.commit()
+        self.client.post('/login', data=json.dumps({'user': 'test@test.net',
+                                                    'password': 'some_password'}))
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
