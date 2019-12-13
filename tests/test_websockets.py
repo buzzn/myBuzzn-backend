@@ -95,9 +95,6 @@ GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
 INHABITANTS = 2
 FLAT_SIZE = 60.0
 
-# pylint: disable=fixme
-# TODO - discovergy login
-
 
 class WebsocketTestCase(BuzznTestCase):
     """ Unit tests for class Websocket. """

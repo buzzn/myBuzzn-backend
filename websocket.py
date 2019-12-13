@@ -18,6 +18,7 @@ def get_parameters(user_id):
     inhabitants, flat_size
     :rtype: tuple
     """
+
     user = db.session.query(User).filter_by(id=user_id).first()
     group = db.session.query(Group).filter_by(id=user.group_id).first()
     group_users = db.session.query(User).filter_by(
@@ -34,6 +35,15 @@ class Websocket:
     clients. """
 
     def __init__(self, app, async_mode, d):
+        """ Create and setup a websocket object to make use of the flask-socketio
+        functionalities.
+        :param flask.Flask: the app itself
+        :param str async_mode: the mode for handling asynchronuous calls with
+        possible values 'threading', 'eventlet' and 'gevent'
+        :param discovergy.discovergy.Discovergy d: the app's object to handle
+        discovergy login and calls
+        """
+
         self._async_mode = async_mode
         self.thread = None
         self.thread_lock = Lock()
@@ -78,7 +88,7 @@ class Websocket:
             return 0.0
 
     def create_data(self, user_id):
-        """ Creates a data package with the latest discovergy readings.
+        """ Create a data package with the latest discovergy readings.
         :param int user_id: the user's id
         :return: {str => int, str => int, str => int, str => float, str => {str
         => int, str => int}}

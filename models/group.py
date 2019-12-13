@@ -16,7 +16,7 @@ class Group(db.Model):
     def __init__(self, name, group_meter_id):
         """ Creates a new energy group.
         :param str name: the group name
-        :param str meter_id: the group's meter id for the common energy
+        :param str group_meter_id: the group's meter id for the common energy
         """
 
         self.name = name
