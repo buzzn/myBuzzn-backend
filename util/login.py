@@ -34,7 +34,7 @@ def get_parameters():
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
         return None, None
-    group = db.session.query(Group).filter_by(_id=user.group_id).first()
+    group = db.session.query(Group).filter_by(id=user.group_id).first()
     if group is None:
         return None, None
     return user, group

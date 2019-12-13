@@ -121,7 +121,7 @@ def group_consumption_history():
     consumed = {}
 
     try:
-        readings = d.get_readings(group._group_meter_id, begin, end,
+        readings = d.get_readings(group.group_meter_id, begin, end,
                                   tics)
         for reading in readings:
             produced[reading.get('time')] = reading.get(

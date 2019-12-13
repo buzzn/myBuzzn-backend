@@ -93,7 +93,7 @@ def group_disaggregation():
     d = login()
     result = {}
     try:
-        readings = d.get_disaggregation(group._group_meter_id, begin, end)
+        readings = d.get_disaggregation(group.group_meter_id, begin, end)
         for reading in readings.items():
             result[reading[0]] = reading[1]
 
