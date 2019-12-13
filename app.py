@@ -61,6 +61,7 @@ def background_thread():
 
 @socketio.on('connect', namespace='/live')
 def test_connect():
+    # pylint: disable=global-statement
     global thread
     with thread_lock:
         if thread is None:
