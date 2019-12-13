@@ -1,7 +1,12 @@
 from os import environ
+from threading import Lock
+from flask import render_template, Response
+from flask_socketio import SocketIO, emit
 from discovergy.discovergy import Discovergy
-from websocket import Websocket
+from models.user import User
 from setup_app import setup_app
+from util.database import db
+from websocket_provider import WebsocketProvider
 
 
 class RunConfig():
@@ -23,7 +28,38 @@ class RunConfig():
 
 app = setup_app(RunConfig())
 d = Discovergy(app.config['CLIENT_NAME'])
+thread = None
+thread_lock = Lock()
+socketio = SocketIO(app, async_mode='eventlet')
+wp = WebsocketProvider(d)
+
+
+@app.route('/live')
+def live():
+    return Response(render_template('live.html', async_mode=socketio.async_mode))
+
+
+def background_thread():
+    """ Emit server-generated live data to the clients every 60s. """
+    while True:
+        socketio.sleep(5)
+        with app.app_context():
+            users = db.session.query(User).all()
+            print(users)
+            for user in users:
+                message = wp.create_data(user.id)
+                socketio.emit(
+                    'live_data', {'data': message}, namespace='/live')
+
+
+@socketio.on('connect', namespace='/live')
+def test_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
+    emit('live_data', {'data': 'Connected'})
+
 
 if __name__ == "__main__":
-    websocket = Websocket(app, "eventlet", d)
-    websocket.socketio.run(app, debug=True)
+    socketio.run(app, debug=True)

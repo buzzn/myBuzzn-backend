@@ -1,10 +1,10 @@
 import logging
-from threading import Lock
 from datetime import datetime, timedelta
-from flask_socketio import SocketIO
+from flask import current_app as app
 from models.user import User
 from models.group import Group
 from util.database import db
+from util.error import NO_USERS
 
 
 logger = logging.getLogger(__name__)
@@ -30,26 +30,16 @@ def get_parameters(user_id):
     return user.meter_id, group.group_meter_id, group_members, user.inhabitants, user.flat_size
 
 
-class Websocket:
-    """ Websocket to handle asynchronous emitting of live data to the
-    clients. """
+class WebsocketProvider:
+    """ Provides a SocketIO object with live data for the clients. """
 
-    def __init__(self, app, async_mode, d):
-        """ Create and setup a websocket object to make use of the flask-socketio
-        functionalities.
-        :param flask.Flask: the app itself
-        :param str async_mode: the mode for handling asynchronuous calls with
-        possible values 'threading', 'eventlet' and 'gevent'
+    def __init__(self, d):
+        """ Create and setup a websocket provider.
         :param discovergy.discovergy.Discovergy d: the app's object to handle
         discovergy login and calls
         """
 
-        self._async_mode = async_mode
-        self.thread = None
-        self.thread_lock = Lock()
-        self.socketio = SocketIO(app, async_mode=self._async_mode)
         self.d = d
-        self.users = None
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value the past year as a value
