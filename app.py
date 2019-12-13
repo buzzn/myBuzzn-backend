@@ -1,5 +1,6 @@
 from os import environ
-
+from discovergy.discovergy import Discovergy
+from websocket import Websocket
 from setup_app import setup_app
 
 
@@ -19,7 +20,10 @@ class RunConfig():
     BUZZN_BASE_URL = environ.get('BUZZN_BASE_URL')
     BUZZN_MAILER = environ.get('BUZZN_MAILER')
 
+
 app = setup_app(RunConfig())
+d = Discovergy(app.config['CLIENT_NAME'])
 
 if __name__ == "__main__":
-    app.run()
+    websocket = Websocket(app, "eventlet", d)
+    websocket.socketio.run(app, debug=True)

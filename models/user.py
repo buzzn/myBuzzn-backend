@@ -78,7 +78,7 @@ class User(db.Model):
     meter_id = db.Column(db.String(32))
     inhabitants = db.Column(db.Integer)
     flat_size = db.Column(db.Float)
-    group_id = db.Column(db.Integer, ForeignKey('group._id'))
+    group_id = db.Column(db.Integer, ForeignKey('group.id'))
     password_reset_token = db.Column(db.String(33), unique=True)
     password_reset_token_expires = db.Column(db.DateTime)
 

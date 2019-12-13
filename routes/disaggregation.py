@@ -43,7 +43,7 @@ def login():
 def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back in time
-    :param in end: end time of disaggregation, default is $now
+    :param int end: end time of disaggregation, default is $now
     :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
