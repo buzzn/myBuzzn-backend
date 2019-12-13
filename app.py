@@ -42,14 +42,19 @@ def live():
 def background_thread():
     """ Emit server-generated live data to the clients every 60s. """
     while True:
+
+        # TODO - change to 60s
         socketio.sleep(5)
         with app.app_context():
             users = db.session.query(User).all()
-            print(users)
             for user in users:
-                message = wp.create_data(user.id)
-                socketio.emit(
-                    'live_data', {'data': message}, namespace='/live')
+                print(user.id)
+
+                # TODO - broadcast live data to proper urls
+                # TODO - change live data url in API
+                # message = wp.create_data(user.id)
+                # socketio.emit(
+                # 'live_data', {'data': message}, namespace='/live')
 
 
 @socketio.on('connect', namespace='/live')
