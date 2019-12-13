@@ -43,6 +43,7 @@ def background_thread():
     """ Emit server-generated live data to the clients every 60s. """
     while True:
 
+        # pylint: disable=fixme
         # TODO - change to 60s
         socketio.sleep(5)
         with app.app_context():
@@ -50,6 +51,7 @@ def background_thread():
             for user in users:
                 print(user.id)
 
+                # pylint: disable=fixme
                 # TODO - broadcast live data to proper urls
                 # TODO - change live data url in API
                 # message = wp.create_data(user.id)
