@@ -5,7 +5,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-import websocket
+import websocket_provider
 
 
 GROUP_LAST_READING = {
@@ -96,8 +96,8 @@ INHABITANTS = 2
 FLAT_SIZE = 60.0
 
 
-class WebsocketTestCase(BuzznTestCase):
-    """ Unit tests for class Websocket. """
+class WebsocketProviderTestCase(BuzznTestCase):
+    """ Unit tests for class WebsocketProvider. """
 
     def setUp(self):
         """ Create a test user and a test group in the test database. """
@@ -127,13 +127,12 @@ class WebsocketTestCase(BuzznTestCase):
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('discovergy.discovergy.Discovergy.get_last_reading',
                 side_effect=RETURN_VALUES)
-    @mock.patch('websocket.Websocket.self_sufficiency',
+    @mock.patch('websocket_provider.WebsocketProvider.self_sufficiency',
                 return_value=SELF_SUFFICIENCY)
     def test_create_data(self, socketio, get_last_reading, self_sufficiency):
         """ Unit tests for function create_data(). """
 
-        ws = websocket.Websocket(
-            None, 'eventlet', Discovergy('TestClient'))
+        ws = websocket_provider.WebsocketProvider(Discovergy('TestClient'))
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         data = ws.create_data(test_user.id)
@@ -160,8 +159,7 @@ class WebsocketTestCase(BuzznTestCase):
     def test_self_sufficiency(self, socketio, get_readings, get_last_reading):
         """ Unit tests for function self_sufficiency(). """
 
-        ws = websocket.Websocket(
-            None, 'eventlet', Discovergy('TestClient'))
+        ws = websocket_provider.WebsocketProvider(Discovergy('TestClient'))
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         meter_id = test_user.meter_id
@@ -177,7 +175,7 @@ class WebsocketTestCase(BuzznTestCase):
     def test_get_parameters(self):
         """ Unit tests for function get_parameters(). """
 
-        result = websocket.get_parameters(1)
+        result = websocket_provider.get_parameters(1)
 
         # Check result values
         self.assertEqual(result[0], METER_ID)
