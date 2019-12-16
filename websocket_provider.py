@@ -57,6 +57,11 @@ class WebsocketProvider:
         begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
 
         try:
+            # pylint: disable=fixme
+            # TODO - handle discovergy login
+            self.d = Discovergy(client_name)
+            self.d.login(email, password)
+
             # Get energy value today
             individual_last_reading = self.d.get_last_reading(meter_id)
             energy_today = individual_last_reading.get('values').get('energy')
