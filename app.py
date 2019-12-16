@@ -33,10 +33,13 @@ thread = None
 thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
+clients = []
 
 
-@app.route('/live')
+@app.route('/live', methods=['GET', 'POST'])
 def live():
+    meter_id = request.args.get('meter_id', default='', type=str)
+    print('Meter id: %s' % meter_id)
     return Response(render_template('live.html', async_mode=socketio.async_mode))
 
 
@@ -47,7 +50,8 @@ def background_thread():
         with app.app_context():
 
             # pylint: disable=fixme
-            # TODO - emit data for logged-in user
+            # TODO - emit data for user with param meter id
+            # TODO - update in broker api
             # users = db.session.query(User).all()
             # for user in users:
                 # message = json.dumps(wp.create_data(user.id))
