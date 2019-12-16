@@ -1,6 +1,5 @@
 import json
-from unittest import mock, skip
-from discovergy.discovergy import Discovergy
+from unittest import mock
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
