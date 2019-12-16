@@ -25,12 +25,16 @@
             });
             // Event handler for server sent data.
             // The callback function is invoked whenever the server emits data
-            // to the client. The data is then displayed in the "Received"
-            // section of the page.
+            // to the client. The data is then displayed on the page.
             socket.on('live_data', function(msg, cb) {
                 $('#log').append('<br>' + $('<div/>').text(msg.data).html());
                 if (cb)
                     cb();
+            });
+            // Event handler for closing connections.
+            // The callback function is invoked when a connection is closed.
+            socket.on('disconnect', function() {
+                socket.emit('my_event', {data: 'Client disconnected'});
             });
         });
     </script>

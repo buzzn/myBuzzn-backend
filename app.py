@@ -1,12 +1,12 @@
 import json
 from os import environ
 from threading import Lock
-from flask import render_template, Response
+from flask import render_template, Response, request
 from flask_socketio import SocketIO, emit
 from discovergy.discovergy import Discovergy
-from models.user import User
+# from models.user import User
 from setup_app import setup_app
-from util.database import db
+# from util.database import db
 from websocket_provider import WebsocketProvider
 
 
@@ -45,14 +45,26 @@ def background_thread():
     while True:
         socketio.sleep(60)
         with app.app_context():
-            # pylint: disable=fixme
-            # TODO - change to all users when discovergy login is implemented
-            user = db.session.query(User).first()
 
             # pylint: disable=fixme
-            # TODO - open and close sessions for each client
-            # TODO - emit data to proper sessions
-            message = json.dumps(wp.create_data(user.id))
+            # TODO - emit data for logged-in user
+            # users = db.session.query(User).all()
+            # for user in users:
+                # message = json.dumps(wp.create_data(user.id))
+
+            message = json.dumps({
+                "date": 3152997594059,
+                "groupConsumption": 2015853400000,
+                "groupProduction": 2189063000,
+                "selfSufficiency": 0.0,
+                "usersConsumption": [
+                    {"id": 1,
+                     "consumption": 3544858992189000},
+                    {"id": 2,
+                     "consumption": 188036451474000},
+                    {"id": 3,
+                     "consumption": 1494461436564000}]
+            })
             socketio.emit('live_data', {'data': message}, namespace='/live')
 
 
@@ -65,7 +77,13 @@ def test_connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
+    print('Client with session id %s connected' % str(request.sid))
     emit('live_data', {'data': 'Connected'})
+
+
+@socketio.on('disconnect', namespace='/live')
+def test_disconnect():
+    print('Client with session id %s disconnected' % str(request.sid))
 
 
 if __name__ == "__main__":
