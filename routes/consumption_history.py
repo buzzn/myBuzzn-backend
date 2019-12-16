@@ -1,21 +1,17 @@
 import os
 from datetime import datetime
-
-# We want to structure our routes in different modules and therefore use equal
-# imports. Likewise, we want the logger in each module for now.
-# pylint: disable=duplicate-code
 import logging
-# pylint: disable=duplicate-code
 from flask import Blueprint, jsonify, request
-# pylint: disable=duplicate-code
 from flask_api import status
-# pylint: disable=duplicate-code
+from flask_jwt_extended import get_jwt_identity
 from flask import current_app as app
-# pylint: disable=duplicate-code
 from discovergy.discovergy import Discovergy
+from models.user import User
+from util.database import db
+from util.error import UNKNOWN_USER, UNKNOWN_GROUP
+from util.login import login_required, get_parameters
 
 
-# pylint: disable=duplicate-code
 logger = logging.getLogger(__name__)
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
@@ -38,6 +34,7 @@ def read_parameters():
 
 @IndividualConsumptionHistory.route('/individual-consumption-history',
                                     methods=['GET'])
+@login_required
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval in mW.
     :param int begin: start time of consumption, default is today at 0:00
@@ -50,9 +47,11 @@ def individual_consumption_history():
     in time, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
-    # pylint: disable=fixme
-    # TODO - Set meter ID in database
-    # TODO - Get meter ID from database
+
+    user_id = get_jwt_identity()
+    user = db.session.query(User).filter_by(id=user_id).first()
+    if user is None:
+        return UNKNOWN_USER
 
     # Call discovergy API for the given meter
     begin, end, tics = read_parameters()
@@ -61,7 +60,7 @@ def individual_consumption_history():
     d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
     result = {}
     try:
-        readings = d.get_readings(os.environ['METER_ID'], begin, end, tics)
+        readings = d.get_readings(user.meter_id, begin, end, tics)
         for reading in readings:
             result[reading.get('time')] = reading.get('values').get('power')
 
@@ -76,6 +75,7 @@ def individual_consumption_history():
 
 
 @GroupConsumptionHistory.route('/group-consumption-history', methods=['GET'])
+@login_required
 def group_consumption_history():
     """ Shows the history of consumption of the given time interval in mW.
     :param int begin: start time of consumption, default is today at 0:00
@@ -88,9 +88,11 @@ def group_consumption_history():
     :rtype: tuple
     """
 
-    # pylint: disable=fixme
-    # TODO - Set group meter ID in database
-    # TODO - Get group meter ID from database
+    user, group = get_parameters()
+    if user is None:
+        return UNKNOWN_USER
+    if group is None:
+        return UNKNOWN_GROUP
 
     # Call discovergy API for the given group meter
     begin, end, tics = read_parameters()
@@ -102,7 +104,7 @@ def group_consumption_history():
     consumed = {}
 
     try:
-        readings = d.get_readings(os.environ['GROUP_METER_ID'], begin, end,
+        readings = d.get_readings(group.group_meter_id, begin, end,
                                   tics)
         for reading in readings:
             produced[reading.get('time')] = reading.get(

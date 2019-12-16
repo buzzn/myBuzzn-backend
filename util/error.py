@@ -15,3 +15,4 @@ class Error:
 UNKNOWN_RESOURCE = Error('Unknown resource', 'This resource is not available.')
 UNKNOWN_USER = Error('Unknown user', 'This user is not known.')
 NO_USERS = Error('No users', 'There are no users in the database.')
+UNKNOWN_GROUP = Error('Unknown group', 'This group is not known.')

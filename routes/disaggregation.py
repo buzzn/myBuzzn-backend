@@ -3,8 +3,13 @@ from datetime import datetime, timedelta
 import logging
 from flask import Blueprint, jsonify, request
 from flask_api import status
+from flask_jwt_extended import get_jwt_identity
 from flask import current_app as app
 from discovergy.discovergy import Discovergy
+from models.user import User
+from util.database import db
+from util.error import UNKNOWN_USER, UNKNOWN_GROUP
+from util.login import login_required, get_parameters
 
 
 logger = logging.getLogger(__name__)
@@ -34,6 +39,7 @@ def login():
 
 
 @IndividualDisaggregation.route('/individual-disaggregation', methods=['GET'])
+@login_required
 def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back in time
@@ -42,16 +48,17 @@ def individual_disaggregation():
     :rtype: tuple
     """
 
-    # pylint: disable=fixme
-    # TODO - Set meter id in database
-    # TODO - Get meter id from database
+    user_id = get_jwt_identity()
+    user = db.session.query(User).filter_by(id=user_id).first()
+    if user is None:
+        return UNKNOWN_USER
 
     # Call discovergy API for the given meter
     begin, end = read_parameters()
     d = login()
     result = {}
     try:
-        readings = d.get_disaggregation(os.environ['METER_ID'], begin, end)
+        readings = d.get_disaggregation(user.meter_id, begin, end)
         for reading in readings.items():
             result[reading[0]] = reading[1]
 
@@ -66,6 +73,7 @@ def individual_disaggregation():
 
 
 @GroupDisaggregation.route('/group-disaggregation', methods=['GET'])
+@login_required
 def group_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back in time
@@ -74,17 +82,18 @@ def group_disaggregation():
     :rtype: tuple
     """
 
-    # pylint: disable=fixme
-    # TODO - Set group meter id in database
-    # TODO - Get group meter id from database
+    user, group = get_parameters()
+    if user is None:
+        return UNKNOWN_USER
+    if group is None:
+        return UNKNOWN_GROUP
 
     # Call discovergy API for the given group meter
     begin, end = read_parameters()
     d = login()
     result = {}
     try:
-        readings = d.get_disaggregation(
-            os.environ['GROUP_METER_ID'], begin, end)
+        readings = d.get_disaggregation(group.group_meter_id, begin, end)
         for reading in readings.items():
             result[reading[0]] = reading[1]
 
