@@ -1,13 +1,15 @@
 import logging
 from datetime import datetime, timedelta
-from flask import current_app as app
-from models.user import User
+from discovergy.discovergy import Discovergy
 from models.group import Group
+from models.user import User
 from util.database import db
-from util.error import NO_USERS
 
 
 logger = logging.getLogger(__name__)
+client_name = 'BuzznClient'
+email = 'team@localpool.de'
+password = 'Zebulon_4711'
 
 
 def get_parameters(user_id):
@@ -33,13 +35,11 @@ def get_parameters(user_id):
 class WebsocketProvider:
     """ Provides a SocketIO object with live data for the clients. """
 
-    def __init__(self, d):
+    def __init__(self):
         """ Create and setup a websocket provider.
-        :param discovergy.discovergy.Discovergy d: the app's object to handle
-        discovergy login and calls
         """
 
-        self.d = d
+        self.d = None
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value the past year as a value
@@ -89,12 +89,16 @@ class WebsocketProvider:
         try:
             meter_id, group_meter_id, group_members, inhabitants, flat_size = get_parameters(
                 user_id)
+
+            # pylint: disable=fixme
+            # TODO - handle discovergy login
+            self.d = Discovergy(client_name)
+            self.d.login(email, password)
             group_last_reading = self.d.get_last_reading(group_meter_id)
             individual_last_reading = self.d.get_last_reading(meter_id)
             usersConsumption = []
-            usersConsumption.append(dict(id=user_id,
-                                         consumption=individual_last_reading.
-                                         get('values').get('energy')))
+            usersConsumption.append(dict(
+                id=user_id, consumption=individual_last_reading.get('values').get('energy')))
             for member in group_members:
                 reading = self.d.get_last_reading(member.get('meter_id'))
                 usersConsumption.append(dict(id=member.get('id'),
@@ -108,7 +112,6 @@ class WebsocketProvider:
                         selfSufficiency=self.self_sufficiency(
                             meter_id, inhabitants, flat_size),
                         usersConsumption=usersConsumption)
-
         except Exception as e:
             logger.error("Exception: %s", e)
             return {}

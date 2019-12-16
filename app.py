@@ -1,3 +1,4 @@
+import json
 from os import environ
 from threading import Lock
 from flask import render_template, Response
@@ -31,7 +32,7 @@ d = Discovergy(app.config['CLIENT_NAME'])
 thread = None
 thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
-wp = WebsocketProvider(d)
+wp = WebsocketProvider()
 
 
 @app.route('/live')
@@ -42,25 +43,23 @@ def live():
 def background_thread():
     """ Emit server-generated live data to the clients every 60s. """
     while True:
-
-        # pylint: disable=fixme
-        # TODO - change to 60s
-        socketio.sleep(5)
+        socketio.sleep(60)
         with app.app_context():
-            users = db.session.query(User).all()
-            for user in users:
-                print(user.id)
+            # pylint: disable=fixme
+            # TODO - change to all users when discovergy login is implemented
+            user = db.session.query(User).first()
 
-                # pylint: disable=fixme
-                # TODO - broadcast live data to proper urls
-                # TODO - change live data url in API
-                # message = wp.create_data(user.id)
-                # socketio.emit(
-                # 'live_data', {'data': message}, namespace='/live')
+            # pylint: disable=fixme
+            # TODO - open and close sessions for each client
+            # TODO - emit data to proper sessions
+            message = json.dumps(wp.create_data(user.id))
+            socketio.emit('live_data', {'data': message}, namespace='/live')
 
 
 @socketio.on('connect', namespace='/live')
 def test_connect():
+    # We need the global statement here, cf.
+    # https://github.com/miguelgrinberg/Flask-SocketIO/blob/master/example/app.py
     # pylint: disable=global-statement
     global thread
     with thread_lock:
