@@ -1,31 +1,17 @@
 import os
 from datetime import datetime
-
-# We want to structure our routes in different modules and therefore use equal
-# imports. Likewise, we want the logger in each module for now.
-# pylint: disable=duplicate-code
 import logging
-# pylint: disable=duplicate-code
 from flask import Blueprint, jsonify, request
-# pylint: disable=duplicate-code
 from flask_api import status
-# pylint: disable=duplicate-code
 from flask_jwt_extended import get_jwt_identity
-# pylint: disable=duplicate-code
 from flask import current_app as app
-# pylint: disable=duplicate-code
 from discovergy.discovergy import Discovergy
-# pylint: disable=duplicate-code
 from models.user import User
-# pylint: disable=duplicate-code
 from util.database import db
-# pylint: disable=duplicate-code
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
-# pylint: disable=duplicate-code
 from util.login import login_required, get_parameters
 
 
-# pylint: disable=duplicate-code
 logger = logging.getLogger(__name__)
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
@@ -102,12 +88,9 @@ def group_consumption_history():
     :rtype: tuple
     """
 
-    # pylint: disable=duplicate-code
     user, group = get_parameters()
-    # pylint: disable=duplicate-code
     if user is None:
         return UNKNOWN_USER
-    # pylint: disable=duplicate-code
     if group is None:
         return UNKNOWN_GROUP
 

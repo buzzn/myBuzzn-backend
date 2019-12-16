@@ -12,15 +12,10 @@ def login_required(fn):
     :param fn: the function to wrap.
     """
 
-    # pylint: disable=duplicate-code
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        # pylint: disable=duplicate-code
         verify_jwt_in_request()
-        # pylint: disable=duplicate-code
         user_id = get_jwt_identity()
-        # pylint: disable=duplicate-code
-        target_user = User.query.filter_by(id=user_id).first()
         if target_user is None:
             return redirect('/admin/login', code=403)
         return fn(*args, **kwargs)
