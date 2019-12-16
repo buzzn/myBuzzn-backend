@@ -16,6 +16,7 @@ def login_required(fn):
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
         user_id = get_jwt_identity()
+        target_user = User.query.filter_by(id=user_id).first()
         if target_user is None:
             return redirect('/admin/login', code=403)
         return fn(*args, **kwargs)
