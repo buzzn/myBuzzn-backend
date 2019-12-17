@@ -58,13 +58,20 @@ def background_thread():
         with app.app_context():
 
             # pylint: disable=fixme
-            # TODO - emit data for user with param meter id
+            # TODO - emit data per session id
             # TODO - update in broker api
-            users = db.session.query(User).all()
-            # for user in users:
-            # message = json.dumps(wp.create_data(user.id))
-            message = json.dumps(clients)
-            socketio.emit('live_data', {'data': message}, namespace='/live')
+            for meter_id in list(clients.values()):
+                user = db.session.query(User).filter_by(
+                    meter_id=meter_id).first()
+
+                # pylint: disable=fixme
+                # TODO - discovergy login
+                # message = json.dumps(wp.create_data(user.id))
+
+                message = json.dumps(dict(user_id=user.id,
+                                          meter_id=user.meter_id))
+                socketio.emit(
+                    'live_data', {'data': message}, namespace='/live')
 
 
 @socketio.on('connect', namespace='/live')
