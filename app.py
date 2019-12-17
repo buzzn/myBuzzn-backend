@@ -1,13 +1,19 @@
 import json
 from os import environ
+import logging
 from threading import Lock
-from flask import render_template, Response, request
+from flask import render_template, Response, request, session
+from flask_api import status
 from flask_socketio import SocketIO, emit
 from discovergy.discovergy import Discovergy
-# from models.user import User
+from models.user import User
 from setup_app import setup_app
-# from util.database import db
+from util.database import db
+from util.error import NO_METER_ID
 from websocket_provider import WebsocketProvider
+
+
+logger = logging.getLogger(__name__)
 
 
 class RunConfig():
@@ -33,13 +39,15 @@ thread = None
 thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
-clients = []
+clients = dict()
 
 
 @app.route('/live', methods=['GET', 'POST'])
 def live():
-    meter_id = request.args.get('meter_id', default='', type=str)
-    print('Meter id: %s' % meter_id)
+    meter_id = request.args.get('meter_id', default=None, type=str)
+    if meter_id is None:
+        return NO_METER_ID.to_json(), status.HTTP_400_BAD_REQUEST
+    session['meter_id'] = meter_id
     return Response(render_template('live.html', async_mode=socketio.async_mode))
 
 
@@ -52,23 +60,10 @@ def background_thread():
             # pylint: disable=fixme
             # TODO - emit data for user with param meter id
             # TODO - update in broker api
-            # users = db.session.query(User).all()
+            users = db.session.query(User).all()
             # for user in users:
-                # message = json.dumps(wp.create_data(user.id))
-
-            message = json.dumps({
-                "date": 3152997594059,
-                "groupConsumption": 2015853400000,
-                "groupProduction": 2189063000,
-                "selfSufficiency": 0.0,
-                "usersConsumption": [
-                    {"id": 1,
-                     "consumption": 3544858992189000},
-                    {"id": 2,
-                     "consumption": 188036451474000},
-                    {"id": 3,
-                     "consumption": 1494461436564000}]
-            })
+            # message = json.dumps(wp.create_data(user.id))
+            message = json.dumps(clients)
             socketio.emit('live_data', {'data': message}, namespace='/live')
 
 
@@ -81,13 +76,14 @@ def test_connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
-    print('Client with session id %s connected' % str(request.sid))
+    if request.sid not in clients:
+        clients[request.sid] = session['meter_id']
     emit('live_data', {'data': 'Connected'})
 
 
 @socketio.on('disconnect', namespace='/live')
 def test_disconnect():
-    print('Client with session id %s disconnected' % str(request.sid))
+    del clients[request.sid]
 
 
 if __name__ == "__main__":
