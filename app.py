@@ -71,7 +71,7 @@ def background_thread():
 
 
 @socketio.on('connect', namespace='/live')
-def test_connect():
+def connect():
     # We need the global statement here, cf.
     # https://github.com/miguelgrinberg/Flask-SocketIO/blob/master/example/app.py
     # pylint: disable=global-statement
@@ -85,7 +85,7 @@ def test_connect():
 
 
 @socketio.on('disconnect', namespace='/live')
-def test_disconnect():
+def disconnect():
     del clients[request.sid]
 
 
