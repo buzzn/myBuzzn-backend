@@ -2,6 +2,7 @@ import json
 from os import environ
 import logging
 from threading import Lock
+import eventlet
 from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
@@ -10,10 +11,12 @@ from models.user import User
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID
+from task import populate_redis, update_redis
 from websocket_provider import WebsocketProvider
 
 
 logger = logging.getLogger(__name__)
+eventlet.monkey_patch()
 
 
 class RunConfig():
@@ -40,6 +43,8 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
+populate_redis()
+eventlet.spawn(update_redis)
 
 
 @app.route('/live', methods=['GET'])
