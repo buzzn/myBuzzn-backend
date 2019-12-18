@@ -35,6 +35,7 @@
             // The callback function is invoked when a connection is closed.
             socket.on('disconnect', function() {
                 socket.emit('my_event', {data: 'Client disconnected'});
+                socket.disconnect()
             });
         });
     </script>
