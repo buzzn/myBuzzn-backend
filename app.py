@@ -39,10 +39,10 @@ thread = None
 thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
-clients = dict()
+clients = {}
 
 
-@app.route('/live', methods=['GET', 'POST'])
+@app.route('/live', methods=['GET'])
 def live():
     meter_id = request.args.get('meter_id', default=None, type=str)
     if meter_id is None:
@@ -56,22 +56,18 @@ def background_thread():
     while True:
         socketio.sleep(60)
         with app.app_context():
-
-            # pylint: disable=fixme
-            # TODO - emit data per session id
-            # TODO - update in broker api
-            for meter_id in list(clients.values()):
+            for key in clients:
                 user = db.session.query(User).filter_by(
-                    meter_id=meter_id).first()
+                    meter_id=clients[key].get('meter_id')).first()
 
                 # pylint: disable=fixme
                 # TODO - discovergy login
                 # message = json.dumps(wp.create_data(user.id))
+                message = json.dumps(
+                    dict(sid=key, user_id=user.id, meter_id=user.meter_id))
 
-                message = json.dumps(dict(user_id=user.id,
-                                          meter_id=user.meter_id))
                 socketio.emit(
-                    'live_data', {'data': message}, namespace='/live')
+                    'live_data', {'data': message}, namespace='/live', room=key)
 
 
 @socketio.on('connect', namespace='/live')
@@ -83,9 +79,9 @@ def test_connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
-    if request.sid not in clients:
-        clients[request.sid] = session['meter_id']
-    emit('live_data', {'data': 'Connected'})
+    clients[request.sid] = {'meter_id': session['meter_id']}
+    emit('live_data', {'data': 'Connected with sid ' +
+                               request.sid}, room=request.sid)
 
 
 @socketio.on('disconnect', namespace='/live')
