@@ -48,7 +48,8 @@ class Task:
         # Get all disaggregations for all meters from one year back until now
 
         # all_meter_ids = [meter_id[0] for meter_id in sqlite_db.session.query(User.meter_id).all(
-        # )] + [group_meter_id[0] for group_meter_id in sqlite_db.session.query(Group.group_meter_id).all()]
+        # )] + [group_meter_id[0] for group_meter_id in
+        # sqlite_db.session.query(Group.group_meter_id).all()]
 
 
 def update_redis():
