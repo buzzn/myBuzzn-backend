@@ -7,11 +7,12 @@ from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
 from discovergy.discovergy import Discovergy
+import redis
 from models.user import User
 from setup_app import setup_app
-from util.database import db
-from util.error import NO_METER_ID
 from task import populate_redis, update_redis
+from util.database import db as mysql_db
+from util.error import NO_METER_ID
 from websocket_provider import WebsocketProvider
 
 
@@ -37,14 +38,15 @@ class RunConfig():
 
 
 app = setup_app(RunConfig())
-d = Discovergy(app.config['CLIENT_NAME'])
+discovergy_handler = Discovergy(app.config['CLIENT_NAME'])
 thread = None
 thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
-populate_redis()
-eventlet.spawn(update_redis)
+redis_db = redis.Redis('localhost')  # connect to server
+populate_redis(discovergy_handler, redis_db)
+eventlet.spawn(update_redis, discovergy_handler, redis_db)
 
 
 @app.route('/live', methods=['GET'])
@@ -62,7 +64,7 @@ def background_thread():
         socketio.sleep(60)
         with app.app_context():
             for key in clients:
-                user = db.session.query(User).filter_by(
+                user = mysql_db.session.query(User).filter_by(
                     meter_id=clients[key].get('meter_id')).first()
 
                 # pylint: disable=fixme
