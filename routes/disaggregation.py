@@ -34,7 +34,7 @@ def login():
 
     client_name = app.config['CLIENT_NAME']
     d = Discovergy(client_name)
-    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
     return d
 
 

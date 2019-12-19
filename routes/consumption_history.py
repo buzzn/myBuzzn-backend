@@ -57,7 +57,7 @@ def individual_consumption_history():
     begin, end, tics = read_parameters()
     client_name = app.config['CLIENT_NAME']
     d = Discovergy(client_name)
-    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
     result = {}
     try:
         readings = d.get_readings(user.meter_id, begin, end, tics)
@@ -98,7 +98,7 @@ def group_consumption_history():
     begin, end, tics = read_parameters()
     client_name = app.config['CLIENT_NAME']
     d = Discovergy(client_name)
-    d.login(os.environ['EMAIL'], os.environ['PASSWORD'])
+    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
     result = {}
     produced = {}
     consumed = {}
