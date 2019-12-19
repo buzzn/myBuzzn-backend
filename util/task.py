@@ -1,14 +1,13 @@
-import pdb
 import os
 import time
 from datetime import datetime, timedelta
-import logging
+# import logging
 from discovergy.discovergy import Discovergy
 import eventlet
 
 
 logger = logging.getLogger(__name__)
-# eventlet.monkey_patch()
+eventlet.monkey_patch()
 
 
 def login(client_name):
