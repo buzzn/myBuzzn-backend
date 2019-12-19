@@ -1,6 +1,6 @@
 import os
 import time
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 import logging
 from discovergy.discovergy import Discovergy
 import eventlet
@@ -34,11 +34,11 @@ def populate_redis(redis_db, all_meter_ids, client_name):
 
     # Get all readings for all meters from one year back until now with
     # interval one_hour
-    # now = round(datetime.now().timestamp() * 1e3)
-    # begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
-    # for meter_id in all_meter_ids:
-    # readings = discovergy_handler.get_readings(meter_id, begin, now,
-    # 'one_hour')
+    now = round(datetime.now().timestamp() * 1e3)
+    begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
+    for meter_id in all_meter_ids:
+        readings = d.get_readings(
+            meter_id, begin, now, 'one_hour')
 
     # Get all disaggregations for all meters from one year back until now
 
