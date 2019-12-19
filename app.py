@@ -43,10 +43,10 @@ socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
 redis_db = redis.Redis(host='localhost', port=6379, db=0)  # connect to server
-with app.app_context():
-    all_meter_ids = [meter_id[0] for meter_id in sqlite_db.session.query(User.meter_id).all(
-    )] + [group_meter_id[0] for group_meter_id in sqlite_db.session.query
-          (Group.group_meter_id).all()]
+# with app.app_context():
+# all_meter_ids = [meter_id[0] for meter_id in sqlite_db.session.query(User.meter_id).all(
+# )] + [group_meter_id[0] for group_meter_id in sqlite_db.session.query
+# (Group.group_meter_id).all()]
 
 # populate_redis(redis_db, all_meter_ids, app.config['CLIENT_NAME'])
 # eventlet.spawn(update_redis, discovergy_handler, redis_db)

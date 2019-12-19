@@ -1,5 +1,8 @@
 import time
 import eventlet
+from flask import current_app as app
+from models.user import User
+from util.database import db as sqlite_db
 
 eventlet.monkey_patch()
 
@@ -9,7 +12,15 @@ def populate_redis(discovergy_handler, redis_db):
 
     # Flush all keys from server
     redis_db.flushdb()
-    print('Populating redis database with all discovergy data from the past.')
+
+    with app.app_context:
+
+        # Get all meter ids from database
+        users = sqlite_db.session.query(User).all()
+        print(type(users))
+        print(users)
+
+        # Get all group meter ids from database
 
 
 def update_redis(discovergy_handler, redis_db):
