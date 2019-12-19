@@ -4,6 +4,7 @@ import time
 import logging
 from discovergy.discovergy import Discovergy
 import eventlet
+import redis
 
 
 logger = logging.getLogger(__name__)
@@ -19,33 +20,34 @@ class Task:
 
     def __init__(self):
         self.d = Discovergy(client_name)
+        self.redis_db = redis.Redis(
+            host='localhost', port=6379, db=0)  # connect to server
 
     def login(self):
         """ Authenticate against the discovergy backend. """
 
         self.d.login(email, password)
 
+    def populate_redis(self):
+        """ Populate the redis database with all discovergy data from the past.
+        :param redis.Redis redis_db: the app's redis database client
+        :param list all_meter_ids: the meter ids of all users and the group meter
+        ids of all groups from the sqlite database
+        """
 
-def populate_redis(redis_db, all_meter_ids):
-    """ Populate the redis database with all discovergy data from the past.
-    :param discovergy.discovergy.Discovergy discovergy_handler: the app's discovergy handler
-    :param redis.Redis redis_db: the app's redis database client
-    :param list all_meter_ids: the meter ids of all users and the group meter
-    ids of all groups from the sqlite database
-    """
+        # Flush all keys from server
+        self.redis_db.flushdb()
 
-    # Flush all keys from server
-    redis_db.flushdb()
+        # Authenticate against the discovergy backend
+        self.login()
 
-    # Authenticate against the discovergy backend
+        # Get all readings for all meters from one year back until now with
+        # interval one_hour
 
-    # Get all readings for all meters from one year back until now with
-    # interval one_hour
-    # now = round(datetime.now().timestamp() * 1e3)
-    # begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
+        # now = round(datetime.now().timestamp() * 1e3)
+        # begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
 
-    # Get all disaggregations for all meters from one year back until now
-    print(all_meter_ids)
+        # Get all disaggregations for all meters from one year back until now
 
 
 def update_redis():
@@ -57,3 +59,8 @@ def update_redis():
         # Get last reading for all meters
         # Get latest disaggregation
         print('Updating redis database with the latest discovergy data.')
+
+
+if __name__ == '__main__':
+    task = Task()
+    task.populate_redis()
