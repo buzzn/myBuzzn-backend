@@ -11,3 +11,4 @@ flask_socketio
 flask_testing
 pylint
 blinker
+redis
