@@ -3,12 +3,10 @@ import time
 # from datetime import datetime, timedelta
 import logging
 from discovergy.discovergy import Discovergy
-import eventlet
 import redis
 
 
 logger = logging.getLogger(__name__)
-eventlet.monkey_patch()
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']
@@ -49,6 +47,9 @@ class Task:
 
         # Get all disaggregations for all meters from one year back until now
 
+        # all_meter_ids = [meter_id[0] for meter_id in sqlite_db.session.query(User.meter_id).all(
+        # )] + [group_meter_id[0] for group_meter_id in sqlite_db.session.query(Group.group_meter_id).all()]
+
 
 def update_redis():
     """ Update the redis database every 60s with the latest discovergy data. """
@@ -64,3 +65,5 @@ def update_redis():
 if __name__ == '__main__':
     task = Task()
     task.populate_redis()
+    while True:
+        task.update_redis()
