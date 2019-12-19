@@ -8,17 +8,25 @@ import eventlet
 
 logger = logging.getLogger(__name__)
 eventlet.monkey_patch()
+client_name = 'BuzznClient'
+email = os.environ['DISCOVERGY_EMAIL']
+password = os.environ['DISCOVERGY_PASSWORD']
 
 
-def login(client_name):
-    """ Authenticate against the discovergy backend. """
+class Task:
+    """ Handle discovergy login, data retrieval, populating and updating the
+    redis database. """
 
-    d = Discovergy(client_name)
-    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
-    return d
+    def __init__(self):
+        self.d = Discovergy(client_name)
+
+    def login(self):
+        """ Authenticate against the discovergy backend. """
+
+        self.d.login(email, password)
 
 
-def populate_redis(redis_db, all_meter_ids, client_name):
+def populate_redis(redis_db, all_meter_ids):
     """ Populate the redis database with all discovergy data from the past.
     :param discovergy.discovergy.Discovergy discovergy_handler: the app's discovergy handler
     :param redis.Redis redis_db: the app's redis database client
@@ -30,20 +38,17 @@ def populate_redis(redis_db, all_meter_ids, client_name):
     redis_db.flushdb()
 
     # Authenticate against the discovergy backend
-    d = login(client_name)
 
     # Get all readings for all meters from one year back until now with
     # interval one_hour
-    now = round(datetime.now().timestamp() * 1e3)
-    begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
-    for meter_id in all_meter_ids:
-        readings = d.get_readings(
-            meter_id, begin, now, 'one_hour')
+    # now = round(datetime.now().timestamp() * 1e3)
+    # begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
 
     # Get all disaggregations for all meters from one year back until now
+    print(all_meter_ids)
 
 
-def update_redis(discovergy_handler, redis_db):
+def update_redis():
     """ Update the redis database every 60s with the latest discovergy data. """
 
     while True:

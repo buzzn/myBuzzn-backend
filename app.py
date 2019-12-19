@@ -8,7 +8,6 @@ from flask_socketio import SocketIO, emit
 import redis
 from models.user import User
 from setup_app import setup_app
-# from util.task import populate_redis, update_redis, login
 from util.database import db as sqlite_db
 from util.error import NO_METER_ID
 from util.websocket_provider import WebsocketProvider
@@ -40,7 +39,7 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
-redis_db = redis.Redis(host='localhost', port=6379, db=0)  # connect to server
+# redis_db = redis.Redis(host='localhost', port=6379, db=0)  # connect to server
 # with app.app_context():
 # all_meter_ids = [meter_id[0] for meter_id in sqlite_db.session.query(User.meter_id).all(
 # )] + [group_meter_id[0] for group_meter_id in sqlite_db.session.query
