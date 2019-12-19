@@ -6,17 +6,16 @@ import eventlet
 from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
-from discovergy.discovergy import Discovergy
 import redis
 from models.user import User
+from models.group import Group
 from setup_app import setup_app
-from task import populate_redis, update_redis
+from util.task import populate_redis, update_redis, login
 from util.database import db as sqlite_db
 from util.error import NO_METER_ID
 from util.websocket_provider import WebsocketProvider
 
 
-logger = logging.getLogger(__name__)
 eventlet.monkey_patch()
 
 
@@ -38,15 +37,19 @@ class RunConfig():
 
 
 app = setup_app(RunConfig())
-discovergy_handler = Discovergy(app.config['CLIENT_NAME'])
 thread = None
 thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
 redis_db = redis.Redis(host='localhost', port=6379, db=0)  # connect to server
-populate_redis(discovergy_handler, redis_db)
-eventlet.spawn(update_redis, discovergy_handler, redis_db)
+with app.app_context():
+    all_meter_ids = [meter_id[0] for meter_id in sqlite_db.session.query(User.meter_id).all(
+    )] + [group_meter_id[0] for group_meter_id in sqlite_db.session.query
+          (Group.group_meter_id).all()]
+
+# populate_redis(redis_db, all_meter_ids, app.config['CLIENT_NAME'])
+# eventlet.spawn(update_redis, discovergy_handler, redis_db)
 
 
 @app.route('/live', methods=['GET'])
