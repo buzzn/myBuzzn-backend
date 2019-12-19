@@ -7,6 +7,8 @@ eventlet.monkey_patch()
 def populate_redis(discovergy_handler, redis_db):
     """ Populate the redis database with all discovergy data from the past. """
 
+    # Flush all keys from server
+    redis_db.flushdb()
     print('Populating redis database with all discovergy data from the past.')
 
 

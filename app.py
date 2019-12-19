@@ -11,9 +11,9 @@ import redis
 from models.user import User
 from setup_app import setup_app
 from task import populate_redis, update_redis
-from util.database import db as mysql_db
+from util.database import db as sqlite_db
 from util.error import NO_METER_ID
-from websocket_provider import WebsocketProvider
+from util.websocket_provider import WebsocketProvider
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
-redis_db = redis.Redis('localhost')  # connect to server
+redis_db = redis.Redis(host='localhost', port=6379, db=0)  # connect to server
 populate_redis(discovergy_handler, redis_db)
 eventlet.spawn(update_redis, discovergy_handler, redis_db)
 
@@ -64,7 +64,7 @@ def background_thread():
         socketio.sleep(60)
         with app.app_context():
             for key in clients:
-                user = mysql_db.session.query(User).filter_by(
+                user = sqlite_db.session.query(User).filter_by(
                     meter_id=clients[key].get('meter_id')).first()
 
                 # pylint: disable=fixme

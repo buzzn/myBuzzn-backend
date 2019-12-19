@@ -4,7 +4,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-import websocket_provider
+from util.websocket_provider import WebsocketProvider, get_parameters
 
 
 GROUP_LAST_READING = {
@@ -128,13 +128,13 @@ class WebsocketProviderTestCase(BuzznTestCase):
     @mock.patch('discovergy.discovergy.Discovergy.login')
     @mock.patch('discovergy.discovergy.Discovergy.get_last_reading',
                 side_effect=RETURN_VALUES)
-    @mock.patch('websocket_provider.WebsocketProvider.self_sufficiency',
+    @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
                 return_value=SELF_SUFFICIENCY)
     # pylint: disable=too-many-arguments
     def test_create_data(self, socketio, discovergy, login, get_last_reading, self_sufficiency):
         """ Unit tests for function create_data(). """
 
-        ws = websocket_provider.WebsocketProvider()
+        ws = WebsocketProvider()
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         data = ws.create_data(test_user.id)
@@ -164,7 +164,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
     def test_self_sufficiency(self, socketio, discovergy, login, get_readings, get_last_reading):
         """ Unit tests for function self_sufficiency(). """
 
-        ws = websocket_provider.WebsocketProvider()
+        ws = WebsocketProvider()
         test_user = db.session.query(
             User).filter_by(name='TestUser').first()
         meter_id = test_user.meter_id
@@ -180,7 +180,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
     def test_get_parameters(self):
         """ Unit tests for function get_parameters(). """
 
-        result = websocket_provider.get_parameters(1)
+        result = get_parameters(1)
 
         # Check result values
         self.assertEqual(result[0], METER_ID)

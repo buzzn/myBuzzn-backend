@@ -43,8 +43,9 @@ project root
 ├── migrations    # Database migration stuff
 ├── models        # Data-Models
 ├── routes        # Defines the http api
+├── templates     # HTML templates for specific app routes and testing purposes
 ├── tests         # Unittests
-├── util          # Misc. db interaction, error handling
+├── util          # Misc. db interaction, error handling, translations, mailing, websocket interaction, eventlet tasks
 └── app.py        # The app-main.
 ```
 
@@ -60,6 +61,16 @@ according tables given a new model use the _flask migrate_ method:
 `flask db migrate` generates a new migration file in
 `/migrations/versions` to transform the databse structure to meet the models'
 needs. To apply the migrations run `flask db upgrade`.
+
+## Redis server 
+The communication between the application and the RQ workers is going to be 
+carried out in a Redis message queue, so you need to have a Redis server 
+running. On Linux, you can likely get it as a package through your operating 
+system's package manager (e.g. `sudo pacman -S redis`). 
+
+You will not need to interact with Redis at all outside of just ensuring that 
+the service is running (e.g. `sudo systemctl start redis.service; redis-cli ping`) 
+and accessible to RQ.
 
 ## Running the tests
 Set environment variables
