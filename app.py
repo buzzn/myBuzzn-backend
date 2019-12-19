@@ -1,6 +1,5 @@
 import json
 from os import environ
-import logging
 from threading import Lock
 import eventlet
 from flask import render_template, Response, request, session
@@ -8,9 +7,8 @@ from flask_api import status
 from flask_socketio import SocketIO, emit
 import redis
 from models.user import User
-from models.group import Group
 from setup_app import setup_app
-from util.task import populate_redis, update_redis, login
+# from util.task import populate_redis, update_redis, login
 from util.database import db as sqlite_db
 from util.error import NO_METER_ID
 from util.websocket_provider import WebsocketProvider
