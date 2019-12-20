@@ -7,7 +7,7 @@ from flask_api import status
 from flask_socketio import SocketIO, emit
 from models.user import User
 from setup_app import setup_app
-from util.database import db as sqlite_db
+from util.database import db
 from util.error import NO_METER_ID
 from util.websocket_provider import WebsocketProvider
 
@@ -55,7 +55,7 @@ def background_thread():
         socketio.sleep(60)
         with app.app_context():
             for key in clients:
-                user = sqlite_db.session.query(User).filter_by(
+                user = db.session.query(User).filter_by(
                     meter_id=clients[key].get('meter_id')).first()
 
                 # pylint: disable=fixme
