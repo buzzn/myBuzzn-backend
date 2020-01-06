@@ -40,11 +40,11 @@ class User(db.Model):
     """
     @staticmethod
     def NAME_MAX_LENGTH():
-        return User._name.property.columns[0].type.length
+        return User.name.property.columns[0].type.length
 
     @staticmethod
     def PASSWORD_MAX_LENGTH():
-        return User._password.property.columns[0].type.length
+        return User.password.property.columns[0].type.length
 
     @staticmethod
     def generate_password_hash(target):
