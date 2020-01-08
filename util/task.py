@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 import time
@@ -64,7 +65,7 @@ class Task:
 
     def __init__(self):
         self.d = Discovergy(client_name)
-        self.redis_db = redis.Redis(
+        self.redis_client = redis.Redis(
             host='localhost', port=6379, db=0)  # connect to server
 
     def login(self):
@@ -75,12 +76,9 @@ class Task:
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past. """
 
-        all_readings = list()
-        all_disaggregations = list()
-
         try:
             # Flush all keys from server
-            self.redis_db.flushdb()
+            self.redis_client.flushdb()
 
             # Connect to sqlite database
             session = create_session()
@@ -93,30 +91,33 @@ class Task:
             # Authenticate against the discovergy backend
             self.login()
 
+            # Get all readings for all meters from one year back until now with
+            # one-week interval (this is the finest granularity we get for one
+            # year back in time, cf. https://api.discovergy.com/docs/)
             for meter_id in all_meter_ids:
-                # Get all readings for all meters from one year back until now with
-                # one-week interval (this is the finest granularity we get for one
-                # year back in time, cf. https://api.discovergy.com/docs/)
                 for reading in self.d.get_readings(meter_id, one_year_back, end,
                                                    'one_week'):
-                    all_readings.append(dict(meter_id=meter_id,
-                                             time=reading['time'],
-                                             values=reading['values']))
+                    key = meter_id + str(reading['time'])
+
+                    # Write reading to redis database as key-value-pair
+                    # The unique key consists of the meter id (16 chars) and the
+                    # timestamp (16 chars)
+                    self.redis_client.set(key, json.dumps(reading['values']))
 
                 # Get all disaggregations for all meters from one week back
                 # until now. This is the earliest data we get, otherwise you'll
                 # end up with a '400 Bad Request: Duration of the data
                 # cannot be larger than 1 week. Please try for a smaller duration.'
                 disaggregation = self.d.get_disaggregation(
-                    meter_id,
-                    one_week_back, end)
+                    meter_id, one_week_back, end)
                 for timestamp in disaggregation:
-                    all_disaggregations.append(dict(meter_id=meter_id,
-                                                    time=timestamp,
-                                                    values=disaggregation[timestamp]))
 
-            # pylint: disable=fixme
-            # TODO - Write all values to redis database
+                    # Write measurement to redis database as key-value-pair
+                    # The unique key consists of the meter id (16 chars) and the
+                    # timestamp (16 chars)
+                    key = meter_id + timestamp
+                    self.redis_client.set(
+                        key, json.dumps(disaggregation[timestamp]))
 
         except Exception as e:
             logger.error("Exception: %s", e)
@@ -127,8 +128,6 @@ class Task:
 
         while True:
             time.sleep(60)
-            latest_readings = list()
-            latest_disaggregations = list()
 
             try:
                 # Connect to sqlite database
@@ -137,28 +136,29 @@ class Task:
                 all_meter_ids = get_all_meter_ids(session)
                 end = calc_end()
                 two_days_back = calc_two_days_back()
-                for meter_id in all_meter_ids:
 
-                    # Get last reading for all meters
+                # Get last reading for all meters
+                for meter_id in all_meter_ids:
                     reading = self.d.get_last_reading(meter_id)
-                    latest_readings.append(dict(meter_id=meter_id,
-                                                time=reading['time'],
-                                                values=reading['values']))
+                    key = meter_id + str(reading['time'])
+
+                    # Write reading to redis database as key-value-pair
+                    # The unique key consists of the meter id (16 chars) and the
+                    # timestamp (16 chars)
+                    self.redis_client.set(key, json.dumps(reading['values']))
 
                     # Get latest disaggregation for all meters
                     disaggregation = self.d.get_disaggregation(
                         meter_id, two_days_back, end)
                     timestamps = sorted(disaggregation.keys())
                     if len(timestamps) > 0:
-                        latest_disaggregations.append(dict(meter_id=meter_id,
-                                                           time=timestamps[-1],
-                                                           values=disaggregation[timestamps[-1]]))
+                        key = meter_id + timestamps[-1]
 
-                print(latest_readings)
-                print(latest_disaggregations)
-
-                # pylint: disable=fixme
-                # TODO - Write all values to redis database
+                        # Write measurement to redis database as key-value-pair
+                        # The unique key consists of the meter id (16 chars) and the
+                        # timestamp (16 chars)
+                        self.redis_client.set(
+                            key, json.dumps(disaggregation[timestamps[-1]]))
 
             except Exception as e:
                 logger.error("Exception: %s", e)
