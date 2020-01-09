@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.user import User
 from models.group import Group
+from error import MISSING_DISCOVERGY_CREDENTIALS
 
 
 logger = logging.getLogger(__name__)
@@ -91,18 +92,18 @@ class Task:
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past. """
 
+        # Flush all keys from server
+        self.redis_client.flushdb()
+
+        # Connect to sqlite database
+        session = create_session()
+
+        all_meter_ids = get_all_meter_ids(session)
+        end = calc_end()
+        one_year_back = calc_one_year_back()
+        one_week_back = calc_one_week_back()
+
         try:
-            # Flush all keys from server
-            self.redis_client.flushdb()
-
-            # Connect to sqlite database
-            session = create_session()
-
-            all_meter_ids = get_all_meter_ids(session)
-            end = calc_end()
-            one_year_back = calc_one_year_back()
-            one_week_back = calc_one_week_back()
-
             # Authenticate against the discovergy backend
             self.login()
 
@@ -133,9 +134,11 @@ class Task:
                     key = meter_id + timestamp
                     self.redis_client.set(
                         key, json.dumps(disaggregation[timestamp]))
+            return True
 
         except Exception as e:
-            logger.error("Exception: %s", e)
+            logger.error('Exception: %s', e)
+            return MISSING_DISCOVERGY_CREDENTIALS
 
     def update_redis(self):
         """ Update the redis database every 60s with the latest discovergy
@@ -181,5 +184,7 @@ class Task:
 
 if __name__ == '__main__':
     task = Task()
-    task.populate_redis()
+    redis_state = task.populate_redis()
+    if redis_state is not True:
+        logger.error(redis_state.description)
     task.update_redis()
