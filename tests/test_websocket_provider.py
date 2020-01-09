@@ -7,17 +7,32 @@ from util.database import db
 from util.websocket_provider import WebsocketProvider, get_parameters
 
 
-GROUP_LAST_READING = {
-    'time': 1575539067000,
-    'values': {
-        'power': 20420100,
-        'power3': 6928720,
-        'energyOut': 0,
-        'power1': 6563800,
-        'energy': 3520052364335000,
-        'power2': 6927580
-    }
-}
+GROUP_LAST_READING = {'energyOut': 2189063000, 'energy2': 0, 'energy1': 0,
+                      'voltage1': 231000, 'voltage2': 231900, 'voltage3': 231500,
+                      'energyOut1': 0, 'power': 21520, 'energyOut2': 0,
+                      'power3': 0, 'power1': 1700, 'energy': 2166410580000,
+                      'power2': 19820}
+INDIVIDUAL_LAST_READING = {'power': -182590, 'power3': -2730, 'energyOut': 0,
+                           'power1': -173960, 'energy': 3603609657330000, 'power2': -5900}
+GROUPMEMBER1_LAST_READING = {'power': 187570, 'power3': 35180, 'energyOut': 0,
+                             'power1': 125670, 'energy': 190585532038000, 'power2': 26720}
+GROUPMEMBER2_LAST_READING = {'power': 4160580, 'power3': 1361800, 'energyOut': 0,
+                             'power1': 1410390, 'energy': 1500976759905000, 'power2': 1388390}
+DATA = {"groupConsumption": 2166410580000, "groupProduction": 2189063000,
+        "selfSufficiency": 2.1909736445530789e-13, "usersConsumption": [{
+            "id": 1,
+            "consumption": 3603609657330000
+        }, {
+            "id": 2,
+            "consumption": 190585532038000
+        }, {
+            "id": 3,
+            "consumption": 1500976759905000
+        }]}
+RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
+                 GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
+SELF_SUFFICIENCY = 2.1909736445530789e-13
+
 INDIVIDUAL_FIRST_READING = [{
     'time': 1572994800000,
     'values': {
@@ -35,58 +50,6 @@ INDIVIDUAL_FIRST_READING = [{
         'power2': 22557
     }
 }]
-INDIVIDUAL_LAST_READING = {
-    'time': 1575539517430,
-    'values': {
-        'energyOut': 2189063000,
-        'energy2': 0,
-        'energy1': 0,
-        'voltage1': 233100,
-        'voltage2': 233500,
-        'voltage3': 233200,
-        'energyOut1': 0,
-        'power': 21130,
-        'energyOut2': 0,
-        'power3': 0,
-        'power1': 1390,
-        'energy': 1931041534000,
-        'power2': 19740
-    }
-}
-GROUPMEMBER1_LAST_READING = {
-    'time': 1575542671508,
-    'values': {
-        'power': 366870,
-        'power3': 154420,
-        'energyOut': 0,
-        'power1': 144000,
-        'energy': 186728851677000,
-        'power2': 68450
-    }
-}
-GROUPMEMBER2_LAST_READING = {
-    'time': 1575542670918,
-    'values': {
-        'power': 11156280,
-        'power3': 3693230,
-        'energyOut': 0,
-        'power1': 3760540,
-        'energy': 1491013650297000,
-        'power2': 3702510
-    }
-}
-DATA = {
-    "date": 1575540829887,
-    "groupConsumption": 3520052364335000,
-    "groupProduction": 0,
-    "selfSufficiency": 6.225875925992823e-10,
-    "usersConsumption": [{"id": 1, "consumption": 1931041534000},
-                         {"id": 2, "consumption": 186728851677000},
-                         {"id": 3, "consumption": 1491013650297000}]
-}
-RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
-                 GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
-SELF_SUFFICIENCY = 6.225875925992823e-10
 GROUP_MEMBERS = [{'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf'}, {
     'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98'}]
 METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
@@ -124,14 +87,12 @@ class WebsocketProviderTestCase(BuzznTestCase):
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
-    @mock.patch('discovergy.discovergy.Discovergy')
-    @mock.patch('discovergy.discovergy.Discovergy.login')
-    @mock.patch('discovergy.discovergy.Discovergy.get_last_reading',
+    @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
                 side_effect=RETURN_VALUES)
     @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
                 return_value=SELF_SUFFICIENCY)
     # pylint: disable=too-many-arguments
-    def test_create_data(self, socketio, discovergy, login, get_last_reading, self_sufficiency):
+    def test_create_data(self, socketio, get_last_reading, self_sufficiency):
         """ Unit tests for function create_data(). """
 
         ws = WebsocketProvider()
@@ -143,15 +104,15 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.assertTrue(isinstance(data, dict))
 
         # Check return values
-        # for param in 'groupConsumption', 'groupProduction', 'selfSufficiency':
-        # self.assertEqual(data.get(param), DATA.get(param))
-        # for item1, item2 in zip(data.get('usersConsumption'),
-        # DATA.get('usersConsumption')):
-        # self.assertEqual(item1.get('id'), item2.get('id'))
-        # self.assertEqual(item1.get('consumption'), item2.get('consumption'))
+        for param in 'groupConsumption', 'groupProduction', 'selfSufficiency':
+            self.assertEqual(data.get(param), DATA.get(param))
+        for item1, item2 in zip(data.get('usersConsumption'), DATA.get('usersConsumption')):
+            self.assertEqual(item1.get('id'), item2.get('id'))
+            self.assertEqual(item1.get('consumption'),
+                             item2.get('consumption'))
 
-    # pylint does not understand the required argument from the @mock.patch decorator
-    # pylint: disable=unused-argument
+            # pylint does not understand the required argument from the @mock.patch decorator
+            # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('discovergy.discovergy.Discovergy')
     @mock.patch('discovergy.discovergy.Discovergy.login')
