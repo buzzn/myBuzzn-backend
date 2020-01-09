@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']
+redis_host = os.environ['REDIS_HOST']
+redis_port = os.environ['REDIS_PORT']
+redis_db = os.environ['REDIS_DB']
 
 
 def create_session():
@@ -38,25 +41,37 @@ def get_all_meter_ids(session):
 def calc_end():
     """ Calculate timestamp of end of interval. """
 
-    return round(datetime.now().timestamp() * 1e3)
+    # Multiply the result of timestamp() from the standard library by 1000 and
+    # round it to have no decimal places to match the timestamp format required
+    # by the discovergy API
+    return round(datetime.now().timestamp() * 1000)
 
 
 def calc_one_year_back():
     """ Calculate timestamp of one year back in time. """
 
-    return round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
+    # Multiply the result of timestamp() from the standard library by 1000 and
+    # round it to have no decimal places to match the timestamp format required
+    # by the discovergy API
+    return round((datetime.now() - timedelta(days=365)).timestamp() * 1000)
 
 
 def calc_one_week_back():
     """ Calculate timestamp of one week back in time. """
 
-    return round((datetime.now() - timedelta(days=7)).timestamp() * 1e3)
+    # Multiply the result of timestamp() from the standard library by 1000 and
+    # round it to have no decimal places to match the timestamp format required
+    # by the discovergy API
+    return round((datetime.now() - timedelta(days=7)).timestamp() * 1000)
 
 
 def calc_two_days_back():
     """ Calculate timestamp of 24 hours back in time. """
 
-    return round((datetime.now() - timedelta(hours=48)).timestamp() * 1e3)
+    # Multiply the result of timestamp() from the standard library by 1000 and
+    # round it to have no decimal places to match the timestamp format required
+    # by the discovergy API
+    return round((datetime.now() - timedelta(hours=48)).timestamp() * 1000)
 
 
 class Task:
