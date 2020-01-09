@@ -26,6 +26,9 @@ BUZZN_EMAIL_PASSWORD             # Mailpassword of the mailaccount
 BUZZN_BASE_URL                   # Baseurl of the backend i.e. address.
                                  # Everyhing which needs to be in front of the
                                  # api calls. Example mybuzzn-backend.buzzn.net
+REDIS_HOST			 # Indicates where the redis database is stored
+REDIS_PORT			 # The port to access the redis database, usually 6379
+REDIS_DB			 # The redis database 
 
 ```
 
