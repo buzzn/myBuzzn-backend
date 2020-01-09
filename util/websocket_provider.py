@@ -1,15 +1,17 @@
+from datetime import datetime
+import json
 import logging
-from datetime import datetime, timedelta
-from discovergy.discovergy import Discovergy
+import os
+import redis
 from models.group import Group
 from models.user import User
 from util.database import db
 
 
 logger = logging.getLogger(__name__)
-client_name = 'BuzznClient'
-email = 'team@localpool.de'
-password = 'Zebulon_4711'
+redis_host = os.environ['REDIS_HOST']
+redis_port = os.environ['REDIS_PORT']
+redis_db = os.environ['REDIS_DB']
 
 
 def get_parameters(user_id):
@@ -36,16 +38,24 @@ class WebsocketProvider:
     """ Provides a SocketIO object with live data for the clients. """
 
     def __init__(self):
-        """ Create and setup a websocket provider.
-        """
+        """ Create and setup a websocket provider. """
 
-        self.d = None
+        self.redis_client = redis.Redis(
+            host=redis_host, port=redis_port, db=redis_db)  # connect to server
+
+    def get_last_reading(self, meter_id):
+        """ Return the parameter 'energy' from the last meter reading stored in the
+        redis db. """
+
+        sorted_keys = sorted([key.decode('utf-8')
+                              for key in self.redis_client.scan_iter(meter_id + '*')])
+        key = sorted_keys[-1]
+        return json.loads(self.redis_client.get(key))
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
-        """ Calculate a user's self-suffiency value the past year as a value
-        between 0 and 1 where 1 is optimal and 0 is worst. Self-sufficiency is
-        defined as (inhabitants * flat size)/(energy value today - energy
-        value one year ago)
+        """ Calculate a user's self-suffiency value between 0 and 1 where 1
+        is optimal and 0 is worst. Self-sufficiency is defined as (inhabitants
+        * flat size)/(last energy reading - first energy reading)
         :param str meter_id: the user's meter id
         :param int inhabitants: number of people in the user's flat
         :param float flat_size: the user's flat size
@@ -53,28 +63,22 @@ class WebsocketProvider:
         :rtype: float
         """
 
-        now = round(datetime.now().timestamp() * 1e3)
-        begin = round((datetime.now() - timedelta(days=365)).timestamp() * 1e3)
-
         try:
-            # pylint: disable=fixme
-            # TODO - handle discovergy login
-            self.d = Discovergy(client_name)
-            self.d.login(email, password)
+            sorted_keys = sorted([key.decode('utf-8') for key in
+                                  self.redis_client.scan_iter(meter_id + '*')])
 
-            # Get energy value today
-            individual_last_reading = self.d.get_last_reading(meter_id)
-            energy_today = individual_last_reading.get('values').get('energy')
+            # Get last energy value
+            last_energy_value = self.get_last_reading(
+                meter_id).get('energy')
 
-            # Get energy value one year ago
-            individual_first_reading = self.d.get_readings(meter_id, begin, now,
-                                                           'one_year')
-            energy_one_year_ago = individual_first_reading[0].get(
-                'values').get('energy')
+            # Get first energy value
+            key = sorted_keys[0]
+            first_energy_value = json.loads(
+                self.redis_client.get(key)).get('energy')
 
             # Return result
-            return (float(inhabitants) * flat_size)/(float(energy_today)
-                                                     - float(energy_one_year_ago))
+            return (float(inhabitants) * flat_size)/(float(last_energy_value) -
+                                                     float(first_energy_value))
 
         except Exception as e:
             logger.error("Exception: %s", e)
@@ -83,40 +87,35 @@ class WebsocketProvider:
             return 0.0
 
     def create_data(self, user_id):
-        """ Create a data package with the latest discovergy readings.
+        """ Create a data package with the latest available data.
         :param int user_id: the user's id
         :return: {str => int, str => int, str => int, str => float, str => {str
         => int, str => int}}
         :rtype: dict
         """
 
-        now = round(datetime.now().timestamp() * 2e3)
+        now = round(datetime.now().timestamp() * 1e3)
+
         try:
             meter_id, group_meter_id, group_members, inhabitants, flat_size = get_parameters(
                 user_id)
-
-            # pylint: disable=fixme
-            # TODO - handle discovergy login
-            self.d = Discovergy(client_name)
-            self.d.login(email, password)
-            group_last_reading = self.d.get_last_reading(group_meter_id)
-            individual_last_reading = self.d.get_last_reading(meter_id)
+            group_last_reading = self.get_last_reading(group_meter_id)
+            individual_last_reading = self.get_last_reading(meter_id)
             usersConsumption = []
             usersConsumption.append(dict(
-                id=user_id, consumption=individual_last_reading.get('values').get('energy')))
+                id=user_id, consumption=individual_last_reading.get('energy')))
             for member in group_members:
-                reading = self.d.get_last_reading(member.get('meter_id'))
+                reading = self.get_last_reading(member.get('meter_id'))
                 usersConsumption.append(dict(id=member.get('id'),
-                                             consumption=reading.get('values').get('energy')))
+                                             consumption=reading.get('energy')))
 
             return dict(date=now,
-                        groupConsumption=group_last_reading.get(
-                            'values').get('energy'),
-                        groupProduction=group_last_reading.get(
-                            'values').get('energyOut'),
+                        groupConsumption=group_last_reading.get('energy'),
+                        groupProduction=group_last_reading.get('energyOut'),
                         selfSufficiency=self.self_sufficiency(
                             meter_id, inhabitants, flat_size),
                         usersConsumption=usersConsumption)
+
         except Exception as e:
             logger.error("Exception: %s", e)
             return {}
