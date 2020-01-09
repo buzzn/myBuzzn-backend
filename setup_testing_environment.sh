@@ -10,3 +10,6 @@ export BUZZN_EMAIL='team@buzzn.net'
 export BUZZN_EMAIL_PASSWORD= 'BUZZN_EMAIL_PASSWORD'
 export BUZZN_BASE_URL='localhost:5000'
 export BUZZN_MAILER='smtp'
+export REDIS_HOST='localhost'
+export REDIS_PORT=6379
+export REDIS_DB=0
