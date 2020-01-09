@@ -109,7 +109,7 @@ def do_user_create():
     target.set_role(request.form['role'])
     db.session.add(target)
     db.session.commit()
-    return user_list("Created user " + target.get_name())
+    return user_list("Created user " + target.name)
 
 @Admin.route('/admin/user/create', methods=['GET'])
 @admin_required
@@ -222,7 +222,7 @@ def do_group_create():
     target_group = Group(request.form['name'], request.form['meter'])
     db.session.add(target_group)
     db.session.commit()
-    return group_list("Created group " + target_group._name)
+    return group_list("Created group " + target_group.name)
 
 @Admin.route('/admin/group/create', methods=['GET'])
 @admin_required
@@ -242,15 +242,15 @@ def do_group_update():
     :param str name: The groups name.
     :param str meter: The groups meter.
     """
-    target_group = Group.query.filter_by(_id=request.form['id']).first()
+    target_group = Group.query.filter_by(id=request.form['id']).first()
     if target_group is None:
         return group_list("Unknown group.")
 
-    target_group._name = request.form['name']
-    target_group._group_meter_id = request.form['meter']
+    target_group.name = request.form['name']
+    target_group.group_meter_id = request.form['meter']
 
     db.session.commit()
-    return group_list("Updated group " + target_group._name)
+    return group_list("Updated group " + target_group.name)
 
 @Admin.route('/admin/group/update', methods=['GET'])
 @admin_required
@@ -258,16 +258,16 @@ def request_group_update():
     """Returns a form to update an existing group.
     :param str id: The id of the group to update.
     """
-    target_group = Group.query.filter_by(_id=request.args['id']).first()
+    target_group = Group.query.filter_by(id=request.args['id']).first()
     if target_group is None:
         return group_list("Unknown group.")
 
     return Response(render_template('admin/group/create-update.html',
                                     csrf_token=(get_raw_jwt() or {}).get("csrf"),
                                     target="/admin/group/update",
-                                    id=target_group._id,
-                                    name=target_group._name,
-                                    meter=target_group._group_meter_id),
+                                    id=target_group.id,
+                                    name=target_group.name,
+                                    meter=target_group.group_meter_id),
                     mimetype='text/html')
 
 @Admin.route('/admin/group/delete')
@@ -276,14 +276,14 @@ def group_delete():
     """Deletes a group.
     :param str id: The id of the group to delete.
     """
-    target_group = Group.query.filter_by(_id=request.args['id']).first()
+    target_group = Group.query.filter_by(id=request.args['id']).first()
     if target_group is None:
         return group_list("Unknown group.")
 
     db.session.delete(target_group)
     db.session.commit()
 
-    return group_list("Deleted group " + target_group._name)
+    return group_list("Deleted group " + target_group.name)
 
 @Admin.route('/admin/group/')
 @admin_required

@@ -7,7 +7,7 @@ class Group(db.Model):
 
     @staticmethod
     def NAME_MAX_LENGTH():
-        return Group._name.property.columns[0].type.length
+        return Group.name.property.columns[0].type.length
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)

@@ -10,13 +10,13 @@
     </thead>
     {% for group in groups %}
     <tr>
-        <td>{{group._id}}</td>
-        <td>{{group._name}}</td>
-        <td>{{group._group_meter_id}}</td>
+        <td>{{group.id}}</td>
+        <td>{{group.name}}</td>
+        <td>{{group.group_meter_id}}</td>
         <td>
-            <a href='/admin/group/update?id={{group._id}}'>Edit</a>
+            <a href='/admin/group/update?id={{group.id}}'>Edit</a>
             <a onClick='return confirm("Really delete group?")'
-              href='/admin/group/delete?id={{group._id}}'>Delete</a>
+              href='/admin/group/delete?id={{group.id}}'>Delete</a>
         </td>
     </tr>
     {% endfor %}

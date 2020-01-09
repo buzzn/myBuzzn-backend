@@ -23,7 +23,7 @@ def profile():
         return UNKNOWN_USER
 
     return json.dumps({k:v for k, v in target_user.__dict__.items() if k in (
-        'name', 'mail', 'flat_size', 'inhabitants', 'group_id')}), status.HTTP_200_OK
+        'name', 'mail', 'flatSize', 'inhabitants', 'groupId')}), status.HTTP_200_OK
 
 
 @Profile.route('/profile', methods=['PUT'])
