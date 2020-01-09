@@ -67,7 +67,7 @@ def calc_one_week_back():
 
 
 def calc_two_days_back():
-    """ Calculate timestamp of 24 hours back in time. """
+    """ Calculate timestamp of 48 hours back in time. """
 
     # Multiply the result of timestamp() from the standard library by 1000 and
     # round it to have no decimal places to match the timestamp format required
