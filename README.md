@@ -32,13 +32,21 @@ REDIS_DB			 # The redis database
 
 ```
 
-Starting a flask server: `./.venv/bin/flask run`
-
-If you want the webserver to restart after source code changes, run it in
-development mode:
+Starting the app: 
 ```bash
-FLASK_DEBUG=1 ./.venv/bin/flask run
+python app.py
 ```
+Currently the webserver is running in development mode to restart after source 
+code changes. To change this behaviour, set the parameter `debug` to `False` in the
+`socketio.run()` call in `app.py`.
+
+Starting the worker to populate and periodically update the redis db with metering
+data from discovergy: 
+```bash
+python util/task.py
+```
+Make sure to run it from the root directory, otherwise it cannot access the SQLite
+database properly.
 
 ## Project structure
 ```
@@ -66,14 +74,11 @@ according tables given a new model use the _flask migrate_ method:
 needs. To apply the migrations run `flask db upgrade`.
 
 ## Redis server 
-The communication between the application and the RQ workers is going to be 
-carried out in a Redis message queue, so you need to have a Redis server 
-running. On Linux, you can likely get it as a package through your operating 
-system's package manager (e.g. `sudo pacman -S redis`). 
-
+The metering data periodially obtained from discovergy is stored in a Redis database, 
+so you need to have a Redis server running. On Linux, you can likely get it as a 
+package through your operating system's package manager (e.g. `sudo pacman -S redis`). 
 You will not need to interact with Redis at all outside of just ensuring that 
-the service is running (e.g. `sudo systemctl start redis.service; redis-cli ping`) 
-and accessible to RQ.
+the service is running (e.g. `sudo systemctl start redis.service; redis-cli ping`).
 
 ## Running the tests
 Set environment variables
