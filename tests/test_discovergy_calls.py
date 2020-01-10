@@ -1,6 +1,6 @@
 import ast
 import json
-from unittest import mock
+from unittest import mock, skip
 from flask_api import status
 from models.user import User, GenderType, StateType
 from models.group import Group
@@ -155,6 +155,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         self.assertEqual(ast.literal_eval(
             response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
+    @skip
     # pylint: disable=unused-argument
     @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
     @mock.patch('discovergy.discovergy.Discovergy.get_readings',
@@ -206,16 +207,14 @@ class IndividualDisaggregation(BuzznTestCase):
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'b2d1ed119bb527b74adc767db48b69d9'  # 8 words hex value
+        self.target_user.meter_id = '269e682dbfd74a569ff4561b6416c999'  # 8 words hex value
         db.session.add(self.target_user)
         db.session.commit()
 
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_disaggregation',
-                return_value=DISAGGREGATION)
-    def test_individual_disaggregation(self, login, disaggregation):
+    @mock.patch('routes.disaggregation.get_disaggregation', return_value=DISAGGREGATION)
+    def test_individual_disaggregation(self, get_disaggregation):
         """ Unit tests for individual_disaggregation(). """
 
         # Check if route exists
@@ -253,10 +252,9 @@ class GroupDisaggregation(BuzznTestCase):
 
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_disaggregation',
+    @mock.patch('routes.disaggregation.get_disaggregation',
                 return_value=EMPTY_RESPONSE)
-    def test_group_disaggregation(self, login, disaggregation):
+    def test_group_disaggregation(self, get_disaggregation):
         """ Unit tests for group_disaggregation(). """
 
         # Check if route exists
@@ -294,10 +292,9 @@ class Disaggregation(BuzznTestCase):
         db.session.commit()
 
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_disaggregation',
+    @mock.patch('routes.disaggregation.get_disaggregation',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, login, disaggregation):
+    def test_parameters(self, get_disaggregation):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',

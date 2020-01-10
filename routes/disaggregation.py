@@ -1,11 +1,11 @@
+import json
 import os
 from datetime import datetime, timedelta
 import logging
+import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
-from flask import current_app as app
-from discovergy.discovergy import Discovergy
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
@@ -15,6 +15,31 @@ from util.login import login_required, get_parameters
 logger = logging.getLogger(__name__)
 IndividualDisaggregation = Blueprint('IndividualDisaggregation', __name__)
 GroupDisaggregation = Blueprint('GroupDisaggregation', __name__)
+redis_host = os.environ['REDIS_HOST']
+redis_port = os.environ['REDIS_PORT']
+redis_db = os.environ['REDIS_DB']
+redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
+
+
+def get_sorted_keys(meter_id):
+    """ Return all keys stored in the redis db for a given meter id.
+    :param str meter_id: the meter id to prefix the scan with
+    """
+
+    return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
+
+
+def get_disaggregation(meter_id):
+    """ Return all disaggregation values for the given meter id.
+    :param str meter_id: the meter id for which to get the values
+    """
+    result = {}
+    for key in get_sorted_keys(meter_id):
+        data = json.loads(redis_client.get(key))
+        if data.get('type') == 'disaggregation':
+            timestamp = key[len(meter_id):]
+            result[timestamp] = data.get('values')
+    return result
 
 
 def read_parameters():
@@ -27,15 +52,6 @@ def read_parameters():
     begin = request.args.get('begin', default=start, type=int)
     end = request.args.get('end', default=None, type=int)
     return begin, end
-
-
-def login():
-    """ Authenticate against the discovergy backend. """
-
-    client_name = app.config['CLIENT_NAME']
-    d = Discovergy(client_name)
-    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
-    return d
 
 
 @IndividualDisaggregation.route('/individual-disaggregation', methods=['GET'])
@@ -53,14 +69,10 @@ def individual_disaggregation():
     if user is None:
         return UNKNOWN_USER
 
-    # Call discovergy API for the given meter
-    begin, end = read_parameters()
-    d = login()
+    # Get all disaggregation values for the given meter
     result = {}
     try:
-        readings = d.get_disaggregation(user.meter_id, begin, end)
-        for reading in readings.items():
-            result[reading[0]] = reading[1]
+        result = get_disaggregation(user.meter_id)
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
@@ -89,13 +101,9 @@ def group_disaggregation():
         return UNKNOWN_GROUP
 
     # Call discovergy API for the given group meter
-    begin, end = read_parameters()
-    d = login()
     result = {}
     try:
-        readings = d.get_disaggregation(group.group_meter_id, begin, end)
-        for reading in readings.items():
-            result[reading[0]] = reading[1]
+        result = get_disaggregation(group.group_meter_id)
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
