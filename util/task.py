@@ -118,7 +118,8 @@ class Task:
                     # Write reading to redis database as key-value-pair
                     # The unique key consists of the meter id (16 chars) and the
                     # timestamp (16 chars)
-                    self.redis_client.set(key, json.dumps(reading['values']))
+                    data = dict(type='reading', values=reading['values'])
+                    self.redis_client.set(key, json.dumps(data))
 
                 # Get all disaggregations for all meters from one week back
                 # until now. This is the earliest data we get, otherwise you'll
@@ -132,8 +133,9 @@ class Task:
                     # The unique key consists of the meter id (16 chars) and the
                     # timestamp (16 chars)
                     key = meter_id + timestamp
-                    self.redis_client.set(
-                        key, json.dumps(disaggregation[timestamp]))
+                    data = dict(type='disaggregation',
+                                values=disaggregation[timestamp])
+                    self.redis_client.set(key, json.dumps(data))
             return True
 
         except Exception as e:
@@ -163,7 +165,8 @@ class Task:
                     # Write reading to redis database as key-value-pair
                     # The unique key consists of the meter id (16 chars) and the
                     # timestamp (16 chars)
-                    self.redis_client.set(key, json.dumps(reading['values']))
+                    data = dict(type='reading', values=reading['values'])
+                    self.redis_client.set(key, json.dumps(data))
 
                     # Get latest disaggregation for all meters
                     disaggregation = self.d.get_disaggregation(
@@ -175,8 +178,9 @@ class Task:
                         # Write measurement to redis database as key-value-pair
                         # The unique key consists of the meter id (16 chars) and the
                         # timestamp (16 chars)
-                        self.redis_client.set(
-                            key, json.dumps(disaggregation[timestamps[-1]]))
+                        data = dict(type='disaggregation',
+                                    values=disaggregation[timestamps[-1]])
+                        self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
                 logger.error("Exception: %s", e)

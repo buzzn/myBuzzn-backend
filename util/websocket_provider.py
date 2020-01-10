@@ -52,14 +52,30 @@ class WebsocketProvider:
                        self.redis_client.scan_iter(meter_id + '*')])
 
     def get_last_reading(self, meter_id):
-        """ Return the first meter reading stored in the redis db. """
+        """ Return the first meter reading stored in the redis db.
+        :param str meter_id: the meter id for which to get the values
+        """
 
-        return json.loads(self.redis_client.get(self.get_sorted_keys(meter_id)[-1]))
+        result = dict()
+        for key in reversed(self.get_sorted_keys(meter_id)):
+            data = self.redis_client.get(key)
+            if json.loads(data).get('type') == 'reading':
+                result = json.loads(data)
+                break
+        return result
 
     def get_first_reading(self, meter_id):
-        """ Return the first meter reading stored in the redis db. """
+        """ Return the first meter reading stored in the redis db.
+        :param str meter_id: the meter id for which to get the values
+        """
 
-        return json.loads(self.redis_client.get(self.get_sorted_keys(meter_id)[0]))
+        result = dict()
+        for key in self.get_sorted_keys(meter_id):
+            data = self.redis_client.get(key)
+            if json.loads(data).get('type') == 'reading':
+                result = json.loads(data)
+                break
+        return result
 
     def self_sufficiency(self, meter_id, inhabitants, flat_size):
         """ Calculate a user's self-suffiency value between 0 and 1 where 1
@@ -74,14 +90,16 @@ class WebsocketProvider:
 
         try:
             # Get last energy value
-            last_energy_value = self.get_last_reading(meter_id).get('energy')
+            last_energy_value = self.get_last_reading(
+                meter_id).get('values').get('energy')
 
             # Get first energy value
-            first_energy_value = self.get_first_reading(meter_id).get('energy')
+            first_energy_value = self.get_first_reading(
+                meter_id).get('values').get('energy')
 
             # Return result
-            return (float(inhabitants) * flat_size)/(float(last_energy_value) -
-                                                     float(first_energy_value))
+            return (float(inhabitants) * flat_size)/(float(last_energy_value)
+                                                     - float(first_energy_value))
 
         except Exception as e:
             logger.error("Exception: %s", e)
@@ -106,14 +124,17 @@ class WebsocketProvider:
             individual_last_reading = self.get_last_reading(meter_id)
             usersConsumption = []
             usersConsumption.append(dict(
-                id=user_id, consumption=individual_last_reading.get('energy')))
+                id=user_id,
+                consumption=individual_last_reading.get('values').get('energy')))
             for member in group_members:
                 reading = self.get_last_reading(member.get('meter_id'))
                 usersConsumption.append(dict(id=member.get('id'),
-                                             consumption=reading.get('energy')))
+                                             consumption=reading.get('values').get('energy')))
             return dict(date=now,
-                        groupConsumption=group_last_reading.get('energy'),
-                        groupProduction=group_last_reading.get('energyOut'),
+                        groupConsumption=group_last_reading.get(
+                            'values').get('energy'),
+                        groupProduction=group_last_reading.get(
+                            'values').get('energyOut'),
                         selfSufficiency=self.self_sufficiency(
                             meter_id, inhabitants, flat_size),
                         usersConsumption=usersConsumption)

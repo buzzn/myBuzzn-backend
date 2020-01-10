@@ -7,17 +7,25 @@ from util.database import db
 from util.websocket_provider import WebsocketProvider, get_parameters
 
 
-GROUP_LAST_READING = {'energyOut': 2189063000, 'energy2': 0, 'energy1': 0,
-                      'voltage1': 231000, 'voltage2': 231900, 'voltage3': 231500,
-                      'energyOut1': 0, 'power': 21520, 'energyOut2': 0,
-                      'power3': 0, 'power1': 1700, 'energy': 2166410580000,
-                      'power2': 19820}
-INDIVIDUAL_LAST_READING = {'power': -182590, 'power3': -2730, 'energyOut': 0,
-                           'power1': -173960, 'energy': 3603609657330000, 'power2': -5900}
-GROUPMEMBER1_LAST_READING = {'power': 187570, 'power3': 35180, 'energyOut': 0,
-                             'power1': 125670, 'energy': 190585532038000, 'power2': 26720}
-GROUPMEMBER2_LAST_READING = {'power': 4160580, 'power3': 1361800, 'energyOut': 0,
-                             'power1': 1410390, 'energy': 1500976759905000, 'power2': 1388390}
+GROUP_LAST_READING = {'type': 'reading',
+                      'values': {'energyOut': 2189063000, 'energy2': 0,
+                                 'energy1': 0, 'voltage1': 231000,
+                                 'voltage2': 231900, 'voltage3': 231500,
+                                 'energyOut1': 0, 'power': 21520,
+                                 'energyOut2': 0, 'power3': 0, 'power1': 1700,
+                                 'energy': 2166410580000, 'power2': 19820}}
+INDIVIDUAL_LAST_READING = {'type': 'reading',
+                           'values': {'power': -182590, 'power3': -2730,
+                                      'energyOut': 0, 'power1': -173960,
+                                      'energy': 3603609657330000, 'power2': -5900}}
+GROUPMEMBER1_LAST_READING = {'type': 'reading',
+                             'values': {'power': 187570, 'power3': 35180,
+                                        'energyOut': 0, 'power1': 125670,
+                                        'energy': 190585532038000, 'power2': 26720}}
+GROUPMEMBER2_LAST_READING = {'type': 'reading',
+                             'values': {'power': 4160580, 'power3': 1361800,
+                                        'energyOut': 0, 'power1': 1410390,
+                                        'energy': 1500976759905000, 'power2': 1388390}}
 DATA = {"groupConsumption": 2166410580000, "groupProduction": 2189063000,
         "selfSufficiency": 2.1909736445530789e-13, "usersConsumption": [{
             "id": 1,
@@ -32,8 +40,10 @@ DATA = {"groupConsumption": 2166410580000, "groupProduction": 2189063000,
 RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
                  GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
 SELF_SUFFICIENCY = 2.1909736445530789e-13
-INDIVIDUAL_FIRST_READING = {'power': 13374273, 'power3': 3902020, 'energyOut': 0,
-                            'power1': 3565876, 'energy': 3055907952664000, 'power2': 4029106}
+INDIVIDUAL_FIRST_READING = {'type': 'reading',
+                            'values': {'power': 13374273, 'power3': 3902020,
+                                       'energyOut': 0, 'power1': 3565876,
+                                       'energy': 3055907952664000, 'power2': 4029106}}
 GROUP_MEMBERS = [{'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf'}, {
     'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98'}]
 METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
@@ -101,7 +111,8 @@ class WebsocketProviderTestCase(BuzznTestCase):
                 return_value=INDIVIDUAL_LAST_READING)
     @mock.patch('util.websocket_provider.WebsocketProvider.get_first_reading',
                 return_value=INDIVIDUAL_FIRST_READING)
-    def test_self_sufficiency(self, socketio, get_last_reading, get_first_reading):
+    def test_self_sufficiency(self, socketio, get_last_reading,
+                              get_first_reading):
         """ Unit tests for function self_sufficiency(). """
 
         ws = WebsocketProvider()
