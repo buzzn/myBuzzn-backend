@@ -169,8 +169,14 @@ class Task:
                 # BAFA support year until now with
                 # one-week interval (this is the finest granularity we get for one
                 # year back in time, cf. https://api.discovergy.com/docs/)
-                for reading in self.d.get_readings(meter_id, readings_start, end,
-                                                   'one_week'):
+                readings = self.d.get_readings(meter_id, one_year_back, end,
+                                               'one_week')
+                if readings is None:
+                    logger.info("No readings available for metering id %s",
+                                meter_id)
+                    continue
+
+                for reading in readings:
                     timestamp = reading['time']
 
                     # Convert unix epoch time in milliseconds to UTC format
@@ -279,7 +285,10 @@ class Task:
             except Exception as e:
                 logger.error("Exception: %s", e)
 
-
-if __name__ == '__main__':
+def run():
+    """Runs the task which fills the redis table with the latest readings."""
     task = Task()
     task.update_redis()
+
+if __name__ == '__main__':
+    run()
