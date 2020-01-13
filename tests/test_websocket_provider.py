@@ -60,17 +60,17 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
         db.drop_all()
         db.create_all()
-        test_user = User(GenderType.MALE, 'TestUser', 'test@test.net', 'TestToken',
+        test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net', 'TestToken',
                          'b4234cd4bed143a6b9bd09e347e17d34', 1)
         test_user.flat_size = 60.0
         test_user.inhabitants = 2
         test_user.set_password('some_password')
         test_user.state = StateType.ACTIVE
         db.session.add(test_user)
-        db.session.add(User(GenderType.FEMALE, 'judith', 'judith@buzzn.net',
+        db.session.add(User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
                             'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
                             1))
-        db.session.add(User(GenderType.MALE, 'danny', 'danny@buzzn.net',
+        db.session.add(User(GenderType.MALE, 'danny', 'stay', 'danny@buzzn.net',
                             'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
@@ -90,7 +90,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
         ws = WebsocketProvider()
         test_user = db.session.query(
-            User).filter_by(name='TestUser').first()
+            User).filter_by(name='User').first()
         data = ws.create_data(test_user.id)
 
         # Check return type
@@ -117,7 +117,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
         ws = WebsocketProvider()
         test_user = db.session.query(
-            User).filter_by(name='TestUser').first()
+            User).filter_by(name='User').first()
         meter_id = test_user.meter_id
         self_sufficiency = ws.self_sufficiency(
             meter_id, test_user.inhabitants, test_user.flat_size)

@@ -18,9 +18,21 @@
     </div>
   </div>
   <div class="field">
+    <label>first name</label>
+    <div class="control">
+      <input class="input" type="text" name="first_name" value="{{first_name}}" />
+    </div>
+  </div>
+  <div class="field">
     <label>name</label>
     <div class="control">
       <input class="input" type="text" name="name" value="{{name}}" />
+    </div>
+  </div>
+  <div class="field">
+    <label>nick</label>
+    <div class="control">
+      <input class="input" type="text" name="nick" value="{{nick}}" />
     </div>
   </div>
   <div class="field">
@@ -41,7 +53,7 @@
       <div class="select">
         <select name="group_id">
           {% for g in groups %}
-          <option {% if g._id==group_id %} selected {% endif %} value="{{g._id}}">{{g._name}}</option>
+          <option {% if g._id==group_id %} selected {% endif %} value="{{g._id}}">{{g.name}}</option>
           {% endfor %}
         </select>
       </div>

@@ -39,7 +39,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
@@ -116,7 +116,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
@@ -195,7 +195,7 @@ class IndividualDisaggregation(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
@@ -230,7 +230,7 @@ class GroupDisaggregation(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
@@ -271,7 +271,7 @@ class Disaggregation(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        self.target_user = User(GenderType.MALE, "SomeUser", "user@some.net",
+        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
