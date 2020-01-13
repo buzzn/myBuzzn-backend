@@ -1,11 +1,11 @@
+import json
 import os
 from datetime import datetime
 import logging
+import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
-from flask import current_app as app
-from discovergy.discovergy import Discovergy
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
@@ -16,6 +16,32 @@ logger = logging.getLogger(__name__)
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
 GroupConsumptionHistory = Blueprint('GroupConsumptionHistory', __name__)
+redis_host = os.environ['REDIS_HOST']
+redis_port = os.environ['REDIS_PORT']
+redis_db = os.environ['REDIS_DB']
+redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
+
+
+def get_sorted_keys(meter_id):
+    """ Return all keys stored in the redis db for a given meter id.
+    :param str meter_id: the meter id to prefix the scan with
+    """
+
+    return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
+
+
+def get_readings(meter_id):
+    """ Return all readings for the given meter id.
+    :param str meter_id: the meter id for which to get the values
+    """
+
+    result = {}
+    for key in get_sorted_keys(meter_id):
+        data = json.loads(redis_client.get(key))
+        if data.get('type') == 'reading':
+            timestamp = key[len(meter_id):]
+            result[timestamp] = data.get('values')
+    return result
 
 
 def read_parameters():
@@ -53,16 +79,11 @@ def individual_consumption_history():
     if user is None:
         return UNKNOWN_USER
 
-    # Call discovergy API for the given meter
-    begin, end, tics = read_parameters()
-    client_name = app.config['CLIENT_NAME']
-    d = Discovergy(client_name)
-    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
     result = {}
     try:
-        readings = d.get_readings(user.meter_id, begin, end, tics)
-        for reading in readings:
-            result[reading.get('time')] = reading.get('values').get('power')
+        readings = get_readings(user.meter_id)
+        for key in readings:
+            result[key] = readings[key].get('power')
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
@@ -94,22 +115,15 @@ def group_consumption_history():
     if group is None:
         return UNKNOWN_GROUP
 
-    # Call discovergy API for the given group meter
-    begin, end, tics = read_parameters()
-    client_name = app.config['CLIENT_NAME']
-    d = Discovergy(client_name)
-    d.login(os.environ['DISCOVERGY_EMAIL'], os.environ['DISCOVERGY_PASSWORD'])
     result = {}
     produced = {}
     consumed = {}
 
     try:
-        readings = d.get_readings(group.group_meter_id, begin, end,
-                                  tics)
-        for reading in readings:
-            produced[reading.get('time')] = reading.get(
-                'values').get('energyOut')
-            consumed[reading.get('time')] = reading.get('values').get('power')
+        readings = get_readings(group.group_meter_id)
+        for key in readings:
+            produced[key] = readings[key].get('energyOut')
+            consumed[key] = readings[key].get('power')
 
         # Return result
         result["consumed"] = consumed

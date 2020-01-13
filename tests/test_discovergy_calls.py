@@ -1,6 +1,6 @@
 import ast
 import json
-from unittest import mock, skip
+from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
 from models.group import Group
@@ -8,14 +8,14 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 
 
-CONSUMPTION = [{'time': 1574982000000, 'values': {'power': 0, 'power3': -27279,
-                                                  'energyOut': 0, 'power1': 0,
-                                                  'energy': 2180256872214000,
-                                                  'power2': -2437}},
-               {'time': 1574985600000, 'values': {'power': 0, 'power3': -27279,
-                                                  'energyOut': 0, 'power1': 0,
-                                                  'energy': 2180256872214000,
-                                                  'power2': -2437}}]
+CONSUMPTION = {'1574982000000': {'power': 0, 'power3': -27279,
+                                 'energyOut': 0, 'power1': 0,
+                                 'energy': 2180256872214000,
+                                 'power2': -2437},
+               '1574985600000': {'power': 0, 'power3': -27279,
+                                 'energyOut': 0, 'power1': 0,
+                                 'energy': 2180256872214000,
+                                 'power2': -2437}}
 EMPTY_RESPONSE = {}
 INDIVIDUAL_CONSUMPTION = {'1574982000000': 0, '1574985600000': 0}
 EMPTY_RESPONSE_BYTES = {}
@@ -24,7 +24,6 @@ GROUP_CONSUMPTION = {'consumed': {'1574982000000': 0,
                      'produced': {'1574982000000': 0,
                                   '1574985600000': 0}}
 EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
-
 DISAGGREGATION = {"1575111600000": {"Durchlauferhitzer-1": 0,
                                     "Grundlast-1": 50000000},
                   "1575112500000": {"Durchlauferhitzer-1": 0,
@@ -44,16 +43,15 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'b2d1ed119bb527b74adc767db48b69d9'  # 8 words hex value
+        self.target_user.meter_id = '52d7c87f8c26433dbd095048ad30c8cf'
+        # self.target_user.meter_id = 'b2d1ed119bb527b74adc767db48b69d9'  # 8 words hex value
         db.session.add(self.target_user)
         db.session.commit()
 
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=CONSUMPTION)
-    def test_individual_consumption_history(self, login, get_readings):
+    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
+    def test_individual_consumption_history(self, get_readings):
         """ Unit tests for individual_consumption_history(). """
 
         # Check if route exists
@@ -74,10 +72,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), INDIVIDUAL_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=EMPTY_RESPONSE)
-    def test_parameters(self, login, get_readings):
+    @mock.patch('routes.consumption_history.get_readings', return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_readings):
         """ Check handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
@@ -134,10 +130,8 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
-                return_value=CONSUMPTION)
-    def test_group_consumption_history(self, login, get_readings):
+    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
+    def test_group_consumption_history(self, get_readings):
         """ Unit tests for group_consumption_history()."""
 
         # Check if route exists
@@ -155,12 +149,10 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         self.assertEqual(ast.literal_eval(
             response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
-    @skip
     # pylint: disable=unused-argument
-    @mock.patch('discovergy.discovergy.Discovergy.login', return_value=True)
-    @mock.patch('discovergy.discovergy.Discovergy.get_readings',
+    @mock.patch('routes.consumption_history.get_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, login, get_readings):
+    def test_parameters(self, get_readings):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
@@ -190,8 +182,8 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         self.assertEqual(response_tics_format.status_code, status.HTTP_200_OK)
 
         # Check response content
-        self.assertEqual(ast.literal_eval(response_timestamp_format.data.decode('utf-8')),
-                         EMPTY_GROUP_CONSUMPTION)
+        self.assertEqual(ast.literal_eval(
+            response_timestamp_format.data.decode('utf-8')), EMPTY_GROUP_CONSUMPTION)
         self.assertEqual(ast.literal_eval(
             response_parameter.data.decode('utf-8')), EMPTY_GROUP_CONSUMPTION)
         self.assertEqual(ast.literal_eval(
