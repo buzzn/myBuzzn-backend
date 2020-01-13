@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.user import User
 from models.group import Group
-from error import MISSING_DISCOVERGY_CREDENTIALS, MISSING_DISAGGREGATION_DATA
+from util.error import MISSING_DISCOVERGY_CREDENTIALS, MISSING_DISAGGREGATION_DATA
 
 
 logger = logging.getLogger(__name__)
