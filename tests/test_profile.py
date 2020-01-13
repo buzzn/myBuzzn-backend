@@ -4,6 +4,7 @@ from flask_api import status
 
 from tests.buzzn_test_case import BuzznTestCase
 from models.user import User, GenderType, StateType
+from models.group import Group
 from util.database import db
 
 #pylint:disable=line-too-long
@@ -14,10 +15,17 @@ class ProfileTestCase(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-
-        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
-                                "SomeToken", "SomeMeterId", "SomeGroup")
+        users_group = Group("SomeGroup", "group_meter_id")
+        db.session.add(users_group)
+        db.session.commit()
+        self.target_user = User(GenderType.MALE, "Some", "User",
+                                "user@some.net", "SomeToken", "SomeMeterId",
+                                users_group.id)
         self.target_user.set_password("some_password")
+        self.target_user.nick = "SomeNick"
+        self.target_user.name = "SomeName"
+        self.target_user.first_name = "SomeFirstName"
+        self.target_user.first_name = "SomeFirstName"
         self.target_user.state = StateType.ACTIVE
         db.session.add(self.target_user)
         db.session.commit()
@@ -35,7 +43,11 @@ class ProfileTestCase(BuzznTestCase):
                 login_request.json["sessionToken"])})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json['name'], 'User')
+        self.assertEqual(response.json['name'], 'SomeName')
+        self.assertEqual(response.json['firstName'], 'SomeFirstName')
+        self.assertEqual(response.json['nick'], 'SomeNick')
+        self.assertEqual(response.json['groupAddress'], 'SomeGroup')
+
 
     def test_set_profile(self):
         """Expect a change in the profile if a new one is provided.
