@@ -14,7 +14,7 @@ class SetPasswordTest(BuzznTestCase):
     def setUp(self):
         super().setUp()
 
-        db.session.add(User(GenderType.MALE, "SomeUser", "User@Some.net",
+        db.session.add(User(GenderType.MALE, "Some", "User", "User@Some.net",
                             "SomeToken", "SomeMeterId", "SomeGroup"))
         db.session.commit()
 

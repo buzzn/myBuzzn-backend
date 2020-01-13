@@ -69,7 +69,9 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     gender = db.Column(db.Enum(GenderType))
-    name = db.Column(db.String(33), unique=True)
+    first_name = db.Column(db.String(33))
+    name = db.Column(db.String(33))
+    nick = db.Column(db.String(33))
     mail = db.Column(db.String(33))
     activation_token = db.Column(db.String(33), unique=True)
     password = db.Column(db.String(333))
@@ -81,10 +83,11 @@ class User(db.Model):
     group_id = db.Column(db.Integer, ForeignKey('group.id'))
     password_reset_token = db.Column(db.String(33), unique=True)
     password_reset_token_expires = db.Column(db.DateTime)
+    avatar = db.Column(db.LargeBinary)
 
     # Plain value constructor, too many arguments is ok here
     #pylint: disable=too-many-arguments
-    def __init__(self, gender, name, mail, activation_token, meter_id, group_id):
+    def __init__(self, gender, first_name, name, mail, activation_token, meter_id, group_id):
         """Creates a new user account and sets its state to pending.
         :param gender: The user's gender.
         :param str name: The user's name.
@@ -94,6 +97,7 @@ class User(db.Model):
         :param int group_id: the user's group id
         """
         self.gender = gender
+        self.first_name = first_name
         self.name = name
         self.mail = mail.lower()
         self.activation_token = activation_token

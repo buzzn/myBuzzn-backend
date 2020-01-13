@@ -12,3 +12,4 @@ flask_testing
 pylint
 blinker
 redis
+pillow
