@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-import time as stl_time
+import time as stdlib_time
 from datetime import datetime, timedelta, date, time
 import logging
 from discovergy.discovergy import Discovergy
@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.user import User
 from models.group import Group
-from error import MISSING_DISCOVERGY_CREDENTIALS
+from error import MISSING_DISCOVERGY_CREDENTIALS, MISSING_DISAGGREGATION_DATA
 
 
 logger = logging.getLogger(__name__)
@@ -80,6 +80,25 @@ def calc_support_year_start():
     return support_year_start
 
 
+def calc_support_week_start():
+    """ Calculate start of BAFA support week.
+    :return:
+    March, 12th of the current year if today is between March, 12th
+    and March, 18th
+    7 days back in time otherwise
+    :rtype: unix timestamp in milliseconds
+    """
+
+    now = datetime.utcnow()
+    if (now.month == 3) and (11 < now.day < 19):
+        d = date(now.year, 3, 12)
+    else:
+        d = (now - timedelta(days=7)).date()
+    t = time(0, 0)
+    support_week_start = round(datetime.combine(d, t).timestamp() * 1000)
+    return support_week_start
+
+
 def calc_one_week_back():
     """ Calculate timestamp of one week back in time. """
 
@@ -113,7 +132,11 @@ class Task:
         self.d.login(email, password)
 
     def populate_redis(self):
-        """ Populate the redis database with all discovergy data from the past. """
+        """ Populate the redis database with all discovergy data from the past.
+        :return: An error if something went wrong, None otherwise
+        :rtype: util.error.Error if something went wrong, NoneType otherwise
+        :rtype: util.error.Error if something went wrong, NoneType otherwise
+        """
 
         # pylint: disable=global-statement
         global last_data_flush
@@ -127,19 +150,26 @@ class Task:
 
         all_meter_ids = get_all_meter_ids(session)
         end = calc_end()
-        one_week_back = calc_one_week_back()
-        start = calc_support_year_start()
+        disaggregation_start = calc_support_week_start()
+        disaggregation_start = calc_two_days_back()
+        readings_start = calc_support_year_start()
 
         try:
             # Authenticate against the discovergy backend
             self.login()
 
-            # Get all readings for all meters from one the beginning of the
-            # BAFA support year until now with
-            # one-week interval (this is the finest granularity we get for one
-            # year back in time, cf. https://api.discovergy.com/docs/)
-            for meter_id in all_meter_ids:
-                for reading in self.d.get_readings(meter_id, start, end,
+        except Exception as e:
+            logger.error('Exception: %s', e)
+            logger.error(MISSING_DISCOVERGY_CREDENTIALS.description)
+            return MISSING_DISCOVERGY_CREDENTIALS
+
+        for meter_id in all_meter_ids:
+            try:
+                # Get all readings for all meters from one the beginning of the
+                # BAFA support year until now with
+                # one-week interval (this is the finest granularity we get for one
+                # year back in time, cf. https://api.discovergy.com/docs/)
+                for reading in self.d.get_readings(meter_id, readings_start, end,
                                                    'one_week'):
                     timestamp = reading['time']
 
@@ -155,41 +185,46 @@ class Task:
                     data = dict(type='reading', values=reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
-                # TODO - check if start of BAFA support year lies after one
-                # week back
+            except Exception as e:
+                logger.error('Exception: %s', e)
 
-                # Get all disaggregations for all meters from one week back
+        for meter_id in all_meter_ids:
+            try:
+                # Get all disaggregation values for all meters from one week back
                 # until now. This is the earliest data we get, otherwise you'll
                 # end up with a '400 Bad Request: Duration of the data
                 # cannot be larger than 1 week. Please try for a smaller duration.'
+                # If one week back lies before the current BAFA support year
+                # start, start with that value instead.
                 disaggregation = self.d.get_disaggregation(
-                    meter_id, one_week_back, end)
-                for timestamp in disaggregation:
+                    meter_id, disaggregation_start, end)
 
-                    # Convert unix epoch time in milliseconds to UTC format
-                    new_timestamp = datetime.utcfromtimestamp(
-                        int(timestamp)/1000).\
-                        strftime('%Y-%m-%d %H:%M:%S')
-                    key = meter_id + '_' + str(new_timestamp)
+            except Exception as e:
+                logger.error('Exception: %s', e)
+                logger.error(MISSING_DISAGGREGATION_DATA.description)
+                return MISSING_DISAGGREGATION_DATA
 
-                    # Write disaggregation to redis database as key-value-pair
-                    # The unique key consists of the meter id (16 chars), the
-                    # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='disaggregation',
-                                values=disaggregation[timestamp])
-                    self.redis_client.set(key, json.dumps(data))
-            return True
+            for timestamp in disaggregation:
+                # Convert unix epoch time in milliseconds to UTC format
+                new_timestamp = datetime.utcfromtimestamp(
+                    int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
+                key = meter_id + '_' + str(new_timestamp)
 
-        except Exception as e:
-            logger.error('Exception: %s', e)
-            return MISSING_DISCOVERGY_CREDENTIALS
+                # Write disaggregation to redis database as key-value-pair
+                # The unique key consists of the meter id (16 chars), the
+                # separator '_' and the UTC timestamp (19 chars)
+                data = dict(type='disaggregation',
+                            values=disaggregation[timestamp])
+                self.redis_client.set(key, json.dumps(data))
+
+        return None
 
     def update_redis(self):
         """ Update the redis database every 60s with the latest discovergy
         data. """
 
         while True:
-            stl_time.sleep(60)
+            stdlib_time.sleep(60)
 
             try:
                 # Populate redis if last data flush was more than 24h ago
@@ -198,9 +233,7 @@ class Task:
                 if (last_data_flush is None) or (datetime.utcnow() -
                                                  last_data_flush >
                                                  timedelta(hours=24)):
-                    redis_state = self.populate_redis()
-                    if redis_state is not True:
-                        logger.error(redis_state.description)
+                    self.populate_redis()
 
                 # Connect to sqlite database
                 session = create_session()
