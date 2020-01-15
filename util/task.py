@@ -208,6 +208,11 @@ class Task:
                 logger.error(MISSING_DISAGGREGATION_DATA.description)
                 return MISSING_DISAGGREGATION_DATA
 
+            if disaggregation is None:
+                logger.info("No disaggregations available for metering id %s",
+                            meter_id)
+                continue
+
             for timestamp in disaggregation:
                 # Convert unix epoch time in milliseconds to UTC format
                 new_timestamp = datetime.utcfromtimestamp(
