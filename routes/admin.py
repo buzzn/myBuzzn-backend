@@ -101,12 +101,14 @@ def do_user_create():
     """
     target = User(
         request.form['gender'],
+        request.form['first_name'],
         request.form['name'],
         request.form['mail'],
         request.form['meter_id'],
         request.form['group_id'],
         secrets.token_hex(33))
     target.set_role(request.form['role'])
+    target.nick = request.form['nick']
     db.session.add(target)
     db.session.commit()
     return user_list("Created user " + target.name)
@@ -149,7 +151,9 @@ def do_user_update():
 
     targetUser = targetUsers[0]
 
+    targetUser.first_name = request.form['first_name']
     targetUser.name = request.form['name']
+    targetUser.nick = request.form['nick']
     targetUser.mail = request.form['mail']
     targetUser.role = request.form['role']
     targetUser.state = request.form['state']
@@ -179,7 +183,9 @@ def request_user_update():
                                     roles=list(RoleType),
                                     id=target_user.id,
                                     gender=target_user.gender,
+                                    first_name=target_user.first_name,
                                     name=target_user.name,
+                                    nick=target_user.nick,
                                     mail=target_user.mail,
                                     meter_id=target_user.meter_id,
                                     group_id=target_user.group_id,

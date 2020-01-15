@@ -16,7 +16,7 @@ class SetPasswordTest(BuzznTestCase):
         """Expect an unknown username requesting a new
         password to result in a bad request."""
 
-        db.session.add(User(GenderType.MALE, "SomeUser", "User@Some.net",
+        db.session.add(User(GenderType.MALE, "Some", "User", "User@Some.net",
                             "SomeToken", "SomeMeterId", "SomeGroup"))
         db.session.commit()
 
@@ -31,7 +31,7 @@ class SetPasswordTest(BuzznTestCase):
         """Expect a password reset request from a user with a disabled user
         account resulting in a bad request."""
 
-        target_user = User(GenderType.MALE, "SomeUser", "User@Some.net",
+        target_user = User(GenderType.MALE, "Some", "User", "User@Some.net",
                            "SomeToken", "SomeMeterId", "SomeGroup")
         target_user.set_state(StateType.DEACTIVATED)
         db.session.add(target_user)
@@ -50,7 +50,7 @@ class SetPasswordTest(BuzznTestCase):
         resulting in a new token, with a new expiry date and the
         `state password_reset_pending`"""
 
-        db.session.add(User(GenderType.MALE, "SomeUser", "User@Some.net",
+        db.session.add(User(GenderType.MALE, "Some", "User", "User@Some.net",
                             "SomeToken", "SomeMeterId", "SomeGroup"))
         db.session.commit()
 
@@ -60,7 +60,7 @@ class SetPasswordTest(BuzznTestCase):
         self.assertEqual(response.status_code,
                          status.HTTP_201_CREATED)
 
-        target_user = User.query.filter_by(name="SomeUser").first()
+        target_user = User.query.filter_by(name="User").first()
         self.assertTrue(
             target_user.password_reset_token_expires > datetime.now())
         self.assertEqual(target_user.state,
@@ -72,7 +72,7 @@ class SetPasswordTest(BuzznTestCase):
         """On a new password request from an active user account with an invalid
         token expect to show a failure."""
 
-        target_user = User(GenderType.MALE, "SomeUser", "User@Some.net",
+        target_user = User(GenderType.MALE, "Some", "User", "User@Some.net",
                            "SomeToken", "SomeMeterId", "SomeGroup")
         target_user.generate_password_request_token()
         db.session.add(target_user)
