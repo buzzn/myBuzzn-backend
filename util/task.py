@@ -10,10 +10,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.user import User
 from models.group import Group
-from util.error import MISSING_DISCOVERGY_CREDENTIALS, MISSING_DISAGGREGATION_DATA
 
-
-logger = logging.getLogger(__name__)
+logging.basicConfig()
+logger = logging.getLogger('util/task')
+logging.getLogger().setLevel(logging.INFO)
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']
@@ -94,7 +94,7 @@ def calc_support_week_start():
         d = date(now.year, 3, 12)
     else:
         d = (now - timedelta(days=7)).date()
-    t = time(0, 0)
+    t = now.time()
     support_week_start = round(datetime.combine(d, t).timestamp() * 1000)
     return support_week_start
 
@@ -150,6 +150,7 @@ class Task:
         all_meter_ids = get_all_meter_ids(session)
         end = calc_end()
         disaggregation_start = calc_support_week_start()
+        print(disaggregation_start)
         readings_start = calc_support_year_start()
 
         try:
@@ -158,8 +159,8 @@ class Task:
 
         except Exception as e:
             logger.error('Exception: %s', e)
-            logger.error(MISSING_DISCOVERGY_CREDENTIALS.description)
-            return MISSING_DISCOVERGY_CREDENTIALS
+            logger.error('Wrong or missing discovergy credentials.')
+            return
 
         for meter_id in all_meter_ids:
             try:
@@ -169,7 +170,8 @@ class Task:
                 # year back in time, cf. https://api.discovergy.com/docs/)
                 readings = self.d.get_readings(meter_id, readings_start, end,
                                                'one_week')
-                if readings is None:
+
+                if readings == []:
                     logger.info("No readings available for metering id %s",
                                 meter_id)
                     continue
@@ -189,11 +191,6 @@ class Task:
                     data = dict(type='reading', values=reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
-            except Exception as e:
-                logger.error('Exception: %s', e)
-
-        for meter_id in all_meter_ids:
-            try:
                 # Get all disaggregation values for all meters from one week back
                 # until now. This is the earliest data we get, otherwise you'll
                 # end up with a '400 Bad Request: Duration of the data
@@ -203,30 +200,26 @@ class Task:
                 disaggregation = self.d.get_disaggregation(
                     meter_id, disaggregation_start, end)
 
+                if disaggregation == {}:
+                    logger.info("No disaggregation available for metering id %s",
+                                meter_id)
+                    continue
+
+                for timestamp in disaggregation:
+                    # Convert unix epoch time in milliseconds to UTC format
+                    new_timestamp = datetime.utcfromtimestamp(
+                        int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
+                    key = meter_id + '_' + str(new_timestamp)
+
+                    # Write disaggregation to redis database as key-value-pair
+                    # The unique key consists of the meter id (16 chars), the
+                    # separator '_' and the UTC timestamp (19 chars)
+                    data = dict(type='disaggregation',
+                                values=disaggregation[timestamp])
+                    self.redis_client.set(key, json.dumps(data))
+
             except Exception as e:
                 logger.error('Exception: %s', e)
-                logger.error(MISSING_DISAGGREGATION_DATA.description)
-                return MISSING_DISAGGREGATION_DATA
-
-            if disaggregation is None:
-                logger.info("No disaggregations available for metering id %s",
-                            meter_id)
-                continue
-
-            for timestamp in disaggregation:
-                # Convert unix epoch time in milliseconds to UTC format
-                new_timestamp = datetime.utcfromtimestamp(
-                    int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
-                key = meter_id + '_' + str(new_timestamp)
-
-                # Write disaggregation to redis database as key-value-pair
-                # The unique key consists of the meter id (16 chars), the
-                # separator '_' and the UTC timestamp (19 chars)
-                data = dict(type='disaggregation',
-                            values=disaggregation[timestamp])
-                self.redis_client.set(key, json.dumps(data))
-
-        return None
 
     def update_redis(self):
         """ Update the redis database every 60s with the latest discovergy
@@ -251,39 +244,39 @@ class Task:
                 end = calc_end()
                 two_days_back = calc_two_days_back()
 
-                # Get last reading for all meters
-                for meter_id in all_meter_ids:
-                    reading = self.d.get_last_reading(meter_id)
-                    timestamp = reading['time']
-                    new_timestamp = datetime.utcfromtimestamp(timestamp/1000).\
-                        strftime('%Y-%m-%d %H:%M:%S')
-                    key = meter_id + '_' + str(new_timestamp)
+                # # Get last reading for all meters
+                # for meter_id in all_meter_ids:
+                #     reading = self.d.get_last_reading(meter_id)
+                #     timestamp = reading['time']
+                #     new_timestamp = datetime.utcfromtimestamp(timestamp/1000).\
+                #         strftime('%Y-%m-%d %H:%M:%S')
+                #     key = meter_id + '_' + str(new_timestamp)
 
-                    # Write reading to redis database as key-value-pair
-                    # The unique key consists of the meter id (16 chars), the
-                    # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='reading', values=reading['values'])
-                    self.redis_client.set(key, json.dumps(data))
+                #     # Write reading to redis database as key-value-pair
+                #     # The unique key consists of the meter id (16 chars), the
+                #     # separator '_' and the UTC timestamp (19 chars)
+                #     data = dict(type='reading', values=reading['values'])
+                #     self.redis_client.set(key, json.dumps(data))
 
-                    # Get latest disaggregation for all meters
-                    disaggregation = self.d.get_disaggregation(
-                        meter_id, two_days_back, end)
-                    timestamps = sorted(disaggregation.keys())
-                    if len(timestamps) > 0:
-                        timestamp = timestamps[-1]
+                #     # Get latest disaggregation for all meters
+                #     disaggregation = self.d.get_disaggregation(
+                #         meter_id, two_days_back, end)
+                #     timestamps = sorted(disaggregation.keys())
+                #     if len(timestamps) > 0:
+                #         timestamp = timestamps[-1]
 
-                        # Convert unix epoch time in milliseconds to UTC format
-                        new_timestamp = datetime.utcfromtimestamp(int(timestamp)/1000).\
-                            strftime('%Y-%m-%d %H:%M:%S')
+                #         # Convert unix epoch time in milliseconds to UTC format
+                #         new_timestamp = datetime.utcfromtimestamp(int(timestamp)/1000).\
+                #             strftime('%Y-%m-%d %H:%M:%S')
 
-                        key = meter_id + '_' + str(new_timestamp)
+                #         key = meter_id + '_' + str(new_timestamp)
 
-                        # Write disaggregation to redis database as key-value-pair
-                        # The unique key consists of the meter id (16 chars), the
-                        # separator '_' and the UTC timestamp (19 chars)
-                        data = dict(type='disaggregation',
-                                    values=disaggregation[timestamp])
-                        self.redis_client.set(key, json.dumps(data))
+                #         # Write disaggregation to redis database as key-value-pair
+                #         # The unique key consists of the meter id (16 chars), the
+                #         # separator '_' and the UTC timestamp (19 chars)
+                #         data = dict(type='disaggregation',
+                #                     values=disaggregation[timestamp])
+                #         self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
                 logger.error("Exception: %s", e)
