@@ -39,7 +39,7 @@ def get_readings(meter_id):
     for key in get_sorted_keys(meter_id):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'reading':
-            timestamp = key[len(meter_id):]
+            timestamp = key[len(meter_id)+1:]
             result[timestamp] = data.get('values')
     return result
 

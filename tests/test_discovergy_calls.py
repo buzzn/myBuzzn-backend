@@ -8,21 +8,21 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 
 
-CONSUMPTION = {'1574982000000': {'power': 0, 'power3': -27279,
-                                 'energyOut': 0, 'power1': 0,
-                                 'energy': 2180256872214000,
-                                 'power2': -2437},
-               '1574985600000': {'power': 0, 'power3': -27279,
-                                 'energyOut': 0, 'power1': 0,
-                                 'energy': 2180256872214000,
-                                 'power2': -2437}}
+CONSUMPTION = {"2020-01-15 10:00:04": {'power': 0, 'power3': -27279,
+                                       'energyOut': 0, 'power1': 0,
+                                       'energy': 2180256872214000,
+                                       'power2': -2437},
+               "2020-01-15 10:01:10": {'power': 0, 'power3': -27279,
+                                       'energyOut': 0, 'power1': 0,
+                                       'energy': 2180256872214000,
+                                       'power2': -2437}}
 EMPTY_RESPONSE = {}
-INDIVIDUAL_CONSUMPTION = {'1574982000000': 0, '1574985600000': 0}
+INDIVIDUAL_CONSUMPTION = {"2020-01-15 10:00:04": 0, "2020-01-15 10:01:10": 0}
 EMPTY_RESPONSE_BYTES = {}
-GROUP_CONSUMPTION = {'consumed': {'1574982000000': 0,
-                                  '1574985600000': 0},
-                     'produced': {'1574982000000': 0,
-                                  '1574985600000': 0}}
+GROUP_CONSUMPTION = {'consumed': {"2020-01-15 10:00:04": 0,
+                                  "2020-01-15 10:01:10": 0},
+                     'produced': {"2020-01-15 10:00:04": 0,
+                                  "2020-01-15 10:01:10": 0}}
 EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
 DISAGGREGATION = {"1575111600000": {"Durchlauferhitzer-1": 0,
                                     "Grundlast-1": 50000000},
