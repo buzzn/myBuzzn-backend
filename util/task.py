@@ -135,7 +135,6 @@ class Task:
         """ Populate the redis database with all discovergy data from the past.
         :return: An error if something went wrong, None otherwise
         :rtype: util.error.Error if something went wrong, NoneType otherwise
-        :rtype: util.error.Error if something went wrong, NoneType otherwise
         """
 
         # pylint: disable=global-statement
@@ -151,7 +150,6 @@ class Task:
         all_meter_ids = get_all_meter_ids(session)
         end = calc_end()
         disaggregation_start = calc_support_week_start()
-        disaggregation_start = calc_two_days_back()
         readings_start = calc_support_year_start()
 
         try:
@@ -169,7 +167,7 @@ class Task:
                 # BAFA support year until now with
                 # one-week interval (this is the finest granularity we get for one
                 # year back in time, cf. https://api.discovergy.com/docs/)
-                readings = self.d.get_readings(meter_id, one_year_back, end,
+                readings = self.d.get_readings(meter_id, readings_start, end,
                                                'one_week')
                 if readings is None:
                     logger.info("No readings available for metering id %s",
@@ -285,10 +283,12 @@ class Task:
             except Exception as e:
                 logger.error("Exception: %s", e)
 
+
 def run():
     """Runs the task which fills the redis table with the latest readings."""
     task = Task()
     task.update_redis()
+
 
 if __name__ == '__main__':
     run()
