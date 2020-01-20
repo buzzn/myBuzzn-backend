@@ -92,6 +92,7 @@ def individual_consumption_history():
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     begin = read_begin_parameter()
+
     result = {}
 
     try:
@@ -128,6 +129,7 @@ def group_consumption_history():
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     if group is None:
         return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
+
     begin = read_begin_parameter()
     result = {}
     produced = {}
