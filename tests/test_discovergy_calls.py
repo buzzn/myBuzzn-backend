@@ -49,8 +49,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
-    def test_individual_consumption_history(self, get_readings):
+    @mock.patch('routes.consumption_history.get_all_readings', return_value=CONSUMPTION)
+    def test_individual_consumption_history(self, get_all_readings):
         """ Unit tests for individual_consumption_history(). """
 
         # Check if route exists
@@ -71,8 +71,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), INDIVIDUAL_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_readings):
+    @mock.patch('routes.consumption_history.get_all_readings', return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_all_readings):
         """ Check handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
@@ -129,8 +129,8 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint does not get the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
-    def test_group_consumption_history(self, get_readings):
+    @mock.patch('routes.consumption_history.get_all_readings', return_value=CONSUMPTION)
+    def test_group_consumption_history(self, get_all_readings):
         """ Unit tests for group_consumption_history()."""
 
         # Check if route exists
@@ -149,9 +149,9 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings',
+    @mock.patch('routes.consumption_history.get_all_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_readings):
+    def test_parameters(self, get_all_readings):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',

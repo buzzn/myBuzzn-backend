@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+from dateutil import parser
 import logging
 import redis
 from flask import Blueprint, jsonify, request
@@ -30,7 +31,7 @@ def get_sorted_keys(meter_id):
     return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
 
 
-def get_readings(meter_id):
+def get_all_readings(meter_id):
     """ Return all readings for the given meter id.
     :param str meter_id: the meter id for which to get the values
     """
@@ -44,18 +45,37 @@ def get_readings(meter_id):
     return result
 
 
-def read_parameters():
-    """ Use the given parameters. """
+def get_readings(meter_id, begin):
+    """ Return all readings for the given meter id, starting with the given
+    timestamp.
+    :param str meter_id: the meter id for which to get the values
+    :param int begin: the unix timestamp to start with
+    """
+
+    result = {}
+    for key in get_sorted_keys(meter_id):
+        data = json.loads(redis_client.get(key))
+        if data.get('type') == 'reading':
+            utc_date = parser.parse(key[len(meter_id)+1])
+            unix_timestamp = utc_date.timestamp()
+            begin_date = datetime.utcfromtimestamp(
+                begin).strftime('%Y-%m-%d %H:%M:%S')
+            print('begin: ' + str(begin_date))
+            print('measurement timestamp: ' + str(utc_date))
+
+
+def read_begin_parameter():
+    """ Use the given begin parameter. """
 
     # Calculate the minimal time of "today", i.e. 00:00 am, as unix timestamp
     # as integer with milliseconds precision. The timestamp format is required
     # by the discovergy API, cf. https://api.discovergy.com/docs/
-    start = round(datetime.combine(datetime.now(),
-                                   datetime.min.time()).timestamp() * 1e3)
+    # start = round(datetime.combine(datetime.now(),
+    # datetime.min.time()).timestamp() * 1e3)
+
+    start = datetime.combine(datetime.now(), datetime.min.time()).timestamp()
     begin = request.args.get('begin', default=start, type=int)
-    end = request.args.get('end', default=None, type=int)
-    tics = request.args.get('tics', default='one_hour', type=str)
-    return begin, end, tics
+    return begin
 
 
 @IndividualConsumptionHistory.route('/individual-consumption-history',
@@ -79,9 +99,12 @@ def individual_consumption_history():
     if user is None:
         return UNKNOWN_USER
 
+    begin = read_begin_parameter()
+    get_readings(user.meter_id, begin)
+
     result = {}
     try:
-        readings = get_readings(user.meter_id)
+        readings = get_all_readings(user.meter_id)
         for key in readings:
             result[key] = readings[key].get('power')
 
@@ -120,7 +143,7 @@ def group_consumption_history():
     consumed = {}
 
     try:
-        readings = get_readings(group.group_meter_id)
+        readings = get_all_readings(group.group_meter_id)
         for key in readings:
             produced[key] = readings[key].get('energyOut')
             consumed[key] = readings[key].get('power')
