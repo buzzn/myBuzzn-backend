@@ -25,7 +25,6 @@ class ProfileTestCase(BuzznTestCase):
         self.target_user.nick = "SomeNick"
         self.target_user.name = "SomeName"
         self.target_user.first_name = "SomeFirstName"
-        self.target_user.first_name = "SomeFirstName"
         self.target_user.state = StateType.ACTIVE
         db.session.add(self.target_user)
         db.session.commit()
@@ -47,6 +46,31 @@ class ProfileTestCase(BuzznTestCase):
         self.assertEqual(response.json['firstName'], 'SomeFirstName')
         self.assertEqual(response.json['nick'], 'SomeNick')
         self.assertEqual(response.json['groupAddress'], 'SomeGroup')
+
+    def test_unknown_group(self):
+        """Expect None for group address if user is not member of any group.
+        """
+        user_no_group = User(GenderType.MALE, "Someother", "User2",
+                             "user2@someother.net", "SomenewToken", "Meterid",
+                             None)
+        user_no_group.set_password("some_password")
+        user_no_group.state = StateType.ACTIVE
+        db.session.add(user_no_group)
+        db.session.commit()
+
+        login_request = self.client.post('/login',
+                                         data=json.dumps(
+                                             {'user': 'user2@someother.net',
+                                              'password': 'some_password'}))
+
+        response = self.client.get(
+            '/profile',
+            headers={'Authorization': 'Bearer {}'.format(
+                login_request.json["sessionToken"])})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json['name'], 'User2')
+        self.assertEqual(response.json['groupAddress'], '')
 
 
     def test_set_profile(self):

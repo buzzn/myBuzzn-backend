@@ -74,6 +74,7 @@ def individual_disaggregation():
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+
     begin = read_begin_parameter()
     result = {}
 
