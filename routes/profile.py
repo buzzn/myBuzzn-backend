@@ -27,8 +27,12 @@ def profile():
         return UNKNOWN_USER
 
     target_profile = {k:v for k, v in target_user.__dict__.items() if k in (
-        'id', 'name', 'nick', 'mail', 'inhabitants', 'avatar', 'groupId'
+        'id', 'name', 'nick', 'mail', 'inhabitants', 'groupId'
     )}
+
+    if target_user.avatar is not None:
+        target_profile['avatar'] = target_user.avatar.decode('utf-8')
+
     target_profile['firstName'] = target_user.first_name
     target_profile['flatSize'] = target_user.flat_size
 
