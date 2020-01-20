@@ -224,8 +224,12 @@ class Task:
         """ Update the redis database every 60s with the latest discovergy
         data. """
 
+        logger.info("Started redis task at %s",
+                    datetime.now().strftime("%H:%M:%S"))
         while True:
             stdlib_time.sleep(60)
+            logger.info("Fill redis at %s",
+                        datetime.now().strftime("%H:%M:%S"))
 
             try:
                 # Populate redis if last data flush was more than 24h ago
