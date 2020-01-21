@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 import logging
+from dateutil import parser
 import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
@@ -29,29 +30,35 @@ def get_sorted_keys(meter_id):
     return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
 
 
-def get_disaggregation(meter_id):
-    """ Return all disaggregation values for the given meter id.
+def get_disaggregation(meter_id, begin):
+    """ Return all disaggregation values for the given meter id, starting with
+    the given timestamp. As we were using unix timestamps as basis for our
+    dates all along, there is no need to convert the given,
+    timezone-unaware dates to UTC.
     :param str meter_id: the meter id for which to get the values
+    :param int begin: the unix timestamp to begin with
     """
+
     result = {}
     for key in get_sorted_keys(meter_id):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'disaggregation':
-            timestamp = key[len(meter_id)+1:]
-            result[timestamp] = data.get('values')
+            disaggregation_date = parser.parse(key[len(meter_id)+1:])
+            disaggregation_timestamp = disaggregation_date.timestamp()
+            if disaggregation_timestamp >= begin:
+                result[disaggregation_date.strftime(
+                    '%Y-%m-%d %H:%M:%S')] = data.get('values')
     return result
 
 
-def read_parameters():
-    """ Use the given parameters. """
+def read_begin_parameter():
+    """ Use the given begin parameter. """
 
-    # Calculate the minimal time of "today", i.e. 00:00 am, as unix timestamp
-    # as integer with milliseconds precision. The timestamp format is required
-    # by the discovergy API, cf. https://api.discovergy.com/docs/
-    start = round((datetime.now() - timedelta(hours=48)).timestamp() * 1e3)
+    # Calculate the minimal time of "today", i.e. 00:00 am as unix timestamp
+
+    start = (datetime.utcnow() - timedelta(hours=48)).timestamp()
     begin = request.args.get('begin', default=start, type=int)
-    end = request.args.get('end', default=None, type=int)
-    return begin, end
+    return begin
 
 
 @IndividualDisaggregation.route('/individual-disaggregation', methods=['GET'])
@@ -59,7 +66,6 @@ def read_parameters():
 def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back in time
-    :param int end: end time of disaggregation, default is $now
     :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
@@ -67,12 +73,12 @@ def individual_disaggregation():
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
-        return UNKNOWN_USER
-
-    # Get all disaggregation values for the given meter
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+    begin = read_begin_parameter()
     result = {}
+
     try:
-        result = get_disaggregation(user.meter_id)
+        result = get_disaggregation(user.meter_id, begin)
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
@@ -89,21 +95,20 @@ def individual_disaggregation():
 def group_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back in time
-    :param int end: end time of disaggregation, default is $now
     :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
 
     user, group = get_parameters()
     if user is None:
-        return UNKNOWN_USER
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     if group is None:
-        return UNKNOWN_GROUP
-
-    # Call discovergy API for the given group meter
+        return UNKNOWN_GROUP.to_json(), status.HTTP_BAD_REQUEST
+    begin = read_begin_parameter()
     result = {}
+
     try:
-        result = get_disaggregation(group.group_meter_id)
+        result = get_disaggregation(group.group_meter_id, begin)
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
