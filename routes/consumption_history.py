@@ -47,7 +47,8 @@ def get_all_readings(meter_id):
 
 def get_readings(meter_id, begin):
     """ Return all readings for the given meter id, starting with the given
-    timestamp.
+    timestamp. As we were using unix timestamps as basis for our dates all
+    along, there is no need to convert the given, timezone-oblivious dates to UTC.
     :param str meter_id: the meter id for which to get the values
     :param int begin: the unix timestamp to start with
     """
@@ -98,14 +99,12 @@ def individual_consumption_history():
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
-        return UNKNOWN_USER
-
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     begin = read_begin_parameter()
-    get_readings(user.meter_id, begin)
-
     result = {}
+
     try:
-        readings = get_all_readings(user.meter_id)
+        readings = get_readings(user.meter_id, begin)
         for key in readings:
             result[key] = readings[key].get('power')
 
@@ -135,16 +134,16 @@ def group_consumption_history():
 
     user, group = get_parameters()
     if user is None:
-        return UNKNOWN_USER
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     if group is None:
-        return UNKNOWN_GROUP
-
+        return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
+    begin = read_begin_parameter()
     result = {}
     produced = {}
     consumed = {}
 
     try:
-        readings = get_all_readings(group.group_meter_id)
+        readings = get_readings(group.group_meter_id, begin)
         for key in readings:
             produced[key] = readings[key].get('energyOut')
             consumed[key] = readings[key].get('power')
