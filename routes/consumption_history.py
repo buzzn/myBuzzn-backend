@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 import logging
-from dateutil import parser, tz
+from dateutil import parser
 import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
