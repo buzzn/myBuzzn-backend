@@ -48,9 +48,9 @@ def get_all_readings(meter_id):
 def get_readings(meter_id, begin):
     """ Return all readings for the given meter id, starting with the given
     timestamp. As we were using unix timestamps as basis for our dates all
-    along, there is no need to convert the given, timezone-oblivious dates to UTC.
+    along, there is no need to convert the given, timezone-unaware dates to UTC.
     :param str meter_id: the meter id for which to get the values
-    :param int begin: the unix timestamp to start with
+    :param int begin: the unix timestamp to begin with
     """
 
     result = {}
@@ -68,11 +68,7 @@ def get_readings(meter_id, begin):
 def read_begin_parameter():
     """ Use the given begin parameter. """
 
-    # Calculate the minimal time of "today", i.e. 00:00 am, as unix timestamp
-    # as integer with milliseconds precision. The timestamp format is required
-    # by the discovergy API, cf. https://api.discovergy.com/docs/
-    # start = round(datetime.combine(datetime.now(),
-    # datetime.min.time()).timestamp() * 1e3)
+    # Calculate the minimal time of "today", i.e. 00:00 am as unix timestamp
 
     start = datetime.combine(
         datetime.utcnow(), datetime.min.time()).timestamp()
@@ -86,11 +82,6 @@ def read_begin_parameter():
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval in mW.
     :param int begin: start time of consumption, default is today at 0:00
-    :param int end: end time of consumption, default is
-    datetime.datetime.now()
-    :param str tics: time distance between returned readings with
-    possible values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour',
-    'one_day', 'one_week', 'one_month', 'one_year', default is 'one_hour'
     :return: (a JSON object where each meter reading is mapped to its point
     in time, 200) or ({}, 206) if there is no history
     :rtype: tuple
