@@ -1,8 +1,8 @@
 import json
 import os
 from datetime import datetime
-from dateutil import parser
 import logging
+from dateutil import parser
 import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
@@ -57,11 +57,12 @@ def get_readings(meter_id, begin):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'reading':
             utc_date = parser.parse(key[len(meter_id)+1])
-            unix_timestamp = utc_date.timestamp()
             begin_date = datetime.utcfromtimestamp(
                 begin).strftime('%Y-%m-%d %H:%M:%S')
             print('begin: ' + str(begin_date))
             print('measurement timestamp: ' + str(utc_date))
+
+    return result
 
 
 def read_begin_parameter():
