@@ -48,7 +48,7 @@ class ProfileTestCase(BuzznTestCase):
         self.assertEqual(response.json['groupAddress'], 'SomeGroup')
 
     def test_unknown_group(self):
-        """Expect None for group address if user is not member of any group.
+        """Expect an empty string for group address if user is not member of any group.
         """
         user_no_group = User(GenderType.MALE, "Someother", "User2",
                              "user2@someother.net", "SomenewToken", "Meterid",
