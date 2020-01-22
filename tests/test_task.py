@@ -46,8 +46,13 @@ class TaskTestCase(BuzznTestCase):
 
         result = get_all_meter_ids(db.session)
 
-        # Check return type
+        # Check return types
         self.assertTrue(isinstance(result, list))
+        for meter_id in result:
+            self.assertTrue(isinstance(meter_id, str))
+            self.assertTrue(meter_id.isalnum())
 
         # Check return values
         self.assertEqual(result, ALL_METER_IDS)
+        for meter_id in result:
+            self.assertEqual(len(meter_id), 32)
