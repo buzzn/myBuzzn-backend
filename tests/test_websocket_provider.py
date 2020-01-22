@@ -70,7 +70,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
         db.session.add(User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
                             'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
                             1))
-        db.session.add(User(GenderType.MALE, 'danny', 'stay', 'danny@buzzn.net',
+        db.session.add(User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
                             'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
