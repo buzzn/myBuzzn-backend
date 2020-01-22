@@ -1,7 +1,5 @@
 import json
 from unittest import mock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
@@ -56,3 +54,11 @@ class TaskTestCase(BuzznTestCase):
         self.assertEqual(result, ALL_METER_IDS)
         for meter_id in result:
             self.assertEqual(len(meter_id), 32)
+
+    def test_calc_end(self):
+        """ Unit tests for function calc_end(). """
+
+        result = calc_end()
+
+        # Check return type
+        self.assertTrue(isinstance(result, int))
