@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from unittest import mock
 from models.user import User, GenderType, StateType
 from models.group import Group
@@ -62,3 +63,18 @@ class TaskTestCase(BuzznTestCase):
 
         # Check return type
         self.assertTrue(isinstance(result, int))
+
+    def test_calc_one_year_back(self):
+        """ Unit tests for function calc_one_year_back(). """
+
+        result = calc_one_year_back()
+
+        # Check return type
+        self.assertTrue(isinstance(result, int))
+
+    def test_calc_support_year_start(self):
+        """ Unit tests for function calc_support_year_start(). """
+
+        result = calc_support_year_start()
+        print(datetime.fromtimestamp(
+            float(result/1000)).strftime('%Y-%m-%d %H:%M:%S'))
