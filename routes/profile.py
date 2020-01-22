@@ -24,7 +24,7 @@ def profile():
     target_user = User.query.filter_by(id=user_id).first()
 
     if target_user is None:
-        return UNKNOWN_USER
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
     target_profile = {k:v for k, v in target_user.__dict__.items() if k in (
         'id', 'name', 'nick', 'mail', 'inhabitants', 'groupId'
@@ -56,7 +56,7 @@ def put_profile():
     target_user = User.query.filter_by(id=user_id).first()
 
     if target_user is None:
-        return UNKNOWN_USER
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
     j = request.get_json(force=True)
     target_user.flat_size = float(j['flatSize'])
