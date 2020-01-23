@@ -72,7 +72,7 @@ def read_begin_parameter():
 
     start = datetime.combine(
         datetime.utcnow(), datetime.min.time()).timestamp()
-    begin = request.args.get('begin', default=start, type=int)
+    begin = request.args.get('begin', default=start, type=float)
     return begin
 
 
