@@ -7,10 +7,11 @@ import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
+from models.group import Group
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
-from util.login import login_required, get_parameters
+from util.login import login_required
 
 
 logger = logging.getLogger(__name__)
@@ -124,9 +125,11 @@ def group_consumption_history():
     :rtype: tuple
     """
 
-    user, group = get_parameters()
+    user_id = get_jwt_identity()
+    user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+    group = db.session.query(Group).filter_by(id=user.group_id).first()
     if group is None:
         return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
 
