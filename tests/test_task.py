@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 from datetime import datetime, timedelta
 from discovergy.discovergy import Discovergy
 import redis
@@ -8,7 +9,7 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.task import get_all_meter_ids, calc_end,\
     calc_one_year_back, calc_support_year_start, calc_support_week_start,\
-    calc_one_week_back, calc_two_days_back, client_name, Task
+    calc_one_week_back, calc_two_days_back, client_name, last_data_flush, Task
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
@@ -135,3 +136,8 @@ class TaskTestCase(BuzznTestCase):
         self.assertTrue(isinstance(self.task.d, Discovergy))
         self.assertTrue(isinstance(self.task.redis_client, redis.Redis))
         self.assertEqual(self.task.d.client_name, client_name)
+
+    @mock.patch('util.task.create_session')
+    @mock.patch('util.task.get_all_meter_ids', return_value=ALL_METER_IDS)
+    def test_populate_redis(self, create_session, _get_all_meter_ids):
+        """ Unit tests for function populate_redis(). """

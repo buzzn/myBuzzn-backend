@@ -21,6 +21,7 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 last_data_flush = None
+exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 
 
 def create_session():
@@ -147,7 +148,6 @@ class Task:
         # Connect to sqlite database
         session = create_session()
 
-        all_meter_ids = get_all_meter_ids(session)
         end = calc_end()
         disaggregation_start = calc_support_week_start()
         readings_start = calc_support_year_start()
@@ -157,11 +157,12 @@ class Task:
             self.login()
 
         except Exception as e:
-            logger.error('Exception: %s', e)
+            message = exception_template.format(type(e).__name__, e.args)
+            logger.error(message)
             logger.error('Wrong or missing discovergy credentials.')
             return
 
-        for meter_id in all_meter_ids:
+        for meter_id in get_all_meter_ids(session):
             try:
                 # Get all readings for all meters from one the beginning of the
                 # BAFA support year until now with
@@ -218,7 +219,8 @@ class Task:
                     self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
-                logger.error('Exception: %s', e)
+                message = exception_template.format(type(e).__name__, e.args)
+                logger.error(message)
 
     def update_redis(self):
         """ Update the redis database every 60s with the latest discovergy
@@ -295,7 +297,8 @@ class Task:
                         self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
-                logger.error("Exception: %s", e)
+                message = exception_template.format(type(e).__name__, e.args)
+                logger.error(message)
 
 
 def run():
