@@ -1,11 +1,11 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.task import get_all_meter_ids, calc_end,\
-    calc_one_year_back, calc_support_year_start  # , calc_support_week_start,\
+    calc_one_year_back, calc_support_year_start, calc_support_week_start  # ,\
 # calc_one_week_back, calc_two_days_back, Task
 
 
@@ -89,3 +89,22 @@ class TaskTestCase(BuzznTestCase):
             self.assertEqual(date.year, datetime.utcnow().year - 1)
         else:
             self.assertEqual(date.year, datetime.utcnow().year)
+
+    def test_calc_support_week_start(self):
+        """ Unit tests for function calc_support_week_start(). """
+
+        result = calc_support_week_start()
+
+        # Check result type
+        self.assertTrue(isinstance(result, int))
+
+        # Check result values
+        date = datetime.fromtimestamp(
+            float(result/1000))
+        if (datetime.utcnow().month == 3) and (11 < datetime.utcnow().day < 19):
+            self.assertEqual(date.year, datetime.utcnow().year)
+            self.assertEqual(date.month, 3)
+            self.assertEqual(date.day, 12)
+        else:
+            self.assertEqual(date.date(), (datetime.utcnow() -
+                                           timedelta(days=7)).date())
