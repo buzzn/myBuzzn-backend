@@ -1,13 +1,12 @@
 import json
 from datetime import datetime
-from unittest import mock
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.task import get_all_meter_ids, calc_end,\
-    calc_one_year_back, calc_support_year_start, calc_support_week_start,\
-    calc_one_week_back, calc_two_days_back, Task
+    calc_one_year_back, calc_support_year_start  # , calc_support_week_start,\
+# calc_one_week_back, calc_two_days_back, Task
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
