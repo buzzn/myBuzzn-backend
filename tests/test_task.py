@@ -76,5 +76,17 @@ class TaskTestCase(BuzznTestCase):
         """ Unit tests for function calc_support_year_start(). """
 
         result = calc_support_year_start()
-        print(datetime.fromtimestamp(
-            float(result/1000)).strftime('%Y-%m-%d %H:%M:%S'))
+
+        # Check result type
+        self.assertTrue(isinstance(result, int))
+
+        # Check result values
+        date = datetime.fromtimestamp(
+            float(result/1000))
+        self.assertEqual(date.day, 12)
+        self.assertEqual(date.month, 3)
+        if (datetime.utcnow().month < date.month) or (datetime.utcnow().day <
+                                                      date.day):
+            self.assertEqual(date.year, datetime.utcnow().year - 1)
+        else:
+            self.assertEqual(date.year, datetime.utcnow().year)
