@@ -1,12 +1,14 @@
 import json
 from datetime import datetime, timedelta
+from discovergy.discovergy import Discovergy
+import redis
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.task import get_all_meter_ids, calc_end,\
-    calc_one_year_back, calc_support_year_start, calc_support_week_start  # ,\
-# calc_one_week_back, calc_two_days_back, Task
+    calc_one_year_back, calc_support_year_start, calc_support_week_start,\
+    calc_one_week_back, calc_two_days_back, client_name, Task
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
@@ -38,6 +40,7 @@ class TaskTestCase(BuzznTestCase):
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
+        self.task = Task()
 
     def test_get_all_meter_ids(self):
         """ Unit tests for function get_all_meter_ids(). """
@@ -108,3 +111,27 @@ class TaskTestCase(BuzznTestCase):
         else:
             self.assertEqual(date.date(), (datetime.utcnow() -
                                            timedelta(days=7)).date())
+
+    def test_calc_one_week_back(self):
+        """ Unit tests for function calc_one_week_back(). """
+
+        result = calc_one_week_back()
+
+        # Check return type
+        self.assertTrue(isinstance(result, int))
+
+    def test_calc_two_days_back(self):
+        """ Unit tests for function calc_two_days_back(). """
+
+        result = calc_two_days_back()
+
+        # Check return type
+        self.assertTrue(isinstance(result, int))
+
+    def check_init(self):
+        """ Unit tests for function Task.__init__(). """
+
+        # Check class variables
+        self.assertTrue(isinstance(self.task.d, Discovergy))
+        self.assertTrue(isinstance(self.task.redis_client, redis.Redis))
+        self.assertEqual(self.task.d.client_name, client_name)
