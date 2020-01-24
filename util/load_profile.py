@@ -16,8 +16,9 @@ def create_session():
 
 def run():
     with open('./load_profiles/standardlastprofil-haushalt-2020.csv') as csvfile:
-        # tbl_reader = csv.reader(csvfile, delimiter=',')
+        tbl_reader = csv.reader(csvfile, delimiter=',')
         create_session()
+        print(type(tbl_reader))
         # for row in tbl_reader:
 
 
