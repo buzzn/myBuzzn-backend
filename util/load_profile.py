@@ -2,6 +2,7 @@ import csv
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.schema import MetaData
 # from util.database import db
 
 
@@ -9,6 +10,7 @@ def create_session():
     parent_dir = Path(__file__).parent.parent.absolute()
     dbPath = str(parent_dir) + '/mybuzzn.db'
     engine = create_engine('sqlite:///%s' % dbPath)
+    print(engine.table_names())
     Session = sessionmaker(bind=engine)
     session = Session()
     return session
@@ -17,8 +19,11 @@ def create_session():
 def run():
     with open('./load_profiles/standardlastprofil-haushalt-2020.csv') as csvfile:
         tbl_reader = csv.reader(csvfile, delimiter=',')
-        create_session()
-        print(type(tbl_reader))
+        session = create_session()
+        print(type(session))
+        # session.execute(load_profile.insert(), {"date": "1/1/2020", "time":
+        # "0:15:00", "energy": 27.135})
+
         # for row in tbl_reader:
 
 
