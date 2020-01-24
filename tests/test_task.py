@@ -75,7 +75,11 @@ class TaskTestCase(BuzznTestCase):
         self.assertTrue(isinstance(result, int))
 
     def test_calc_support_year_start(self):
-        """ Unit tests for function calc_support_year_start(). """
+        """ Unit tests for function calc_support_year_start(). 
+        Expect Mar-12 last year if today is between Jan-01 and
+        Mar-11.
+        Expect Mar-12 this year if today is after Mar-11.
+        """
 
         result = calc_support_year_start()
 
@@ -94,7 +98,11 @@ class TaskTestCase(BuzznTestCase):
             self.assertEqual(date.year, datetime.utcnow().year)
 
     def test_calc_support_week_start(self):
-        """ Unit tests for function calc_support_week_start(). """
+        """ Unit tests for function calc_support_week_start(). 
+        Expect one week back if today is before Mar-12 or after Mar-18.
+        Expect start of support year, i.e. Mar-12 this year, if today is
+        between Mar-11 and Mar-19.
+        """
 
         result = calc_support_week_start()
 
