@@ -2,7 +2,7 @@ import csv
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.schema import MetaData
+# from sqlalchemy.schema import MetaData
 # from util.database import db
 
 
@@ -18,7 +18,7 @@ def create_session():
 
 def run():
     with open('./load_profiles/standardlastprofil-haushalt-2020.csv') as csvfile:
-        tbl_reader = csv.reader(csvfile, delimiter=',')
+        # tbl_reader = csv.reader(csvfile, delimiter=',')
         session = create_session()
         print(type(session))
         # session.execute(load_profile.insert(), {"date": "1/1/2020", "time":
