@@ -1,4 +1,3 @@
-# from flask import current_app as app
 from util.database import db
 
 
@@ -8,3 +7,8 @@ class LoadProfile(db.Model):
     date = db.Column(db.String(33), primary_key=True)
     time = db.Column(db.String(33), primary_key=True)
     energy = db.Column(db.Float)
+
+    def __init__(self, date, time, energy):
+        self.date = date
+        self.time = time
+        self.energy = energy
