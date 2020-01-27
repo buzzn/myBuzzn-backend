@@ -39,7 +39,8 @@ def upgrade():
                     sa.Column('password', sa.String(
                         length=333), nullable=True),
                     sa.Column('state', sa.Enum('ACTIVATION_PENDING', 'PASSWORT_RESET_PENDING',
-                                               'ACTIVE', 'DEACTIVATED', name='statetype'), nullable=True),
+                                               'ACTIVE', 'DEACTIVATED',
+                                               name='statetype'), nullable=True),
                     sa.Column('role', sa.Enum('LOCAL_POWER_TAKER',
                                               'ADMINISTRATOR', name='roletype'), nullable=True),
                     sa.Column('meter_id', sa.String(length=32), nullable=True),
