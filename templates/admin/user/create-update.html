@@ -53,7 +53,7 @@
       <div class="select">
         <select name="group_id">
           {% for g in groups %}
-          <option {% if g._id==group_id %} selected {% endif %} value="{{g._id}}">{{g.name}}</option>
+          <option {% if g.id==group_id %} selected {% endif %} value="{{g.id}}">{{g.name}}</option>
           {% endfor %}
         </select>
       </div>
