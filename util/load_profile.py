@@ -3,7 +3,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 # from sqlalchemy.schema import MetaData
-from util.database import db
+# from util.database import db
 from models.loadprofile import LoadProfile
 
 
@@ -19,10 +19,9 @@ def create_session():
 
 def run():
     with open('./load_profiles/standardlastprofil-haushalt-2020.csv') as csvfile:
-        tbl_reader = csv.reader(csvfile, delimiter=',')
+        # tbl_reader = csv.reader(csvfile, delimiter=',')
         session = create_session()
 
-        # TODO
         session.execute(LoadProfile.insert(), {"date": "1/1/2020", "time":
                                                "0:15:00", "energy": 27.135})
 
