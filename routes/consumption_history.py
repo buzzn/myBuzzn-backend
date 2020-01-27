@@ -62,7 +62,7 @@ def get_readings(meter_id, begin):
             reading_timestamp = reading_date.timestamp()
             if reading_timestamp >= begin:
                 result[reading_date.strftime(
-                    '%Y-%d-%m %H:%S:%M')] = data.get('values')
+                    '%Y-%m-%d %H:%S:%M')] = data.get('values')
     return result
 
 
