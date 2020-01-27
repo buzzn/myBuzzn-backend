@@ -2,7 +2,7 @@
 An app to investigate your power consumption habits for *BUZZN* customers.
 
 ## How to run
-We recommend to setup a virtual env for the projects' requirements.
+We recommend to setup a virtual environment for the projects' requirements.
 ```bash
 cd PROJECT_ROOT
 virtualenv -p `whereis python | cut -d ' ' -f3` .venv
@@ -101,18 +101,19 @@ Clone the sources:
 ```bash
 git clone https://github.com/buzzn/mybuzzn-backend.git
 ```
-We recommend to setup a virtual env for the projects' requirements.
+We recommend to setup a virtual environment for the projects' requirements.
 ```bash
 cd PROJECT_ROOT
 virtualenv -p `whereis python | cut -d ' ' -f3` .venv
 source .venv/bin/activate
 ```
-Install the requirements
+Install the python requirements
 ```bash
 pip install -r "requirements.txt"
 pip install git+https://github.com/buzzn/discovergy.git
 ```
-Create an endpoint in your webserver, for example for apache, create a new site:
+
+Create an endpoint in your webserver, for example for Apache, create a new site:
 ```
 <VirtualHost *:80>
   ServerName your-domain.net
@@ -121,7 +122,7 @@ Create an endpoint in your webserver, for example for apache, create a new site:
 
   WSGIDaemonProcess mybuzznbackend user=mybuzznbackend-user group=mybuzznbackend-group threads=5 python-path=/path/to/python:/and/path/to/packages
   WSGIScriptAlias / /path/to/mybuzzn/projectdir/mybuzznbackend.wsgi
-  WSGIPassAuthorization On # Importent, so autho header is passed to the app
+  WSGIPassAuthorization On # Important for authorization header to be passed to the app
 
     <Directory /path/to/project/>
         WSGIProcessGroup mybuzznbackend
@@ -131,11 +132,11 @@ Create an endpoint in your webserver, for example for apache, create a new site:
     </Directory>
 </VirtualHost>
 ```
-Make sure that `WSGIPassAuthorization` is set to `On`, to have the app access to
-the auth headers.
+Make sure that `WSGIPassAuthorization` is set to `On` to grant the app
+authorization header access.
 
-Make sure a file `setup_environment.py` exists in the project root, which sets
-env variables like this:
+Make sure a file `setup_environment.py` exists in the project root which sets
+environment variables like this:
 ```python
 import os
 
@@ -156,8 +157,9 @@ os.environ['REDIS_PORT'] = '...'
 os.environ['REDIS_DB'] = '...'
 ```
 
-Make sure the `start_redis_task.py` is running. If you are running
-systemd, this can be done using a service:
+Make you have a running instance of redis `systemctl start redis.service` and
+the `start_redis_task.py` is running. If you are running systemd, this can be
+done using a service:
 ```ini
 [Unit]
 Description=Fill redis db with current reading values
@@ -177,10 +179,11 @@ WantedBy=multi-user.target⏎
 
 ### Upgrading to a new version
 To upgrade to a new version, go to the project root and run `git pull`.
-If something has changed on the models, run `source ./env/bin/activate` to
-activate the python environment. Then run `./env/bin/flask db upgrade` to
+If something has changed on the models, run `source ./venv/bin/activate` to
+activate the python environment. Then run `./venv/bin/flask db upgrade` to
 upgrade the database.
 
-Finally restart the redis task and the webserver:
+Finally restart the redis task, which fills the redis database with meter
+readings and the webserver:
 `systemctl restart apache2.service redis-task.service`
 
