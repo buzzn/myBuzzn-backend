@@ -1,5 +1,6 @@
 import csv
 import logging
+import optparse
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -21,7 +22,30 @@ def create_session():
     return session
 
 
+def parse_args():
+    usage = """usage: %prog file ...
+Parse a standard load profile in csv format and upload it to the sqlite
+database mybuzzn.db. Run it like this from project root:
+
+    python util/load_profile.py standardlastprofil-haushalt-2020-bereinigt.csv
+
+Please make sure your csv file has a header row and does not contain any duplicate values. 
+    """
+
+    parser = optparse.OptionParser(usage)
+    _, csvfile = parser.parse_args()
+
+    if not csvfile:
+        print(parser.format_help())
+        parser.exit()
+
+    return csvfile
+
+
 def run():
+
+    csvfile = parse_args()
+    print(type(csvfile))
 
     with open('./load_profiles/standardlastprofil-haushalt-2020-bereinigt.csv') as csvfile:
         tbl_reader = csv.reader(csvfile, delimiter=',')
@@ -30,7 +54,7 @@ def run():
         try:
             for row in tbl_reader:
                 session.add(LoadProfile(row[0], row[1], float(row[2])))
-                session.commit()
+            session.commit()
 
         except Exception as e:
             message = exception_template.format(type(e).__name__, e.args)
