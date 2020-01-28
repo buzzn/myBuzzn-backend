@@ -2,7 +2,7 @@
 An app to investigate your power consumption habits for *BUZZN* customers.
 
 ## How to run
-We recommend to setup a virtual env for the projects' requirements.
+We recommend to setup a virtual environment for the projects' requirements.
 ```bash
 cd PROJECT_ROOT
 virtualenv -p `whereis python | cut -d ' ' -f3` .venv
@@ -94,3 +94,96 @@ python -m unittest
 ```bash
 pylint app.py apitests models routes tests util
 ```
+## How to deploy
+This chapter describes how to get a production instance running.
+### Setup a new instance
+Clone the sources:
+```bash
+git clone https://github.com/buzzn/mybuzzn-backend.git
+```
+We recommend to setup a virtual environment for the projects' requirements.
+```bash
+cd PROJECT_ROOT
+virtualenv -p `whereis python | cut -d ' ' -f3` .venv
+source .venv/bin/activate
+```
+Install the python requirements
+```bash
+pip install -r "requirements.txt"
+pip install git+https://github.com/buzzn/discovergy.git
+```
+
+Create an endpoint in your webserver, for example for Apache, create a new site:
+```
+<VirtualHost *:80>
+  ServerName your-domain.net
+  ErrorLog /path/to/error/log
+  CustomLog /path/to/access.log combined
+
+  WSGIDaemonProcess mybuzznbackend user=mybuzznbackend-user group=mybuzznbackend-group threads=5 python-path=/path/to/python:/and/path/to/packages
+  WSGIScriptAlias / /path/to/mybuzzn/projectdir/mybuzznbackend.wsgi
+  WSGIPassAuthorization On # Important for authorization header to be passed to the app
+
+    <Directory /path/to/project/>
+        WSGIProcessGroup mybuzznbackend
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+</VirtualHost>
+```
+Make sure that `WSGIPassAuthorization` is set to `On` to grant the app
+authorization header access.
+
+Make sure a file `setup_environment.py` exists in the project root which sets
+environment variables like this:
+```python
+import os
+
+os.environ['BUZZN_SECRET_KEY'] = '...'
+os.environ['DISCOVERGY_EMAIL'] = '...'
+os.environ['DISCOVERGY_PASSWORD'] = '...'
+os.environ['JWT_SECRET_KEY'] = '...'
+os.environ['BUZZN_SQLALCHEMY_DATABASE_URI'] = '...'
+os.environ['BUZZN_PASSWORD_SALT'] = '...'
+os.environ['BUZZN_SMTP_SERVER'] = '...'
+os.environ['BUZZN_SMTP_SERVER_PORT'] = '...'
+os.environ['BUZZN_EMAIL'] = '...'
+os.environ['BUZZN_EMAIL_PASSWORD'] = '...'
+os.environ['BUZZN_BASE_URL'] = '...'
+os.environ['BUZZN_MAILER'] = '...'
+os.environ['REDIS_HOST'] = '...'
+os.environ['REDIS_PORT'] = '...'
+os.environ['REDIS_DB'] = '...'
+```
+
+Make you have a running instance of redis `systemctl start redis.service` and
+the `start_redis_task.py` is running. If you are running systemd, this can be
+done using a service:
+```ini
+[Unit]
+Description=Fill redis db with current reading values
+After=network.target redis.service
+
+[Service]
+Type=simple
+Reastart=always
+ExecStart=/path/to/python/interpreter/in/environment /path/to/start_redis_task.py
+StandardOutput=journal
+User=mybuzznbackend-user
+Group=mybuzznbackend-group
+
+[Install]
+WantedBy=multi-user.target⏎
+```
+
+### Upgrading to a new version
+To upgrade to a new version, go to the project root and run `git pull`.
+If something has changed on the models, run `source ./venv/bin/activate` to
+activate the python environment. Then run `./venv/bin/flask db upgrade` to
+upgrade the database.
+
+Finally restart the redis task, which fills the redis database with meter
+readings and the webserver:
+`systemctl restart apache2.service redis-task.service`
+

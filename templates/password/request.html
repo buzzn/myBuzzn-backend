@@ -1,14 +1,22 @@
 {% extends "password/layout.html" %}
 {% block head %}
 {{super()}}
-<title>Passwort ändern</title>
+<title>BUZZN - Passwort zurücksetzen</title>
 {% endblock %}
 
 {% block body %}
 <p>{{message}}</p>
+<h1>Passwort zurücksetzen</h1>
+<p>Vergebe jetzt ein neues Passwort und melde dich danach wieder in der App an.</p>
 <form action="/password/reset/{{passwordResetToken}}" method="POST">
-  <label>Passwort</label><input type="password" name="password" /><br />
-  <label>Passwort-Wiederhoung</label><input type="password" name="passwordRepeat" /><br />
-  <button type="submit">Passwort ändern</button>
+  <div class="field">
+    <label for="password">Neues Passwort</label>
+    <input name="password" type="password" id="password" placeholder="Neues Passwort">
+  </div>
+  <div class="field">
+    <label for="passwordRepeat">Neues Passwort wiederholen</label>
+    <input name="passwordRepeat" type="password" id="passwordRepeat" placeholder="Neues Passwort wiederholen">
+  </div>
+  <button type="submit">Speichern</button>
 </form>
 {% endblock %}
