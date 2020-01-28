@@ -35,6 +35,7 @@ def profile():
 
     target_profile['firstName'] = target_user.first_name
     target_profile['flatSize'] = target_user.flat_size
+    target_profile['meterId'] = target_user.meter_id
 
     target_group = Group.query.filter(Group.id == target_user.group_id).first()
 
