@@ -23,29 +23,30 @@ def create_session():
 
 
 def parse_args():
-    usage = """usage: %prog file ...
+    usage = """usage: %prog filepath ...
 Parse a standard load profile in csv format and upload it to the sqlite
 database mybuzzn.db. Run it like this from project root:
 
-    python util/load_profile.py standardlastprofil-haushalt-2020-bereinigt.csv
+    python util/load_profile.py "util/standardlastprofil-haushalt-2020-bereinigt.csv"
 
 Please make sure your csv file has a header row and does not contain any duplicate values. 
     """
 
     parser = optparse.OptionParser(usage)
-    _, csvfile = parser.parse_args()
+    _, csvfile_path = parser.parse_args()
 
-    if not csvfile:
+    if not csvfile_path:
         print(parser.format_help())
         parser.exit()
 
-    return csvfile
+    return csvfile_path
 
 
 def run():
 
-    csvfile = parse_args()
-    print(type(csvfile))
+    csvfile_path = parse_args()
+    print(type(csvfile_path))
+    print(csvfile_path)
 
     with open('./load_profiles/standardlastprofil-haushalt-2020-bereinigt.csv') as csvfile:
         tbl_reader = csv.reader(csvfile, delimiter=',')
