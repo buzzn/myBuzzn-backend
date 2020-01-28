@@ -34,14 +34,14 @@ Please make sure your csv file has a header row and does not contain any duplica
     parser = argparse.ArgumentParser(description=usage)
     parser.add_argument('filepath', type=str, nargs='+',
                         help='the csv file path')
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
     return args
 
 
 def run():
 
-    csvfile_path = parse_args()
-    with open(csvfile_path) as csvfile:
+    csvfile_path = parse_args().get('filepath')
+    with open(csvfile_path[0]) as csvfile:
         tbl_reader = csv.reader(csvfile, delimiter=',')
         next(tbl_reader, None)
         session = create_session()
