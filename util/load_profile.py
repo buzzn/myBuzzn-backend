@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 import logging
 import argparse
 from models.loadprofile import LoadProfileEntry
@@ -25,6 +26,7 @@ def parse_args():
     return args
 
 
+# pylint: disable=too-many-locals
 def run():
 
     csvfile_path = parse_args().get('filepath')
@@ -36,15 +38,17 @@ def run():
             for row in tbl_reader:
                 date = row[0].split('/')
                 time = row[1].split(':')
-                hours = time[0]
-                minutes = time[1]
-                seconds = time[2]
-                date_formatted = date[2] + '-' + date[0] + '-' + date[1]
-                time_formatted = hours + ':' + minutes + ':' + seconds
+                year = int(date[2])
+                month = int(date[0])
+                day = int(date[1])
+                hours = int(time[0])
+                minutes = int(time[1])
+                seconds = int(time[2])
+                date_formatted = datetime(
+                    year, month, day, hours, minutes, seconds)
                 energy = row[2]
-
-                session.add(LoadProfileEntry(
-                    date_formatted, time_formatted, energy))
+                session.add(LoadProfileEntry(date_formatted.strftime('%Y-%m-%d'),
+                                             date_formatted.strftime('%H:%M:%S'), energy))
             session.commit()
 
         except Exception as e:
