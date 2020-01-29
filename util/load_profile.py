@@ -1,5 +1,4 @@
 import csv
-from datetime import datetime
 import logging
 import argparse
 from models.loadprofile import LoadProfileEntry
@@ -36,14 +35,11 @@ def run():
         try:
             for row in tbl_reader:
                 date = row[0].split('/')
-                month = date[0]
-                day = date[1]
-                year = date[2]
                 time = row[1].split(':')
                 hours = time[0]
                 minutes = time[1]
                 seconds = time[2]
-                date_formatted = year + '-' + month + '-' + day
+                date_formatted = date[2] + '-' + date[0] + '-' + date[1]
                 time_formatted = hours + ':' + minutes + ':' + seconds
                 energy = row[2]
 
