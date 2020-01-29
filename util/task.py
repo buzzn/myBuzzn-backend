@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.user import User
 from models.group import Group
+from util.error import exception_message
 
 logging.basicConfig()
 logger = logging.getLogger('util/task')
@@ -21,7 +22,6 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 last_data_flush = None
-exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 
 
 def create_session():
@@ -157,7 +157,7 @@ class Task:
             self.login()
 
         except Exception as e:
-            message = exception_template.format(type(e).__name__, e.args)
+            message = exception_message(e)
             logger.error(message)
             logger.error('Wrong or missing discovergy credentials.')
             return
@@ -219,7 +219,7 @@ class Task:
                     self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
-                message = exception_template.format(type(e).__name__, e.args)
+                message = exception_message(e)
                 logger.error(message)
 
     def update_redis(self):
@@ -297,7 +297,7 @@ class Task:
                         self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
-                message = exception_template.format(type(e).__name__, e.args)
+                message = exception_message(e)
                 logger.error(message)
 
 
