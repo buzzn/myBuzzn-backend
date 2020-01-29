@@ -1,7 +1,8 @@
 import csv
+from datetime import datetime
 import logging
 import argparse
-from models.loadprofile import LoadProfile
+from models.loadprofile import LoadProfileEntry
 from util.database import create_session
 
 
@@ -34,10 +35,20 @@ def run():
         session = create_session()
         try:
             for row in tbl_reader:
-                date = row[0]
-                time = row[1]
+                date = row[0].split('/')
+                month = date[0]
+                day = date[1]
+                year = date[2]
+                time = row[1].split(':')
+                hours = time[0]
+                minutes = time[1]
+                seconds = time[2]
+                date_formatted = year + '-' + month + '-' + day
+                time_formatted = hours + ':' + minutes + ':' + seconds
                 energy = row[2]
-                session.add(LoadProfile(date, time, energy))
+
+                session.add(LoadProfileEntry(
+                    date_formatted, time_formatted, energy))
             session.commit()
 
         except Exception as e:
