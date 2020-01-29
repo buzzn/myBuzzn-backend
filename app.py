@@ -10,6 +10,7 @@ from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID
 from util.websocket_provider import WebsocketProvider
+from models.user import User
 
 
 eventlet.monkey_patch()
@@ -57,13 +58,7 @@ def background_thread():
             for key in clients:
                 user = db.session.query(User).filter_by(
                     meter_id=clients[key].get('meter_id')).first()
-
-                # pylint: disable=fixme
-                # TODO - discovergy login
-                # message = json.dumps(wp.create_data(user.id))
-                message = json.dumps(
-                    dict(sid=key, user_id=user.id, meter_id=user.meter_id))
-
+                message = json.dumps(wp.create_data(user.id))
                 socketio.emit(
                     'live_data', {'data': message}, namespace='/live', room=key)
 
