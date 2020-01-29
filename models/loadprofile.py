@@ -1,8 +1,8 @@
 from util.database import db
 
 
-class LoadProfile(db.Model):
-    """ Represents the standard load profile. """
+class LoadProfileEntry(db.Model):
+    """ Represents one entry of a standard load profile. """
 
     __tablename__ = 'loadprofile'
     date = db.Column(db.String(33), primary_key=True)
