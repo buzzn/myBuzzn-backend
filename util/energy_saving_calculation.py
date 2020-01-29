@@ -58,7 +58,7 @@ def calculate_percentages(start):
     year = start.year
     month = start.month
     day = start.day
-    end = datetime(year + 1, month, day).date()
+    #  end = datetime(year + 1, month, day).date()
     return {}
 
 
