@@ -15,12 +15,12 @@
 
 
 from datetime import datetime, time
-from dateutil import parser
 import json
 import os
 from pathlib import Path
-import pytz
 import logging
+from dateutil import parser
+import pytz
 import redis
 from sqlalchemy import create_engine
 from util.error import exception_message
