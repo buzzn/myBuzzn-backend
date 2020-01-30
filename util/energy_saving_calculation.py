@@ -20,9 +20,9 @@ import os
 from pathlib import Path
 import logging
 from dateutil import parser
-import pytz
 import redis
 from sqlalchemy import create_engine
+import pytz
 from util.error import exception_message
 
 
