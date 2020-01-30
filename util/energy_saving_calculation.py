@@ -1,8 +1,3 @@
-# A Standardlastprofil is a set of pairs, where each pair specifies a time span of
-# 15 minutes and the amount of energy consumed in this span. In this description
-# we assume each value of the energy consumption to be between 0 and 1 and the sum
-# of all values to be equal to 1. This might differ in the database.
-
 # To get the estimated power consumption for one user within a given term do:
 # ratio_values: Sum up all Standardlastprofil ratio values of the ongoing term.
 # energy_consumption_last_term: The last meter reading minus the first meter
@@ -26,8 +21,7 @@ from pathlib import Path
 import logging
 import redis
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-# from util.error import exception_message
+from util.error import exception_message
 
 
 logging.basicConfig()
@@ -38,30 +32,50 @@ redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 
 
-def create_session():
+def get_engine():
     parent_dir = Path(__file__).parent.parent.absolute()
     dbPath = str(parent_dir) + '/mybuzzn.db'
     engine = create_engine('sqlite:///%s' % dbPath)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    return session
+    return engine
 
 
 def calculate_percentages(start):
     """ Calculates the percentages of energy consumption for the specified
     term. A term is a year where the start may be specified by the caller.
     :param datetime.date start: the start value for the term
-    :return: the energy consumption for each date
+    :return: the energy consumption for each date as percentage
     :rtype: dict
     """
 
-    year = start.year
-    month = start.month
-    day = start.day
-    end = datetime(year + 1, month, day).date()
-    print(start)
-    print(end)
-    return {}
+    end = datetime(start.year + 1, start.month, start.day).date()
+    engine = get_engine()
+    result = {}
+    energy_total = 0
+    try:
+        with engine.connect() as con:
+            rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
+                             str(start) + "\' AND \'" + str(end) + '\' ORDER BY date')
+
+            # Calculate energy total which should be ~1.000.000 kWh
+            for row in rs:
+                energy_total += row[2]
+
+            # Calculate 1% of energy total
+            energy_percent = energy_total/100
+
+            # Calculate percentage of each energy value and write to result
+            rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
+                             str(start) + "\' AND \'" + str(end) + '\' ORDER BY date')
+            for row in rs:
+                date_time = row[0] + ' ' + row[1]
+                percentage = float(row[2])/energy_percent
+                result[date_time] = percentage
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+
+    return result
 
 
 class Task:
