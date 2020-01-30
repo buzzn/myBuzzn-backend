@@ -39,18 +39,19 @@ def get_engine():
     return engine
 
 
-def calculate_percentages(start):
+def calculate_ratio_values(start):
     """ Calculates the percentages of energy consumption for the specified
     term. A term is a year where the start may be specified by the caller.
     :param datetime.date start: the start value for the term
-    :return: the energy consumption for each date as percentage
-    :rtype: dict
+    :return: sum of all standard load profile ratio values of the given term
+    :rtype: float
     """
 
     end = datetime(start.year + 1, start.month, start.day).date()
+    term_end = datetime.utcnow().date()
     engine = get_engine()
-    result = {}
-    energy_total = 0
+    energy_total = 0.0
+    ratio_values = 0.0
     try:
         with engine.connect() as con:
             rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
@@ -65,17 +66,27 @@ def calculate_percentages(start):
 
             # Calculate percentage of each energy value and write to result
             rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
-                             str(start) + "\' AND \'" + str(end) + '\' ORDER BY date')
+                             str(start) + "\' AND \'" + str(term_end) + '\' ORDER BY date')
             for row in rs:
-                date_time = row[0] + ' ' + row[1]
                 percentage = float(row[2])/energy_percent
-                result[date_time] = percentage
+                ratio_values += percentage
 
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
 
-    return result
+    return ratio_values
+
+
+def estimated_energy_consumption(ratio_values, start, meter_id):
+    """ Calculate the estimated energy saving for one user in a given term
+    using the standard load profile.
+    :param float ratio_values: sum of all standard load profile ratio values of the given term
+    :param datetime.date start: the start of the term
+    :param str user_id: the user's id
+    :returns: the estimated energy saving for the user
+    :rtype: int
+    """
 
 
 class Task:
@@ -86,12 +97,12 @@ class Task:
         self.redis_client = redis.Redis(host=redis_host, port=redis_port,
                                         db=redis_db)  # connect to server
 
-    def calculate_energy_saving_one_user(self, user_id, start):
+    def calculate_energy_saving_one_user(self, start, meter_id):
         """ Calculate the estimated energy saving for one user in a given term
         using the standard load profile.
-        :param str user_id: the user's id
         :param datetime.date start: the start of the term
-        :returns: the estimated energy saving for the user
+        :param str meter_id: the user's meter id
+        :returns: the estimated energy saving for all users
         :rtype: int
         """
 
@@ -109,7 +120,7 @@ def run():
     users and writes the results to the redis database. """
 
     # task = Task()
-    calculate_percentages(datetime.utcnow().date())
+    calculate_ratio_values(datetime(2020, 1, 1).date())
 
 
 if __name__ == '__main__':
