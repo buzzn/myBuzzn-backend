@@ -152,8 +152,10 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     :rtype: float
     """
 
-    print(start)
-    print(meter_id)
+    end = datetime.utcnow().date()
+    last_meter_reading = get_meter_reading_date(meter_id, end)
+    first_meter_reading = get_meter_reading_date(meter_id, start)
+    return last_meter_reading - first_meter_reading
 
 
 def calc_estimated_energy_consumption(ratio_values, energy_consumption_last_term,
@@ -211,8 +213,8 @@ def run():
     users and writes the results to the redis database. """
 
     # task = Task()
-    date = datetime(2020, 1, 31).date()
-    calc_energy_consumption_last_term(
+    date = datetime(2020, 1, 30).date()
+    calc_energy_consumption_ongoing_term(
         'b4234cd4bed143a6b9bd09e347e17d34', date)
 
 
