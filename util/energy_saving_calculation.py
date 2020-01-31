@@ -14,7 +14,7 @@
 # The algorithm may run once a day and store the result for each user.
 
 
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import json
 import os
 from pathlib import Path
@@ -89,31 +89,40 @@ def get_sorted_keys(meter_id):
     return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
 
 
-def get_last_reading_of_date(meter_id, date):
+def get_meter_reading_date(meter_id, date):
     """ Return the last reading for the given meter id on the given day which
     is stored in the redis database. As we were using unix timestamps as basis
     for our dates all along, there is no need to convert the given,
     timezone-unaware date to UTC.
     :param str meter_id: the meter id for which to get the value
     :param datetime.date date: the date for which to get the value
-    :return: the last reading for the given meter id on the given day
+    :return: the first reading for the given meter id on the given date
     :rtype: float
     """
 
+    result = 0.0
     readings = []
     naive_begin = datetime.combine(date, time(0, 0, 0))
     naive_end = datetime.combine(date, time(23, 59, 59))
     timezone = pytz.timezone('UTC')
     begin = (timezone.localize(naive_begin)).timestamp()
     end = (timezone.localize(naive_end)).timestamp()
-    for key in get_sorted_keys(meter_id):
-        data = json.loads(redis_client.get(key))
-        if data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-            reading_timestamp = reading_date.timestamp()
-            if begin <= reading_timestamp <= end:
-                readings.append(data.get('values')['energy'])
-    return readings[-1]
+
+    try:
+        for key in get_sorted_keys(meter_id):
+            data = json.loads(redis_client.get(key))
+            if data.get('type') == 'reading':
+                reading_date = parser.parse(key[len(meter_id)+1:])
+                reading_timestamp = reading_date.timestamp()
+                if begin <= reading_timestamp <= end:
+                    readings.append(data.get('values')['energy'])
+        result = readings[-1]
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+
+    return result
 
 
 def calc_energy_consumption_last_term(meter_id, start):
@@ -126,8 +135,11 @@ def calc_energy_consumption_last_term(meter_id, start):
     :rtype: float
     """
 
-    print(start)
-    print(meter_id)
+    begin = (datetime(start.year - 1, start.month, start.day)).date()
+    end = start - timedelta(days=1)
+    last_meter_reading = get_meter_reading_date(meter_id, end)
+    first_meter_reading = get_meter_reading_date(meter_id, begin)
+    return last_meter_reading - first_meter_reading
 
 
 def calc_energy_consumption_ongoing_term(meter_id, start):
@@ -199,8 +211,9 @@ def run():
     users and writes the results to the redis database. """
 
     # task = Task()
-    date = datetime(2020, 1, 30).date()
-    get_last_reading_of_date('b4234cd4bed143a6b9bd09e347e17d34', date)
+    date = datetime(2020, 1, 31).date()
+    calc_energy_consumption_last_term(
+        'b4234cd4bed143a6b9bd09e347e17d34', date)
 
 
 if __name__ == '__main__':
