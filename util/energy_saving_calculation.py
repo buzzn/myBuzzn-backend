@@ -1,11 +1,4 @@
 
-# energy_consumption_last_term: The last meter reading minus the first meter
-# reading of the previous term.
-# energy_consumption_ongoing_term: The latest meter reading minus the first meter
-# reading of the ongoing term.
-# Then the estimated power consumption: (1 - ratio_values) *
-# energy_consumption_last_term + energy_consumption_ongoing_term
-
 # To get the estimated saving do: energy_consumption_last_term - estimated power consumption
 
 # To get the estimated saving for all users sum up all last term power
@@ -45,7 +38,7 @@ def get_engine():
 def calc_ratio_values(start):
     """ Calculates the percentages of energy consumption for the specified
     term. A term is a year where the start may be specified by the caller.
-    :param datetime.date start: the start value for the term
+    :param datetime.date start: the start date of the term
     :return: sum of all standard load profile ratio values of the given term
     :rtype: float
     """
@@ -129,7 +122,7 @@ def calc_energy_consumption_last_term(meter_id, start):
     """ Calculate the last meter reading minus the first meter reading of the
     previous term for a given meter id.
     :param str meter_id: the meter id
-    :param datetime.date start: the start value of the ongoing term
+    :param datetime.date start: the start date of the ongoing term
     :return: the last meter reading minus the first meter reading of the given
     meter id
     :rtype: float
@@ -146,7 +139,7 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     """ Calculate the latest meter reading minus the first meter reading of the
     ongoing term for a given meter id.
     :param datetime meter_id: the meter id
-    :param datetime.date start: the start value of the ongoing term
+    :param datetime.date start: the start date of the ongoing term
     :return: the latest meter reading minus the first meter reading of the
     given meter id
     :rtype: float
@@ -158,22 +151,21 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     return last_meter_reading - first_meter_reading
 
 
-def calc_estimated_energy_consumption(ratio_values, energy_consumption_last_term,
-                                      energy_consumption_ongoing_term):
+def calc_estimated_energy_consumption(meter_id, start):
     """ Calculate the estimated energy saving for one user in a given term
-    using the standard load profile.
-    :param float ratio_values: sum of all standard load profile ratio values of the given term
-    :param float energy_consumption_last_term: the last meter reading minus the
-    first meter reading of the previous term
-    :param float energy_consumption_ongoing_term: the last meter reading minus
-    the first meter reading of the ongoing term
+    using the standard load profile as
+    (1 - ratio values) * energy consumption last term + energy consumption ongoing term
+    :param datetime.date start: the start date of the given term
     :returns: the estimated energy consumption
     :rtype: float
     """
 
-    print(ratio_values)
-    print(energy_consumption_last_term)
-    print(energy_consumption_ongoing_term)
+    ratio_values = calc_ratio_values(start)
+    energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
+                                                                     start)
+    energy_consumption_ongoing_term = calc_energy_consumption_ongoing_term(
+        meter_id, start)
+    return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
 
 
 def calc_estimated_energy_saving(energy_consumption_last_term,
@@ -214,7 +206,7 @@ def run():
 
     # task = Task()
     date = datetime(2020, 1, 30).date()
-    calc_energy_consumption_ongoing_term(
+    calc_estimated_energy_consumption(
         'b4234cd4bed143a6b9bd09e347e17d34', date)
 
 
