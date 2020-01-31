@@ -1,5 +1,3 @@
-
-
 # To get the estimated saving for all users sum up all last term power
 # consumptions and subtract all estimated power consumptions.
 
@@ -15,7 +13,9 @@ from dateutil import parser
 import redis
 from sqlalchemy import create_engine
 import pytz
+from models.user import User
 from util.error import exception_message
+from util.database import create_session
 
 
 logging.basicConfig()
@@ -25,6 +25,12 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
+
+
+def get_all_user_meter_ids(session):
+    """ Get all user meter ids from sqlite database. """
+
+    return [meter_id[0] for meter_id in session.query(User.meter_id).all()]
 
 
 def get_engine():
@@ -184,32 +190,47 @@ def calc_estimated_energy_saving(meter_id, start):
     return energy_consumption_last_term - estimated_energy_consumption
 
 
-def estimated_energy_saving_all_users():
-    """ Calculate the estimated energy saving of all users by summing up all
-    last term energy consumptions and subtracting all estimated energy
-    consumptions.
-    :return: the estimated energy saving of all users
-    :rtype: float
+def estimate_energy_saving_each_user(start):
+    """ Calculate the estimated energy saving for each user and write it to
+    the redis database.
+    :param datetime.date start: the start date of the given term
     """
 
+    savings = dict()
+    session = create_session()
+    for meter_id in get_all_user_meter_ids(session):
+        saving = calc_estimated_energy_saving(meter_id, start)
+        savings[meter_id] = saving
+    timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    for key, value in savings.items():
+        redis_key = key + '_' + str(timestamp)
+        data = dict(type='estimated_energy_saving', values=value)
+        redis_client.set(redis_key, json.dumps(data))
 
-class Task:
-    """ Retrieve standard load profile from sqlite database, calculate
-    estimated energy saving for each user and all users, write results to redis database. """
 
-    def __init__(self):
-        self.redis_client = redis.Redis(host=redis_host, port=redis_port,
-                                        db=redis_db)  # connect to server
+def estimate_energy_saving_all_users(start):
+    """ Calculate the estimated energy saving of all users by summing up all
+    last term energy consumptions and subtracting all estimated energy
+    consumptions. Write the result to the redis database.
+    :param datetime.date start: the start date of the given term
+    """
+    savings = 0.0
+    session = create_session()
+    for meter_id in get_all_user_meter_ids(session):
+        savings += calc_estimated_energy_saving(meter_id, start)
+    timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    redis_key = 'all_meter_ids' + '_' + str(timestamp)
+    data = dict(type='estimated_energy_saving', values=savings)
+    redis_client.set(redis_key, json.dumps(data))
 
 
 def run():
-    """ Runs the task which calculates the estimated energy saving for all
-    users and writes the results to the redis database. """
+    """ Calculate the estimated energy saving for each user and all users
+    and write the results to the redis database.
+    """
 
-    # task = Task()
     date = datetime(2020, 1, 30).date()
-    calc_estimated_energy_saving(
-        'b4234cd4bed143a6b9bd09e347e17d34', date)
+    estimate_energy_saving_all_users(date)
 
 
 if __name__ == '__main__':
