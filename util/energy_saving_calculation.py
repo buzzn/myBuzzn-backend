@@ -1,5 +1,4 @@
 
-# To get the estimated saving do: energy_consumption_last_term - estimated power consumption
 
 # To get the estimated saving for all users sum up all last term power
 # consumptions and subtract all estimated power consumptions.
@@ -155,6 +154,7 @@ def calc_estimated_energy_consumption(meter_id, start):
     """ Calculate the estimated energy saving for one user in a given term
     using the standard load profile as
     (1 - ratio values) * energy consumption last term + energy consumption ongoing term
+    :param str meter_id: the meter id
     :param datetime.date start: the start date of the given term
     :returns: the estimated energy consumption
     :rtype: float
@@ -168,18 +168,20 @@ def calc_estimated_energy_consumption(meter_id, start):
     return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
 
 
-def calc_estimated_energy_saving(energy_consumption_last_term,
-                                 estimated_energy_consumption):
+def calc_estimated_energy_saving(meter_id, start):
     """ Calculate the estimated energy saving for one user in a given term
     using the standard load profile.
-    :param float energy_consumption_last_term: the last meter reading minus the first meter reading
-    :param float estimated_energy_consumption: the estimated energy consumption
+    :param str meter_id: the meter id
+    :param datetime.date start: the start date of the given term
     :return: the estimated energy saving
     :rtype: float
     """
 
-    print(energy_consumption_last_term)
-    print(estimated_energy_consumption)
+    energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
+                                                                     start)
+    estimated_energy_consumption = calc_estimated_energy_consumption(meter_id,
+                                                                     start)
+    return energy_consumption_last_term - estimated_energy_consumption
 
 
 def estimated_energy_saving_all_users():
@@ -206,7 +208,7 @@ def run():
 
     # task = Task()
     date = datetime(2020, 1, 30).date()
-    calc_estimated_energy_consumption(
+    calc_estimated_energy_saving(
         'b4234cd4bed143a6b9bd09e347e17d34', date)
 
 
