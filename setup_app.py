@@ -52,6 +52,7 @@ def setup_app(app_config):
     # pylint: disable=import-outside-toplevel,unused-import
     from models.user import User
     from models.group import Group
+    from models.loadprofile import LoadProfileEntry
     Migrate(app, db)
 
     # Login stuff

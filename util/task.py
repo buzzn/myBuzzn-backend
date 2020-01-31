@@ -1,16 +1,15 @@
 import json
 import os
-from pathlib import Path
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
 import logging
 from discovergy.discovergy import Discovergy
 import redis
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from models.user import User
 from models.group import Group
 from util.error import exception_message
+from util.database import create_session
+
 
 logging.basicConfig()
 logger = logging.getLogger('util/task')
@@ -22,15 +21,6 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 last_data_flush = None
-
-
-def create_session():
-    parent_dir = Path(__file__).parent.parent.absolute()
-    dbPath = str(parent_dir) + '/mybuzzn.db'
-    engine = create_engine('sqlite:///%s' % dbPath)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    return session
 
 
 def get_all_meter_ids(session):
