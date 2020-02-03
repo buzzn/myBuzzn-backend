@@ -207,17 +207,3 @@ def estimate_energy_saving_all_users(start):
     redis_key = 'all_meter_ids' + '_' + str(timestamp)
     data = dict(type='estimated_energy_saving', values=savings)
     redis_client.set(redis_key, json.dumps(data))
-
-
-def run():
-    """ Calculate the estimated energy saving for each user and all users
-    and write the results to the redis database.
-    """
-
-    session = create_session()
-    # date = datetime(2020, 2, 3).date()
-    print(get_all_user_meter_ids(session))
-
-
-if __name__ == '__main__':
-    run()
