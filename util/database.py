@@ -9,8 +9,7 @@ db = SQLAlchemy()
 
 def create_session():
     """ Create a database session for sqlite database mybuzzn.db in the util
-    directory.
-    """
+    directory. """
 
     parent_dir = Path(__file__).parent.parent.absolute()
     dbPath = str(parent_dir) + '/mybuzzn.db'
@@ -18,3 +17,13 @@ def create_session():
     Session = sessionmaker(bind=engine)
     session = Session()
     return session
+
+
+def get_engine():
+    """ Create a database engine for sqlite database mybuzzn.db in the util
+    directory. """
+
+    parent_dir = Path(__file__).parent.parent.absolute()
+    dbPath = str(parent_dir) + '/mybuzzn.db'
+    engine = create_engine('sqlite:///%s' % dbPath)
+    return engine

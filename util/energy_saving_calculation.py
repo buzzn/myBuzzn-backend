@@ -1,21 +1,13 @@
-# To get the estimated saving for all users sum up all last term power
-# consumptions and subtract all estimated power consumptions.
-
-# The algorithm may run once a day and store the result for each user.
-
-
 from datetime import datetime, time, timedelta
 import json
 import os
-from pathlib import Path
 import logging
 from dateutil import parser
 import redis
-from sqlalchemy import create_engine
 import pytz
 from models.user import User
 from util.error import exception_message
-from util.database import create_session
+from util.database import create_session, get_engine
 
 
 logging.basicConfig()
@@ -31,13 +23,6 @@ def get_all_user_meter_ids(session):
     """ Get all user meter ids from sqlite database. """
 
     return [meter_id[0] for meter_id in session.query(User.meter_id).all()]
-
-
-def get_engine():
-    parent_dir = Path(__file__).parent.parent.absolute()
-    dbPath = str(parent_dir) + '/mybuzzn.db'
-    engine = create_engine('sqlite:///%s' % dbPath)
-    return engine
 
 
 def calc_ratio_values(start):
@@ -229,8 +214,9 @@ def run():
     and write the results to the redis database.
     """
 
-    date = datetime(2020, 1, 30).date()
-    estimate_energy_saving_all_users(date)
+    session = create_session()
+    date = datetime(2020, 2, 3).date()
+    print(get_all_user_meter_ids(session))
 
 
 if __name__ == '__main__':
