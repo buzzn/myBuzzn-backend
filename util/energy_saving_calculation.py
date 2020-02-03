@@ -215,7 +215,7 @@ def run():
     """
 
     session = create_session()
-    date = datetime(2020, 2, 3).date()
+    # date = datetime(2020, 2, 3).date()
     print(get_all_user_meter_ids(session))
 
 
