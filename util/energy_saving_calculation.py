@@ -8,6 +8,7 @@ import pytz
 from models.user import User
 from util.error import exception_message
 from util.database import create_session, get_engine
+from util.redis_helpers import get_sorted_keys
 
 
 logging.basicConfig()
@@ -64,14 +65,6 @@ def calc_ratio_values(start):
     return ratio_values
 
 
-def get_sorted_keys(meter_id):
-    """ Return all keys stored in the redis db for a given meter id.
-    :param str meter_id: the meter id to prefix the scan with
-    """
-
-    return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
-
-
 def get_meter_reading_date(meter_id, date):
     """ Return the last reading for the given meter id on the given day which
     is stored in the redis database. As we were using unix timestamps as basis
@@ -92,7 +85,7 @@ def get_meter_reading_date(meter_id, date):
     end = (timezone.localize(naive_end)).timestamp()
 
     try:
-        for key in get_sorted_keys(meter_id):
+        for key in get_sorted_keys(redis_client, meter_id):
             data = json.loads(redis_client.get(key))
             if data.get('type') == 'reading':
                 reading_date = parser.parse(key[len(meter_id)+1:])
