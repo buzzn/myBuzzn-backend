@@ -7,7 +7,7 @@ from util.database import db
 from util.energy_saving_calculation import get_all_user_meter_ids,\
     calc_ratio_values, get_meter_reading_date,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
-    calc_estimated_energy_consumption
+    calc_estimated_energy_consumption, calc_estimated_energy_saving
 
 
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
@@ -101,6 +101,15 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
         for meter_id in ALL_USER_METER_IDS:
             result = calc_estimated_energy_consumption(meter_id, self.start)
+
+            # Check result types
+            self.assertTrue(isinstance(result, (float, type(None))))
+
+    def test_calc_estimated_energy_saving(self):
+        """ Unit tests for function calc_estimated_energy_saving() """
+
+        for meter_id in ALL_USER_METER_IDS:
+            result = calc_estimated_energy_saving(meter_id, self.start)
 
             # Check result types
             self.assertTrue(isinstance(result, (float, type(None))))
