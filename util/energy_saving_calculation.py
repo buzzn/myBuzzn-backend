@@ -47,14 +47,11 @@ def calc_ratio_values(start):
             for row in rs:
                 energy_total += row[2]
 
-            # Calculate 1% of energy total
-            energy_percent = energy_total/100
-
             # Calculate percentage of each energy value and write to result
             rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
                              str(start) + "\' AND \'" + str(term_end) + '\' ORDER BY date')
             for row in rs:
-                percentage = float(row[2])/energy_percent
+                percentage = float(row[2])/energy_total
                 ratio_values += percentage
 
     except Exception as e:

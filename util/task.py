@@ -132,9 +132,6 @@ class Task:
         global last_data_flush
         last_data_flush = datetime.utcnow()
 
-        # Flush all keys from server
-        self.redis_client.flushdb()
-
         # Connect to sqlite database
         session = create_session()
 
