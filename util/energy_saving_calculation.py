@@ -165,6 +165,12 @@ def calc_estimated_energy_consumption(meter_id, start):
                                                                      start)
     energy_consumption_ongoing_term = calc_energy_consumption_ongoing_term(
         meter_id, start)
+    if energy_consumption_last_term is None or energy_consumption_ongoing_term is None:
+        logger.info(
+            'No estimated energy consumption available for meter_id %s from\
+ %s on', meter_id, str(start))
+        return None
+
     return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
 
 

@@ -6,13 +6,12 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import get_all_user_meter_ids,\
     calc_ratio_values, get_meter_reading_date,\
-    calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term
+    calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
+    calc_estimated_energy_consumption
 
 
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
                       '52d7c87f8c26433dbd095048ad30c8cf', '117154df05874f41bfdaebcae6abfe98']
-
-METER_READINGS_DATE = [3670753747281000, 194570475262815, 1510624663942000]
 
 
 class EnergySavingCalculationTestCase(BuzznTestCase):
@@ -96,3 +95,12 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
             # Check result types
             self.assertTrue(isinstance(result, (int, type(None))))
+
+    def test_calc_estimated_energy_consumption(self):
+        """ Unit tests for function calc_estimated_energy_consumption() """
+
+        for meter_id in ALL_USER_METER_IDS:
+            result = calc_estimated_energy_consumption(meter_id, self.start)
+
+            # Check result types
+            self.assertTrue(isinstance(result, (float, type(None))))
