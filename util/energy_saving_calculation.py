@@ -69,7 +69,7 @@ def get_meter_reading_date(meter_id, date):
     :param str meter_id: the meter id for which to get the value
     :param datetime.date date: the date for which to get the value
     :return: the first reading for the given meter id on the given date
-    :rtype: float
+    :rtype: float or None if there are no values
     """
 
     readings = []
@@ -108,7 +108,7 @@ def calc_energy_consumption_last_term(meter_id, start):
     :param datetime.date start: the start date of the ongoing term
     :return: the last meter reading minus the first meter reading of the given
     meter id
-    :rtype: int
+    :rtype: int or None if there are no values
     """
 
     begin = (datetime(start.year - 1, start.month, start.day)).date()
@@ -131,7 +131,7 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     :param datetime.date start: the start date of the ongoing term
     :return: the latest meter reading minus the first meter reading of the
     given meter id
-    :rtype: int
+    :rtype: int or None if there are no values
     """
 
     end = datetime.utcnow().date()
@@ -153,7 +153,7 @@ def calc_estimated_energy_consumption(meter_id, start):
     :param str meter_id: the meter id
     :param datetime.date start: the start date of the given term
     :returns: the estimated energy consumption
-    :rtype: float
+    :rtype: float or None if there are no values
     """
 
     ratio_values = calc_ratio_values(start)
@@ -177,7 +177,7 @@ def calc_estimated_energy_saving(meter_id, start):
     :param str meter_id: the meter id
     :param datetime.date start: the start date of the given term
     :return: the estimated energy saving
-    :rtype: float
+    :rtype: float or None if there are no values
     """
 
     energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
