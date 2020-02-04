@@ -12,6 +12,7 @@ from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required
+from util.redis_helpers import get_sorted_keys
 
 
 logger = logging.getLogger(__name__)
@@ -24,21 +25,13 @@ redis_db = os.environ['REDIS_DB']
 redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
 
 
-def get_sorted_keys(meter_id):
-    """ Return all keys stored in the redis db for a given meter id.
-    :param str meter_id: the meter id to prefix the scan with
-    """
-
-    return sorted([key.decode('utf-8') for key in redis_client.scan_iter(meter_id + '*')])
-
-
 def get_all_readings(meter_id):
     """ Return all readings for the given meter id.
     :param str meter_id: the meter id for which to get the values
     """
 
     result = {}
-    for key in get_sorted_keys(meter_id):
+    for key in get_sorted_keys(redis_client, meter_id):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'reading':
             timestamp = key[len(meter_id)+1:]
@@ -55,7 +48,7 @@ def get_readings(meter_id, begin):
     """
 
     result = {}
-    for key in get_sorted_keys(meter_id):
+    for key in get_sorted_keys(redis_client, meter_id):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])

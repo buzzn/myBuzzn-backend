@@ -11,6 +11,8 @@ from util.energy_saving_calculation import get_all_user_meter_ids,\
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
                       '52d7c87f8c26433dbd095048ad30c8cf', '117154df05874f41bfdaebcae6abfe98']
 
+METER_READINGS_DATE = [3670753747281000, 194570475262815, 1510624663942000]
+
 
 class EnergySavingCalculationTestCase(BuzznTestCase):
     """ Unit tests for energy saving calculation methods. """
@@ -36,7 +38,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
-        self.start = datetime(2020, 1, 1).date()
+        # self.start = datetime(2020, 1, 1).date()
+        self.start = datetime(2020, 2, 3).date()
 
     def test_get_all_user_meter_ids(self):
         """ Unit tests for function get_all_user_meter_ids(). """
@@ -72,4 +75,4 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
             result = get_meter_reading_date(meter_id, self.start)
 
             # Check result types
-            self.assertTrue(isinstance(result, (float, type(None))))
+            self.assertTrue(isinstance(result, (int, type(None))))
