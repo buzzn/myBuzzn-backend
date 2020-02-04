@@ -5,7 +5,8 @@ from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import get_all_user_meter_ids,\
-    calc_ratio_values, get_meter_reading_date, calc_energy_consumption_last_term
+    calc_ratio_values, get_meter_reading_date,\
+    calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term
 
 
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
@@ -82,6 +83,16 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
         for meter_id in ALL_USER_METER_IDS:
             result = calc_energy_consumption_last_term(meter_id, self.start)
+
+            # Check result types
+            self.assertTrue(isinstance(result, (int, type(None))))
+
+    def test_calc_energy_consumption_ongoing_term(self):
+        """ Unit tests for function calc_energy_consumption_ongoing_term() """
+
+        for meter_id in ALL_USER_METER_IDS:
+            result = calc_energy_consumption_ongoing_term(meter_id,
+                                                          self.start)
 
             # Check result types
             self.assertTrue(isinstance(result, (int, type(None))))

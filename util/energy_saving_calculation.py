@@ -119,10 +119,12 @@ def calc_energy_consumption_last_term(meter_id, start):
     end = start - timedelta(days=1)
     last_meter_reading = get_meter_reading_date(meter_id, end)
     first_meter_reading = get_meter_reading_date(meter_id, begin)
+
     if last_meter_reading is None or first_meter_reading is None:
         logger.info('No energy consumption available for %s between %s and %s',
                     meter_id, str(begin), str(end))
         return None
+
     return last_meter_reading - first_meter_reading
 
 
@@ -133,12 +135,18 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     :param datetime.date start: the start date of the ongoing term
     :return: the latest meter reading minus the first meter reading of the
     given meter id
-    :rtype: float
+    :rtype: int
     """
 
     end = datetime.utcnow().date()
     last_meter_reading = get_meter_reading_date(meter_id, end)
     first_meter_reading = get_meter_reading_date(meter_id, start)
+
+    if last_meter_reading is None or first_meter_reading is None:
+        logger.info('No energy consumption available for %s between %s and %s',
+                    meter_id, str(start), str(end))
+        return None
+
     return last_meter_reading - first_meter_reading
 
 
