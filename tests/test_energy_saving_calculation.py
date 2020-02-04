@@ -7,7 +7,8 @@ from util.database import db
 from util.energy_saving_calculation import get_all_user_meter_ids,\
     calc_ratio_values, get_meter_reading_date,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
-    calc_estimated_energy_consumption, calc_estimated_energy_saving
+    calc_estimated_energy_consumption, calc_estimated_energy_saving,\
+    estimate_energy_saving_each_user, estimate_energy_saving_all_users
 
 
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
@@ -113,3 +114,22 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
             # Check result types
             self.assertTrue(isinstance(result, (float, type(None))))
+
+    def test_estimate_energy_saving_each_users(self):
+        """ Unit tests for function estimate_energy_saving_each_user() """
+
+        result = estimate_energy_saving_each_user(self.start)
+
+        # Check result types
+        self.assertTrue(isinstance(result, dict))
+        for key, value in result.items():
+            self.assertTrue(key.isalnum())
+            self.assertTrue(isinstance(value, (float, type(None))))
+
+    def test_estimate_energy_saving_all_users(self):
+        """ Unit tests for function estimate_energy_saving_each_user() """
+
+        result = estimate_energy_saving_all_users(self.start)
+
+        # Check result type
+        self.assertTrue(isinstance(result, float))

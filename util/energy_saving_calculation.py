@@ -13,7 +13,6 @@ from util.redis_helpers import get_sorted_keys
 
 logging.basicConfig()
 logger = logging.getLogger('util/energy_saving_calculation')
-logging.getLogger().setLevel(logging.INFO)
 redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
@@ -198,9 +197,10 @@ def calc_estimated_energy_saving(meter_id, start):
 
 
 def estimate_energy_saving_each_user(start):
-    """ Calculate the estimated energy saving for each user and write it to
-    the redis database.
+    """ Calculate the estimated energy saving for each user.
     :param datetime.date start: the start date of the given term
+    :return: the estimated energy saving of each user in the given term
+    :rtype: dict
     """
 
     savings = dict()
@@ -208,24 +208,24 @@ def estimate_energy_saving_each_user(start):
     for meter_id in get_all_user_meter_ids(session):
         saving = calc_estimated_energy_saving(meter_id, start)
         savings[meter_id] = saving
-    timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    for key, value in savings.items():
-        redis_key = key + '_' + str(timestamp)
-        data = dict(type='estimated_energy_saving', values=value)
-        redis_client.set(redis_key, json.dumps(data))
+
+    return savings
 
 
 def estimate_energy_saving_all_users(start):
     """ Calculate the estimated energy saving of all users by summing up all
     last term energy consumptions and subtracting all estimated energy
-    consumptions. Write the result to the redis database.
+    consumptions.
     :param datetime.date start: the start date of the given term
+    :return: the estimated energy saving of all users in the given term
+    :rtype: float
     """
+
     savings = 0.0
     session = create_session()
     for meter_id in get_all_user_meter_ids(session):
-        savings += calc_estimated_energy_saving(meter_id, start)
-    timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    redis_key = 'all_meter_ids' + '_' + str(timestamp)
-    data = dict(type='estimated_energy_saving', values=savings)
-    redis_client.set(redis_key, json.dumps(data))
+        saving = calc_estimated_energy_saving(meter_id, start)
+        if saving is not None:
+            savings += saving
+
+    return savings
