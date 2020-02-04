@@ -76,29 +76,33 @@ def get_meter_reading_date(meter_id, date):
     :rtype: float
     """
 
-    result = 0.0
     readings = []
+    data = None
     naive_begin = datetime.combine(date, time(0, 0, 0))
     naive_end = datetime.combine(date, time(23, 59, 59))
     timezone = pytz.timezone('UTC')
     begin = (timezone.localize(naive_begin)).timestamp()
     end = (timezone.localize(naive_end)).timestamp()
 
-    try:
-        for key in get_sorted_keys(redis_client, meter_id):
+    for key in get_sorted_keys(redis_client, meter_id):
+        try:
             data = json.loads(redis_client.get(key))
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
+        if data is not None:
             if data.get('type') == 'reading':
                 reading_date = parser.parse(key[len(meter_id)+1:])
                 reading_timestamp = reading_date.timestamp()
                 if begin <= reading_timestamp <= end:
                     readings.append(data.get('values')['energy'])
-        result = readings[-1]
 
-    except Exception as e:
-        message = exception_message(e)
-        logger.error(message)
+    if len(readings) > 0:
+        return readings[-1]
 
-    return result
+    logger.info('No last reading available for meter id %s on %s',
+                meter_id, str(date))
+    return None
 
 
 def calc_energy_consumption_last_term(meter_id, start):

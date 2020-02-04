@@ -69,4 +69,7 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         """ Unit tests for function get_meter_reading_date() """
 
         for meter_id in ALL_USER_METER_IDS:
-            get_meter_reading_date(meter_id, self.start)
+            result = get_meter_reading_date(meter_id, self.start)
+
+            # Check result types
+            self.assertTrue(isinstance(result, (float, type(None))))
