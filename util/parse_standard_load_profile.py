@@ -1,7 +1,8 @@
 import csv
-from datetime import datetime
+from datetime import datetime, date, time
 import logging
 import argparse
+import pytz
 from models.loadprofile import LoadProfileEntry
 from util.database import create_session
 
@@ -34,21 +35,25 @@ def run():
         tbl_reader = csv.reader(csvfile, delimiter=',')
         next(tbl_reader, None)
         session = create_session()
+        tz_local = pytz.timezone('Europe/Berlin')
         try:
             for row in tbl_reader:
-                date = row[0].split('/')
-                time = row[1].split(':')
-                year = int(date[2])
-                month = int(date[0])
-                day = int(date[1])
-                hours = int(time[0])
-                minutes = int(time[1])
-                seconds = int(time[2])
-                date_formatted = datetime(
-                    year, month, day, hours, minutes, seconds)
+                _date = row[0].split('/')
+                _time = row[1].split(':')
+                year = int(_date[2])
+                month = int(_date[0])
+                day = int(_date[1])
+                hours = int(_time[0])
+                minutes = int(_time[1])
+                seconds = int(_time[2])
+                date_formatted = datetime.combine(date(year, month, day),
+                                                  time(hours, minutes,
+                                                       seconds))
+                date_local = tz_local.localize(date_formatted)
+                date_global = date_local.astimezone(pytz.utc)
                 energy = row[2]
-                session.add(LoadProfileEntry(date_formatted.strftime('%Y-%m-%d'),
-                                             date_formatted.strftime('%H:%M:%S'), energy))
+                session.add(LoadProfileEntry(date_global.strftime('%Y-%m-%d'),
+                                             date_global.strftime('%H:%M:%S'), energy))
             session.commit()
 
         except Exception as e:
