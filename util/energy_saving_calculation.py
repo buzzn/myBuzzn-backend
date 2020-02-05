@@ -40,19 +40,16 @@ def calc_ratio_values(start):
     ratio_values = 0.0
     try:
         with engine.connect() as con:
-            rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
+            # Query total energy which should be ~ 1.000.000 kWh
+            rs = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'" +
                              str(start) + "\' AND \'" + str(end) + '\' ORDER BY date')
+            energy_total = rs.first()[0]
 
-            # Calculate energy total which should be ~1.000.000 kWh
-            for row in rs:
-                energy_total += row[2]
-
-            # Calculate percentage of each energy value and write to result
-            rs = con.execute("SELECT * FROM loadprofile WHERE date BETWEEN \'" +
+            # Query sum of energy promilles
+            rs = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'" +
                              str(start) + "\' AND \'" + str(term_end) + '\' ORDER BY date')
-            for row in rs:
-                percentage = float(row[2])/energy_total
-                ratio_values += percentage
+            energy_promille = rs.first()[0]
+            ratio_values = energy_promille/energy_total
 
     except Exception as e:
         message = exception_message(e)
