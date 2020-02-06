@@ -125,7 +125,7 @@ class Task:
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past.
         :return: An error if something went wrong, None otherwise
-        :rtype: util.error.Error if something went wrong, NoneType otherwise
+        :rtype: util.error.Error if something went wrong, type(None) otherwise
         """
 
         # pylint: disable=global-statement
@@ -289,7 +289,8 @@ class Task:
 
 
 def run():
-    """Runs the task which fills the redis table with the latest readings."""
+    """ Runs the task which fills the redis database with the latest readings."""
+
     task = Task()
     task.update_redis()
 
