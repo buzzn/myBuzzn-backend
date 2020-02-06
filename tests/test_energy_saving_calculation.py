@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest import skip
 import json
 from models.user import User, GenderType, StateType
 from models.group import Group
@@ -39,7 +40,6 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
-        self.start = datetime(2020, 2, 3).date()
 
     def test_get_all_user_meter_ids(self):
         """ Unit tests for function get_all_user_meter_ids(). """
@@ -60,7 +60,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_calc_ratio_values(self):
         """ Unit tests for function calc_ratio_values(). """
 
-        result = calc_ratio_values(self.start)
+        start = datetime(2019, 3, 12).date()
+        result = calc_ratio_values(start)
 
         # Check result type
         self.assertIsInstance(result, float)
@@ -71,8 +72,9 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_get_meter_reading_date(self):
         """ Unit tests for function get_meter_reading_date() """
 
+        start = datetime.today().date()
         for meter_id in ALL_USER_METER_IDS:
-            result = get_meter_reading_date(meter_id, self.start)
+            result = get_meter_reading_date(meter_id, start)
 
             # Check result types
             self.assertIsInstance(result, (int, type(None)))
@@ -80,8 +82,9 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_calc_energy_consumption_last_term(self):
         """ Unit tests for function calc_energy_consumption_last_term() """
 
+        start = datetime(2019, 3, 12).date()
         for meter_id in ALL_USER_METER_IDS:
-            result = calc_energy_consumption_last_term(meter_id, self.start)
+            result = calc_energy_consumption_last_term(meter_id, start)
 
             # Check result types
             self.assertIsInstance(result, (int, type(None)))
@@ -89,9 +92,9 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_calc_energy_consumption_ongoing_term(self):
         """ Unit tests for function calc_energy_consumption_ongoing_term() """
 
+        start = datetime(2019, 3, 12).date()
         for meter_id in ALL_USER_METER_IDS:
-            result = calc_energy_consumption_ongoing_term(meter_id,
-                                                          self.start)
+            result = calc_energy_consumption_ongoing_term(meter_id, start)
 
             # Check result types
             self.assertIsInstance(result, (int, type(None)))
@@ -99,8 +102,9 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_calc_estimated_energy_consumption(self):
         """ Unit tests for function calc_estimated_energy_consumption() """
 
+        start = datetime(2019, 3, 12).date()
         for meter_id in ALL_USER_METER_IDS:
-            result = calc_estimated_energy_consumption(meter_id, self.start)
+            result = calc_estimated_energy_consumption(meter_id, start)
 
             # Check result types
             self.assertIsInstance(result, (float, type(None)))
@@ -108,8 +112,9 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_calc_estimated_energy_saving(self):
         """ Unit tests for function calc_estimated_energy_saving() """
 
+        start = datetime(2019, 3, 12).date()
         for meter_id in ALL_USER_METER_IDS:
-            result = calc_estimated_energy_saving(meter_id, self.start)
+            result = calc_estimated_energy_saving(meter_id, start)
 
             # Check result types
             self.assertIsInstance(result, (float, type(None)))
@@ -117,7 +122,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_estimate_energy_saving_each_users(self):
         """ Unit tests for function estimate_energy_saving_each_user() """
 
-        result = estimate_energy_saving_each_user(self.start)
+        start = datetime(2019, 3, 12).date()
+        result = estimate_energy_saving_each_user(start)
 
         # Check result types
         self.assertIsInstance(result, dict)
@@ -128,7 +134,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def test_estimate_energy_saving_all_users(self):
         """ Unit tests for function estimate_energy_saving_each_user() """
 
-        result = estimate_energy_saving_all_users(self.start)
+        start = datetime(2019, 3, 12).date()
+        result = estimate_energy_saving_all_users(start)
 
         # Check result type
         self.assertIsInstance(result, float)
