@@ -31,6 +31,30 @@ def get_all_meter_ids(session):
            for group_meter_id in session.query(Group.group_meter_id).all()]
 
 
+def calculate_timestamps():
+    """ Calculate begin and end of previous and ongoing terms. """
+
+    # Calculate timestamps for ongoing term
+    begin_ongoing_term = calc_support_year_start()
+    end_ongoing_term = round(datetime.combine(datetime.now().date(), time(0, 0,
+                                                                          0)).timestamp()
+                             * 1000)
+
+    # Calculate timestamps for previous term
+    end_prev_term = round((datetime.fromtimestamp(
+        begin_ongoing_term/1000) - timedelta(days=1)).timestamp() * 1000)
+
+    previous_year = datetime.fromtimestamp(
+        begin_ongoing_term/1000).year - 1
+    begin_previous_term_date = datetime.fromtimestamp(
+        begin_ongoing_term/1000).date().replace(year=previous_year)
+    begin_prev_term = round(datetime.combine(begin_previous_term_date,
+                                             time(0, 0, 0)).timestamp() *
+                            1000)
+
+    return begin_ongoing_term, end_ongoing_term, begin_prev_term, end_prev_term
+
+
 def calc_end():
     """ Calculate timestamp of end of interval. """
 
@@ -124,7 +148,7 @@ class Task:
 
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past.
-        :return: An error if something went wrong, None otherwise
+        :return: an error if something went wrong, None otherwise
         :rtype: util.error.Error if something went wrong, type(None) otherwise
         """
 
@@ -178,6 +202,34 @@ class Task:
                     data = dict(type='reading', values=reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
+                # Get the energy consumption for all meters in the ongoing term
+                # (start date and end date) and the previous term (start date
+                # and end date)
+                for timestamp in calculate_timestamps():
+                    end_of_day = round((datetime.utcfromtimestamp(
+                        timestamp/1000) + timedelta(hours=24, minutes=59,
+                                                    seconds=59)).timestamp() * 1000)
+                    readings = self.d.get_readings(meter_id, timestamp,
+                                                   end_of_day, 'one_hour')
+
+                    if readings == []:
+                        logger.info('No readings available for metering id %s',
+                                    meter_id)
+                        continue
+
+                    for reading in readings:
+                        timestamp = reading['time']
+
+                        # Convert unix epoch time in milliseconds to UTC format
+                        new_timestamp = datetime.utcfromtimestamp(
+                            timestamp/1000).strftime('%Y-%m-%d %H:%M:%S')
+
+                        key = meter_id + '_' + str(new_timestamp)
+
+                        # Write reading to redis database as key-value-pair
+                        data = dict(type='reading', values=reading['values'])
+                        self.redis_client.set(key, json.dumps(data))
+
                 # Get all disaggregation values for all meters from one week back
                 # until now. This is the earliest data we get, otherwise you'll
                 # end up with a '400 Bad Request: Duration of the data
@@ -226,7 +278,7 @@ class Task:
                 global last_data_flush
                 if (last_data_flush is None) or (datetime.utcnow() -
                                                  last_data_flush >
-                                                 timedelta(hours=24)):
+                                                 timedelta(minutes=24)):
                     self.populate_redis()
 
                 # Connect to sqlite database
