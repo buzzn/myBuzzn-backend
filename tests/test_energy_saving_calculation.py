@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest import skip
 import json
 from models.user import User, GenderType, StateType
 from models.group import Group
