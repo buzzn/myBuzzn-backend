@@ -41,14 +41,16 @@ def calc_ratio_values(start):
     try:
         with engine.connect() as con:
             # Query total energy which should be ~ 1.000.000 kWh
-            rs = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'" +
-                             str(start) + "\' AND \'" + str(end) + '\' ORDER BY date')
-            energy_total = rs.first()[0]
+            energy_total = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'"
+                                       + str(start) + "\' AND \'" + str(end) +
+                                       '\' ORDER BY date').first()[0]
 
             # Query sum of energy promilles
-            rs = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'" +
-                             str(start) + "\' AND \'" + str(term_end) + '\' ORDER BY date')
-            energy_promille = rs.first()[0]
+            energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
+                                          + " WHERE date BETWEEN \'" +
+                                          str(start) + "\' AND \'"
+                                          + str(term_end) + '\' ORDER BY date').first()[0]
+
             ratio_values = energy_promille/energy_total
 
     except Exception as e:
@@ -60,13 +62,13 @@ def calc_ratio_values(start):
 
 def get_meter_reading_date(meter_id, date):
     """ Return the last reading for the given meter id on the given day which
-    is stored in the redis database. As we were using unix timestamps as basis
-    for our dates all along, there is no need to convert the given,
+    is stored in the redis database. As we were using unix timestamps as
+    basis for our dates all along, there is no need to convert the given,
     timezone-unaware date to UTC.
-    :param str meter_id: the meter id for which to get the value
-    :param datetime.date date: the date for which to get the value
-    :return: the first reading for the given meter id on the given date
-    :rtype: float or None if there are no values
+    : param str meter_id: the meter id for which to get the value
+    : param datetime.date date: the date for which to get the value
+    : return: the first reading for the given meter id on the given date
+    : rtype: float or None if there are no values
     """
 
     readings = []
@@ -77,18 +79,20 @@ def get_meter_reading_date(meter_id, date):
     begin = (timezone.localize(naive_begin)).timestamp()
     end = (timezone.localize(naive_end)).timestamp()
 
-    for key in get_sorted_keys(redis_client, meter_id):
-        try:
-            data = json.loads(redis_client.get(key))
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-        if data is not None:
-            if data.get('type') == 'reading':
-                reading_date = parser.parse(key[len(meter_id)+1:])
-                reading_timestamp = reading_date.timestamp()
-                if begin <= reading_timestamp <= end:
-                    readings.append(data.get('values')['energy'])
+    print(get_sorted_keys(redis_client, meter_id))
+
+    # for key in get_sorted_keys(redis_client, meter_id):
+    # try:
+    # data = json.loads(redis_client.get(key))
+    # except Exception as e:
+    # message = exception_message(e)
+    # logger.error(message)
+    # if data is not None:
+    # if data.get('type') == 'reading':
+    # reading_date = parser.parse(key[len(meter_id)+1:])
+    # reading_timestamp = reading_date.timestamp()
+    # if begin <= reading_timestamp <= end:
+    # readings.append(data.get('values')['energy'])
 
     if len(readings) > 0:
         return readings[-1]
