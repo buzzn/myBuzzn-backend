@@ -31,8 +31,12 @@ def get_all_meter_ids(session):
            for group_meter_id in session.query(Group.group_meter_id).all()]
 
 
-def calculate_timestamps():
-    """ Calculate begin and end of previous and ongoing terms. """
+def calc_timestamps():
+    """ Calculate begin and end of previous and ongoing terms.
+    :return: begin and end of the previous and the current support year until
+    today as unix milliseconds timestamps
+    :rtype: tuple(int)
+    """
 
     # Calculate timestamps for ongoing term
     begin_ongoing_term = calc_support_year_start()
@@ -155,13 +159,10 @@ class Task:
         # pylint: disable=global-statement
         global last_data_flush
         last_data_flush = datetime.utcnow()
+        end = calc_end()
 
         # Connect to sqlite database
         session = create_session()
-
-        end = calc_end()
-        disaggregation_start = calc_support_week_start()
-        readings_start = calc_support_year_start()
 
         try:
             # Authenticate against the discovergy backend
@@ -179,7 +180,8 @@ class Task:
                 # BAFA support year until now with
                 # one-week interval (this is the finest granularity we get for one
                 # year back in time, cf. https://api.discovergy.com/docs/)
-                readings = self.d.get_readings(meter_id, readings_start, end,
+                readings = self.d.get_readings(meter_id,
+                                               calc_support_year_start(), end,
                                                'one_week')
 
                 if readings == []:
@@ -205,7 +207,7 @@ class Task:
                 # Get the energy consumption for all meters in the ongoing term
                 # (start date and end date) and the previous term (start date
                 # and end date)
-                for timestamp in calculate_timestamps():
+                for timestamp in calc_timestamps():
                     end_of_day = round((datetime.utcfromtimestamp(
                         timestamp/1000) + timedelta(hours=24, minutes=59,
                                                     seconds=59)).timestamp() * 1000)
@@ -237,7 +239,7 @@ class Task:
                 # If one week back lies before the current BAFA support year
                 # start, start with that value instead.
                 disaggregation = self.d.get_disaggregation(
-                    meter_id, disaggregation_start, end)
+                    meter_id, calc_support_week_start(), end)
 
                 if disaggregation == {}:
                     logger.info("No disaggregation available for metering id %s",
