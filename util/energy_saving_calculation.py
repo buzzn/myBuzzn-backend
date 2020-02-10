@@ -51,7 +51,7 @@ def calc_ratio_values(start):
                                           str(start) + "\' AND \'"
                                           + str(term_end) + '\' ORDER BY date').first()[0]
 
-            ratio_values = energy_promille/energy_total
+        ratio_values = energy_promille/energy_total
 
     except Exception as e:
         message = exception_message(e)
@@ -67,8 +67,9 @@ def get_meter_reading_date(meter_id, date):
     timezone-unaware date to UTC.
     : param str meter_id: the meter id for which to get the value
     : param datetime.date date: the date for which to get the value
-    : return: the first reading for the given meter id on the given date
-    : rtype: float or None if there are no values
+    : return: the first reading for the given meter id on the given date or
+    None if there are no values
+    : rtype: float or type(None)
     """
 
     readings = []
@@ -79,26 +80,24 @@ def get_meter_reading_date(meter_id, date):
     begin = (timezone.localize(naive_begin)).timestamp()
     end = (timezone.localize(naive_end)).timestamp()
 
-    print(get_sorted_keys(redis_client, meter_id))
-
-    # for key in get_sorted_keys(redis_client, meter_id):
-    # try:
-    # data = json.loads(redis_client.get(key))
-    # except Exception as e:
-    # message = exception_message(e)
-    # logger.error(message)
-    # if data is not None:
-    # if data.get('type') == 'reading':
-    # reading_date = parser.parse(key[len(meter_id)+1:])
-    # reading_timestamp = reading_date.timestamp()
-    # if begin <= reading_timestamp <= end:
-    # readings.append(data.get('values')['energy'])
+    for key in get_sorted_keys(redis_client, meter_id):
+        try:
+            data = json.loads(redis_client.get(key))
+            print(data)
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
+        if data is not None and data.get('type') == 'reading':
+            reading_date = parser.parse(key[len(meter_id)+1:])
+            reading_timestamp = reading_date.timestamp()
+            if begin <= reading_timestamp <= end:
+                readings.append(data.get('values')['energy'])
 
     if len(readings) > 0:
         return readings[-1]
 
-    logger.info('No last reading available for meter id %s on %s',
-                meter_id, str(date))
+    # logger.info('No last reading available for meter id %s on %s',
+    # meter_id, str(date))
     return None
 
 
@@ -108,8 +107,8 @@ def calc_energy_consumption_last_term(meter_id, start):
     :param str meter_id: the meter id
     :param datetime.date start: the start date of the ongoing term
     :return: the last meter reading minus the first meter reading of the given
-    meter id
-    :rtype: int or None if there are no values
+    meter id or None if there are no values
+    :rtype: int or type(None)
     """
 
     begin = (datetime(start.year - 1, start.month, start.day)).date()
@@ -117,12 +116,12 @@ def calc_energy_consumption_last_term(meter_id, start):
     last_meter_reading = get_meter_reading_date(meter_id, end)
     first_meter_reading = get_meter_reading_date(meter_id, begin)
 
-    if last_meter_reading is None or first_meter_reading is None:
-        logger.info('No energy consumption available for %s between %s and %s',
-                    meter_id, str(begin), str(end))
-        return None
+    # if last_meter_reading is None or first_meter_reading is None:
+    # logger.info('No energy consumption available for %s between %s and %s',
+    # meter_id, str(begin), str(end))
+    return None
 
-    return last_meter_reading - first_meter_reading
+    # return last_meter_reading - first_meter_reading
 
 
 def calc_energy_consumption_ongoing_term(meter_id, start):
