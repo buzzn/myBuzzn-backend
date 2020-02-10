@@ -14,16 +14,36 @@ from util.energy_saving_calculation import get_all_user_meter_ids,\
 
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
                       '52d7c87f8c26433dbd095048ad30c8cf', '117154df05874f41bfdaebcae6abfe98']
+
 RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
+
 SORTED_KEYS = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00',
                b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00',
                b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 02:00:00']
+
 DATA = [b'{"type": "reading", "values": {"energy": 1512027002819000}}',
         b'{"type": "reading", "values": {"energy": 1512028877416000}}',
         b'{"type": "reading", "values": {"energy": 1512032408202000}}']
 
-METER_READINGS = [1512032408202000, 1512028877416000, 1512027002819000,
-                  151203240823000, 1512028877419000, 1512032408204000]
+SORTED_KEYS_LAST_TERM = [
+    [b'52d7c87f8c26433dbd095048ad30c8cf_2020-03-11 04:15:00'],
+    [b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-12 04:15:00']]
+
+LAST_READING_ONGOING_TERM = bytes(
+    '52d7c87f8c26433dbd095048ad30c8cf_' + datetime.today().
+    strftime('%Y-%m-%d %H:%M:%S'), encoding='utf-8')
+
+SORTED_KEYS_ONGOING_TERM = [
+    [LAST_READING_ONGOING_TERM],
+    [b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-12 04:15:00']]
+
+DATA_LAST_TERM = [
+    b'{"type": "reading", "values": {"energy": 1512027005000000}}',
+    b'{"type": "reading", "values": {"energy": 1512027002819000}}']
+
+DATA_ONGOING_TERM = DATA_LAST_TERM
+
+METER_READINGS = [1512032408202000, 1151203240823000]
 
 
 class EnergySavingCalculationTestCase(BuzznTestCase):
@@ -93,30 +113,33 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         # Check result types
         self.assertIsInstance(result, (int, type(None)))
 
-    @skip
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter', side_effect=SORTED_KEYS)
-    @mock.patch('redis.Redis.get', side_effect=METER_READINGS)
+    @mock.patch('redis.Redis.scan_iter',
+                side_effect=SORTED_KEYS_LAST_TERM)
+    @mock.patch('redis.Redis.get', side_effect=DATA_LAST_TERM)
     def test_calc_energy_consumption_last_term(self, scan_iter, get):
         """ Unit tests for function calc_energy_consumption_last_term() """
 
         start = datetime(2020, 3, 12).date()
         result = calc_energy_consumption_last_term(
-            ALL_USER_METER_IDS[0], start)
+            ALL_USER_METER_IDS[1], start)
 
-        # Check result types
+        # Check result type
         self.assertIsInstance(result, (int, type(None)))
 
-    @skip
-    def test_calc_energy_consumption_ongoing_term(self):
+    # pylint: disable=unused-argument
+    @mock.patch('redis.Redis.scan_iter',
+                side_effect=SORTED_KEYS_ONGOING_TERM)
+    @mock.patch('redis.Redis.get', side_effect=DATA_ONGOING_TERM)
+    def test_calc_energy_consumption_ongoing_term(self, scan_iter, get):
         """ Unit tests for function calc_energy_consumption_ongoing_term() """
 
         start = datetime(2019, 3, 12).date()
-        for meter_id in ALL_USER_METER_IDS:
-            result = calc_energy_consumption_ongoing_term(meter_id, start)
+        result = calc_energy_consumption_ongoing_term(ALL_USER_METER_IDS[1],
+                                                      start)
 
-            # Check result types
-            self.assertIsInstance(result, (int, type(None)))
+        # Check result type
+        self.assertIsInstance(result, (int, type(None)))
 
     @skip
     def test_calc_estimated_energy_consumption(self):
