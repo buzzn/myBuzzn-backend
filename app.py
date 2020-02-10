@@ -12,7 +12,6 @@ from util.error import NO_METER_ID
 from util.websocket_provider import WebsocketProvider
 from models.user import User
 
-
 eventlet.monkey_patch()
 
 
@@ -36,6 +35,7 @@ class RunConfig():
 app = setup_app(RunConfig())
 thread = None
 thread_lock = Lock()
+client_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet')
 wp = WebsocketProvider()
 clients = {}
@@ -55,13 +55,22 @@ def background_thread():
     while True:
         socketio.sleep(60)
         with app.app_context():
-            for key in clients:
-                user = db.session.query(User).filter_by(
-                    meter_id=clients[key].get('meter_id')).first()
-                message = json.dumps(wp.create_data(user.id))
-                socketio.emit(
-                    'live_data', {'data': message}, namespace='/live', room=key)
+            with client_lock:
+                if clients is None:
+                    continue
 
+                for key in clients:
+                    try:
+                        user = db.session.query(User).filter_by(
+                            meter_id=clients[key].get('meter_id')).first()
+
+                        message = json.dumps(wp.create_data(user.id))
+                        socketio.emit(
+                            'live_data', {'data': message}, namespace='/live',
+                            room=key)
+                    except Exception as e:
+                        print("Caught exception serving client %s:", key)
+                        print(e)
 
 @socketio.on('connect', namespace='/live')
 def connect():
@@ -72,14 +81,17 @@ def connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
-    clients[request.sid] = {'meter_id': session['meter_id']}
-    emit('live_data', {'data': 'Connected with sid ' +
-                               request.sid}, room=request.sid)
+
+    with client_lock:
+        clients[request.sid] = {'meter_id': session['meter_id']}
+        emit('live_data', {'data': 'Connected with sid ' +
+                                   request.sid}, room=request.sid)
 
 
 @socketio.on('disconnect', namespace='/live')
 def disconnect():
-    del clients[request.sid]
+    with client_lock:
+        del clients[request.sid]
 
 
 if __name__ == "__main__":
