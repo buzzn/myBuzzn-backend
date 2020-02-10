@@ -15,24 +15,15 @@ from util.energy_saving_calculation import get_all_user_meter_ids,\
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
                       '52d7c87f8c26433dbd095048ad30c8cf', '117154df05874f41bfdaebcae6abfe98']
 RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
-SORTED_KEYS = [[b"b4234cd4bed143a6b9bd09e347e17d34_2020-02-07 00:00:00",
-                b"b4234cd4bed143a6b9bd09e347e17d34_2020-02-07 01:00:00",
-                b"b4234cd4bed143a6b9bd09e347e17d34_2020-02-07 02:00:00"],
-               [b"52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00",
-                b"52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00",
-                b"52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 02:00:00"],
-               [b"117154df05874f41bfdaebcae6abfe98_2020-02-07 00:00:00",
-                b"117154df05874f41bfdaebcae6abfe98_2020-02-07 01:00:00",
-                b"117154df05874f41bfdaebcae6abfe98_2020-02-07 02:00:00"]]
+SORTED_KEYS = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00',
+               b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00',
+               b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 02:00:00']
 DATA = [b'{"type": "reading", "values": {"energy": 1512027002819000}}',
         b'{"type": "reading", "values": {"energy": 1512028877416000}}',
-        b'{"type": "reading", "values": {"energy": 1512032408202000}}',
-        b'{"type": "reading", "values": {"energy": 1512027002819000}}',
-        b'{"type": "reading", "values": {"energy": 1512028877416000}}',
-        b'{"type": "reading", "values": {"energy": 1512032408202000}}',
-        b'{"type": "reading", "values": {"energy": 1512027002819000}}',
-        b'{"type": "reading", "values": {"energy": 1512028877416000}}',
         b'{"type": "reading", "values": {"energy": 1512032408202000}}']
+
+METER_READINGS = [1512032408202000, 1512028877416000, 1512027002819000,
+                  151203240823000, 1512028877419000, 1512032408204000]
 
 
 class EnergySavingCalculationTestCase(BuzznTestCase):
@@ -91,29 +82,30 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         self.assertTrue(1.0 >= result >= 0.0)
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter', side_effect=SORTED_KEYS)
+    @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
     @mock.patch('redis.Redis.get', side_effect=DATA)
     def test_get_meter_reading_date(self, scan_iter, get):
         """ Unit tests for function get_meter_reading_date() """
 
         start = datetime(2020, 2, 7).date()
-        for meter_id in ALL_USER_METER_IDS:
-            result = get_meter_reading_date(meter_id, start)
+        result = get_meter_reading_date(ALL_USER_METER_IDS[1], start)
 
-            # Check result types
-            print(result)
-            # self.assertIsInstance(result, (int, type(None)))
+        # Check result types
+        self.assertIsInstance(result, (int, type(None)))
 
     @skip
-    def test_calc_energy_consumption_last_term(self):
+    # pylint: disable=unused-argument
+    @mock.patch('redis.Redis.scan_iter', side_effect=SORTED_KEYS)
+    @mock.patch('redis.Redis.get', side_effect=METER_READINGS)
+    def test_calc_energy_consumption_last_term(self, scan_iter, get):
         """ Unit tests for function calc_energy_consumption_last_term() """
 
-        start = datetime(2019, 3, 12).date()
-        for meter_id in ALL_USER_METER_IDS:
-            result = calc_energy_consumption_last_term(meter_id, start)
+        start = datetime(2020, 3, 12).date()
+        result = calc_energy_consumption_last_term(
+            ALL_USER_METER_IDS[0], start)
 
-            # Check result types
-            self.assertIsInstance(result, (int, type(None)))
+        # Check result types
+        self.assertIsInstance(result, (int, type(None)))
 
     @skip
     def test_calc_energy_consumption_ongoing_term(self):
