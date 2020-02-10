@@ -83,7 +83,6 @@ def get_meter_reading_date(meter_id, date):
     for key in get_sorted_keys(redis_client, meter_id):
         try:
             data = json.loads(redis_client.get(key))
-            print(data)
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
@@ -96,8 +95,8 @@ def get_meter_reading_date(meter_id, date):
     if len(readings) > 0:
         return readings[-1]
 
-    # logger.info('No last reading available for meter id %s on %s',
-    # meter_id, str(date))
+    logger.info('No last reading available for meter id %s on %s',
+                meter_id, str(date))
     return None
 
 
@@ -116,12 +115,12 @@ def calc_energy_consumption_last_term(meter_id, start):
     last_meter_reading = get_meter_reading_date(meter_id, end)
     first_meter_reading = get_meter_reading_date(meter_id, begin)
 
-    # if last_meter_reading is None or first_meter_reading is None:
-    # logger.info('No energy consumption available for %s between %s and %s',
-    # meter_id, str(begin), str(end))
-    return None
+    if last_meter_reading is None or first_meter_reading is None:
+        logger.info('No energy consumption available for %s between %s and %s',
+                    meter_id, str(begin), str(end))
+        return None
 
-    # return last_meter_reading - first_meter_reading
+    return last_meter_reading - first_meter_reading
 
 
 def calc_energy_consumption_ongoing_term(meter_id, start):
@@ -130,8 +129,8 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     :param datetime meter_id: the meter id
     :param datetime.date start: the start date of the ongoing term
     :return: the latest meter reading minus the first meter reading of the
-    given meter id
-    :rtype: int or None if there are no values
+    given meter id or None if there are no values
+    :rtype: int or type(None)
     """
 
     end = datetime.utcnow().date()
