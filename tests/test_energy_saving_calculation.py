@@ -52,6 +52,11 @@ SORTED_KEYS_ALL_TERMS = [[b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-11 01:00:00
 DATA_ALL_TERMS = [DATA_LAST_TERM[0], DATA_LAST_TERM[1], DATA_ONGOING_TERM[0],
                   DATA_ONGOING_TERM[1]]
 
+SORTED_KEYS_ESTIMATION = [SORTED_KEYS_ALL_TERMS[0],
+                          SORTED_KEYS_ALL_TERMS[1]] + SORTED_KEYS_ALL_TERMS
+
+DATA_ESTIMATION = [DATA_ALL_TERMS[0], DATA_ALL_TERMS[1]] + DATA_ALL_TERMS
+
 
 class EnergySavingCalculationTestCase(BuzznTestCase):
     """ Unit tests for energy saving calculation methods. """
@@ -162,8 +167,10 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         # Check result types
         self.assertIsInstance(result, (float, type(None)))
 
-    @skip
     # pylint: disable=unused-argument
+    @mock.patch('redis.Redis.scan_iter',
+                side_effect=SORTED_KEYS_ESTIMATION)
+    @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
     def test_calc_estimated_energy_saving(self, scan_iter, get):
         """ Unit tests for function calc_estimated_energy_saving() """
 
