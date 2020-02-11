@@ -180,17 +180,14 @@ def calc_estimated_energy_saving(meter_id, start):
 
     energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
                                                                      start)
-    print(energy_consumption_last_term)
-    # estimated_energy_consumption = calc_estimated_energy_consumption(meter_id,
-    # start)
-    # if energy_consumption_last_term is None or estimated_energy_consumption is None:
-    # logger.info(
-    # 'No estimated energy saving available for meter_id %s from\
- # %s on', meter_id, str(start))
-    # return None
+    estimated_energy_consumption = calc_estimated_energy_consumption(
+        meter_id, start)
+    if energy_consumption_last_term is None or estimated_energy_consumption is None:
+        logger.info('No estimated energy saving available for meter_id % s from\
+                    % s on', meter_id, str(start))
+        return None
 
-    # return energy_consumption_last_term - estimated_energy_consumption
-    return None
+    return energy_consumption_last_term - estimated_energy_consumption
 
 
 def estimate_energy_saving_each_user(start):
