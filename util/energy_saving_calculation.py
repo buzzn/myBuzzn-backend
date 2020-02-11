@@ -7,7 +7,7 @@ import redis
 import pytz
 from models.user import User
 from util.error import exception_message
-from util.database import create_session, get_engine
+from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
 
 
@@ -190,7 +190,7 @@ def calc_estimated_energy_saving(meter_id, start):
     return energy_consumption_last_term - estimated_energy_consumption
 
 
-def estimate_energy_saving_each_user(start):
+def estimate_energy_saving_each_user(start, session):
     """ Calculate the estimated energy saving for each user.
     :param datetime.date start: the start date of the given term
     :return: the estimated energy saving of each user in the given term
@@ -198,7 +198,6 @@ def estimate_energy_saving_each_user(start):
     """
 
     savings = dict()
-    session = create_session()
     for meter_id in get_all_user_meter_ids(session):
         saving = calc_estimated_energy_saving(meter_id, start)
         savings[meter_id] = saving
@@ -206,7 +205,7 @@ def estimate_energy_saving_each_user(start):
     return savings
 
 
-def estimate_energy_saving_all_users(start):
+def estimate_energy_saving_all_users(start, session):
     """ Calculate the estimated energy saving of all users by summing up all
     last term energy consumptions and subtracting all estimated energy
     consumptions.
@@ -216,7 +215,6 @@ def estimate_energy_saving_all_users(start):
     """
 
     savings = 0.0
-    session = create_session()
     for meter_id in get_all_user_meter_ids(session):
         saving = calc_estimated_energy_saving(meter_id, start)
         if saving is not None:

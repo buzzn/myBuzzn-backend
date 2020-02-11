@@ -1,4 +1,4 @@
-from unittest import mock, skip
+from unittest import mock
 from datetime import datetime
 import json
 from models.user import User, GenderType, StateType
@@ -8,8 +8,7 @@ from util.database import db
 from util.energy_saving_calculation import get_all_user_meter_ids,\
     calc_ratio_values, get_meter_reading_date,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
-    calc_estimated_energy_consumption, calc_estimated_energy_saving,\
-    estimate_energy_saving_each_user, estimate_energy_saving_all_users
+    calc_estimated_energy_consumption, calc_estimated_energy_saving
 
 
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
@@ -179,26 +178,3 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
         # Check result types
         self.assertIsInstance(result, (float, type(None)))
-
-    @skip
-    def test_estimate_energy_saving_each_user(self):
-        """ Unit tests for function estimate_energy_saving_each_user() """
-
-        start = datetime(2019, 3, 12).date()
-        result = estimate_energy_saving_each_user(start)
-
-        # Check result types
-        self.assertIsInstance(result, dict)
-        for key, value in result.items():
-            self.assertTrue(key.isalnum())
-            self.assertIsInstance(value, (float, type(None)))
-
-    @skip
-    def test_estimate_energy_saving_all_users(self):
-        """ Unit tests for function estimate_energy_saving_each_user() """
-
-        start = datetime(2019, 3, 12).date()
-        result = estimate_energy_saving_all_users(start)
-
-        # Check result type
-        self.assertIsInstance(result, float)
