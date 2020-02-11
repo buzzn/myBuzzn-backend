@@ -1,5 +1,5 @@
 from unittest import mock, skip
-from datetime import datetime, time
+from datetime import datetime
 import json
 from models.user import User, GenderType, StateType
 from models.group import Group
@@ -41,9 +41,16 @@ DATA_LAST_TERM = [
     b'{"type": "reading", "values": {"energy": 1512027005000000}}',
     b'{"type": "reading", "values": {"energy": 1512027002819000}}']
 
-DATA_ONGOING_TERM = DATA_LAST_TERM
+DATA_ONGOING_TERM = [
+    b'{"type": "reading", "values": {"energy": 1512027009000000}}',
+    b'{"type": "reading", "values": {"energy": 1512027005000100}}']
 
-METER_READINGS = [1512032408202000, 1151203240823000]
+SORTED_KEYS_ALL_TERMS = [[b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-11 01:00:00'],
+                         [b'52d7c87f8c26433dbd095048ad30c8cf_2018-03-12 01:00:00'],
+                         SORTED_KEYS_ONGOING_TERM[0], SORTED_KEYS_ONGOING_TERM[1]]
+
+DATA_ALL_TERMS = [DATA_LAST_TERM[0], DATA_LAST_TERM[1], DATA_ONGOING_TERM[0],
+                  DATA_ONGOING_TERM[1]]
 
 
 class EnergySavingCalculationTestCase(BuzznTestCase):
@@ -141,30 +148,33 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         # Check result type
         self.assertIsInstance(result, (int, type(None)))
 
-    @skip
-    def test_calc_estimated_energy_consumption(self):
+    # pylint: disable=unused-argument
+    @mock.patch('redis.Redis.scan_iter',
+                side_effect=SORTED_KEYS_ALL_TERMS)
+    @mock.patch('redis.Redis.get', side_effect=DATA_ALL_TERMS)
+    def test_calc_estimated_energy_consumption(self, scan_iter, get):
         """ Unit tests for function calc_estimated_energy_consumption() """
 
         start = datetime(2019, 3, 12).date()
-        for meter_id in ALL_USER_METER_IDS:
-            result = calc_estimated_energy_consumption(meter_id, start)
+        result = calc_estimated_energy_consumption(
+            ALL_USER_METER_IDS[1], start)
 
-            # Check result types
-            self.assertIsInstance(result, (float, type(None)))
+        # Check result types
+        self.assertIsInstance(result, (float, type(None)))
 
     @skip
-    def test_calc_estimated_energy_saving(self):
+    # pylint: disable=unused-argument
+    def test_calc_estimated_energy_saving(self, scan_iter, get):
         """ Unit tests for function calc_estimated_energy_saving() """
 
         start = datetime(2019, 3, 12).date()
-        for meter_id in ALL_USER_METER_IDS:
-            result = calc_estimated_energy_saving(meter_id, start)
+        result = calc_estimated_energy_saving(ALL_USER_METER_IDS[1], start)
 
-            # Check result types
-            self.assertIsInstance(result, (float, type(None)))
+        # Check result types
+        self.assertIsInstance(result, (float, type(None)))
 
     @skip
-    def test_estimate_energy_saving_each_users(self):
+    def test_estimate_energy_saving_each_user(self):
         """ Unit tests for function estimate_energy_saving_each_user() """
 
         start = datetime(2019, 3, 12).date()
