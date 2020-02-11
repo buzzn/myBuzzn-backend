@@ -151,8 +151,8 @@ def calc_estimated_energy_consumption(meter_id, start):
     (1 - ratio values) * energy consumption last term + energy consumption ongoing term
     :param str meter_id: the meter id
     :param datetime.date start: the start date of the given term
-    :returns: the estimated energy consumption
-    :rtype: float or None if there are no values
+    :returns: the estimated energy consumption or None if there are no values
+    :rtype: float or type(None)
     """
 
     ratio_values = calc_ratio_values(start)
@@ -162,9 +162,8 @@ def calc_estimated_energy_consumption(meter_id, start):
         meter_id, start)
 
     if energy_consumption_last_term is None or energy_consumption_ongoing_term is None:
-        logger.info(
-            'No estimated energy consumption available for meter_id %s from\
- %s on', meter_id, str(start))
+        logger.info('No estimated energy consumption available for meter_id % s from\
+                    % s on', meter_id, str(start))
         return None
 
     return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
@@ -181,15 +180,17 @@ def calc_estimated_energy_saving(meter_id, start):
 
     energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
                                                                      start)
-    estimated_energy_consumption = calc_estimated_energy_consumption(meter_id,
-                                                                     start)
-    if energy_consumption_last_term is None or estimated_energy_consumption is None:
-        logger.info(
-            'No estimated energy saving available for meter_id %s from\
- %s on', meter_id, str(start))
-        return None
+    print(energy_consumption_last_term)
+    # estimated_energy_consumption = calc_estimated_energy_consumption(meter_id,
+    # start)
+    # if energy_consumption_last_term is None or estimated_energy_consumption is None:
+    # logger.info(
+    # 'No estimated energy saving available for meter_id %s from\
+ # %s on', meter_id, str(start))
+    # return None
 
-    return energy_consumption_last_term - estimated_energy_consumption
+    # return energy_consumption_last_term - estimated_energy_consumption
+    return None
 
 
 def estimate_energy_saving_each_user(start):
