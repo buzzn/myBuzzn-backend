@@ -31,7 +31,7 @@ def get_all_meter_ids(session):
            for group_meter_id in session.query(Group.group_meter_id).all()]
 
 
-def calc_timestamps():
+def calc_term_boundaries():
     """ Calculate begin and end of previous and ongoing terms.
     :return: begin and end of the previous and the current support year until
     today as unix milliseconds timestamps
@@ -207,7 +207,7 @@ class Task:
                 # Get the energy consumption for all meters in the ongoing term
                 # (start date and end date) and the previous term (start date
                 # and end date)
-                for timestamp in calc_timestamps():
+                for timestamp in calc_term_boundaries():
                     end_of_day = round((datetime.utcfromtimestamp(
                         timestamp/1000) + timedelta(hours=24, minutes=59,
                                                     seconds=59)).timestamp() * 1000)

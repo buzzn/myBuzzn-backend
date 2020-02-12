@@ -195,7 +195,7 @@ def estimate_energy_saving_each_user(start, session):
     """ Calculate the estimated energy saving for each user.
     :param datetime.date start: the start date of the given term
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :return: the estimated energy saving of each user in the given term
+    :return: the estimated energy saving of each user mapped to their meter id in the given term
     :rtype: dict
     """
 

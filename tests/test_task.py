@@ -6,7 +6,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.task import get_all_meter_ids, calc_timestamps, calc_end,\
+from util.task import get_all_meter_ids, calc_term_boundaries, calc_end,\
     calc_one_year_back, calc_support_year_start, calc_support_week_start,\
     calc_one_week_back, calc_two_days_back, client_name, Task
 
@@ -58,8 +58,8 @@ class TaskTestCase(BuzznTestCase):
         for meter_id in result:
             self.assertEqual(len(meter_id), 32)
 
-    def test_calc_timestamps(self):
-        """ Unit tests for function calc_end().
+    def test_calc_term_boundaries(self):
+        """ Unit tests for function calc_term_boundaries().
         Expect begin_ongoing_term to equal the start of the current support
         year at 00:00:00 UTC.
         Expect end_ongoing_term to equal today at 00:00:00 UTC.
@@ -69,7 +69,7 @@ class TaskTestCase(BuzznTestCase):
         at 00:00:00 UTC.
         """
 
-        result = calc_timestamps()
+        result = calc_term_boundaries()
         today = datetime.today()
 
         # Check result types
