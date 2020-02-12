@@ -27,7 +27,6 @@ def upgrade():
                     sa.Column('id', sa.Integer(), nullable=True),
                     sa.Column('meter_id', sa.String(length=32), nullable=True),
                     sa.Column('saving', sa.Float(), nullable=True),
-                    sa.ForeignKeyConstraint(['id'], ['user.id'], ),
                     sa.ForeignKeyConstraint(['meter_id'], ['user.meter_id'], ),
                     sa.PrimaryKeyConstraint('timestamp')
                     )
