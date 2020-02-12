@@ -6,7 +6,8 @@ class UserSaving(db.Model):
     """ Represents a user savings entry in the backend. """
 
     timestamp = db.Column(db.DateTime, primary_key=True)
-    meter_id = db.Column(db.String(32), ForeignKey('user.meter_id'))
+    meter_id = db.Column(db.String(32), ForeignKey('user.meter_id'),
+                         primary_key=True)
     saving = db.Column(db.Float)
 
     def __init__(self, timestamp, meter_id, saving):
