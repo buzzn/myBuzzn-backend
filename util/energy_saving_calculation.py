@@ -51,7 +51,8 @@ def calc_ratio_values(start):
                                           str(start) + "\' AND \'"
                                           + str(term_end) + '\' ORDER BY date').first()[0]
 
-        ratio_values = energy_promille/energy_total
+        if (energy_promille is not None) and (energy_total is not None):
+            ratio_values = energy_promille/energy_total
 
     except Exception as e:
         message = exception_message(e)
