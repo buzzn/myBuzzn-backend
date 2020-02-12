@@ -14,4 +14,4 @@ blinker
 redis
 pillow
 pytz
-Werkzeug==1.0.0
+Werkzeug==0.16.1
