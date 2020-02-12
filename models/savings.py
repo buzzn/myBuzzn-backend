@@ -6,11 +6,10 @@ class UserSaving(db.Model):
     """ Represents a user savings entry in the backend. """
 
     timestamp = db.Column(db.DateTime, primary_key=True)
-    id = db.Column(db.Integer, ForeignKey('user.id'))
     meter_id = db.Column(db.String(32), ForeignKey('user.meter_id'))
     saving = db.Column(db.Float)
 
-    def __init__(self, timestamp, user_id, meter_id, saving):
+    def __init__(self, timestamp, meter_id, saving):
         """ Creates a new user saving.
         :param datetime.datetime timestamp: the UTC datetime
         :param int id: the user's id
@@ -18,7 +17,6 @@ class UserSaving(db.Model):
         """
 
         self.timestamp = timestamp
-        self.user_id = user_id
         self.meter_id = meter_id
         self.saving = saving
 
