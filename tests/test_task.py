@@ -60,7 +60,7 @@ class TaskTestCase(BuzznTestCase):
 
     def test_calc_term_boundaries(self):
         """ Unit tests for function calc_term_boundaries().
-        Expect begin_ongoing_term to equal the start of the current support
+        Expect begin_ongoing_term to equal the s_term_boundaries of the current support
         year at 00:00:00 UTC.
         Expect end_ongoing_term to equal today at 00:00:00 UTC.
         Expect begin_previous_term to equal the start of the previous support
