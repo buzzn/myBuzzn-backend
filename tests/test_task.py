@@ -48,9 +48,9 @@ class TaskTestCase(BuzznTestCase):
         result = get_all_meter_ids(db.session)
 
         # Check return types
-        self.assertTrue(isinstance(result, list))
+        self.assertIsInstance(result, list)
         for meter_id in result:
-            self.assertTrue(isinstance(meter_id, str))
+            self.assertIsInstance(meter_id, str)
             self.assertTrue(meter_id.isalnum())
 
         # Check return values
@@ -110,7 +110,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_end()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def test_calc_one_year_back(self):
         """ Unit tests for function calc_one_year_back(). """
@@ -118,7 +118,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_one_year_back()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def test_calc_support_year_start(self):
         """ Unit tests for function calc_support_year_start().
@@ -129,7 +129,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_support_year_start()
 
         # Check result type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
         # Check result values
         d = datetime.fromtimestamp(
@@ -174,7 +174,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_support_week_start()
 
         # Check result type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
         # Check result values
         d = datetime.fromtimestamp(
@@ -193,7 +193,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_one_week_back()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def test_calc_two_days_back(self):
         """ Unit tests for function calc_two_days_back(). """
@@ -201,12 +201,12 @@ class TaskTestCase(BuzznTestCase):
         result = calc_two_days_back()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def check_init(self):
         """ Unit tests for function Task.__init__(). """
 
         # Check class variables
-        self.assertTrue(isinstance(self.task.d, Discovergy))
-        self.assertTrue(isinstance(self.task.redis_client, redis.Redis))
+        self.assertIsInstance(self.task.d, Discovergy)
+        self.assertIsInstance(self.task.redis_client, redis.Redis)
         self.assertEqual(self.task.d.client_name, client_name)
