@@ -17,18 +17,18 @@ depends_on = None
 
 
 def upgrade():
+    op.create_table('user_saving',
+                    sa.Column('timestamp', sa.DateTime(), nullable=False),
+                    sa.Column('meter_id', sa.String(
+                        length=32), nullable=False),
+                    sa.Column('saving', sa.Float(), nullable=True),
+                    sa.ForeignKeyConstraint(['meter_id'], ['user.meter_id'], ),
+                    sa.PrimaryKeyConstraint('timestamp', 'meter_id')
+                    )
     op.create_table('community_saving',
                     sa.Column('timestamp', sa.DateTime(), nullable=False),
                     sa.Column('saving', sa.Float(), nullable=True),
                     sa.PrimaryKeyConstraint('timestamp')
-                    )
-    op.create_table('user_saving',
-                    sa.Column('timestamp', sa.DateTime(), nullable=False),
-                    sa.Column('id', sa.Integer(), nullable=True),
-                    sa.Column('meter_id', sa.String(length=32), nullable=True),
-                    sa.Column('saving', sa.Float(), nullable=True),
-                    sa.ForeignKeyConstraint(['meter_id'], ['user.meter_id'], ),
-                    sa.PrimaryKeyConstraint('timestamp', 'meter_id')
                     )
 
 
