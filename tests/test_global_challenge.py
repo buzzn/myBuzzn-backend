@@ -6,8 +6,13 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
+from routes.global_challenge import get_individual_saving
 from tests.test_energy_saving_calculation import SORTED_KEYS_ESTIMATION,\
     DATA_ESTIMATION
+
+
+INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
+METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
 
 
 class GlobalChallengeTestCase(BuzznTestCase):
@@ -34,7 +39,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
                 side_effect=SORTED_KEYS_ESTIMATION)
     @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
     def test_estimate_energy_saving_each_user(self, scan_iter, get):
-        """ Unit tests for function estimate_energy_saving_each_user() """
+        """ Unit tests for function estimate_energy_saving_each_user(). """
 
         start = datetime(2019, 3, 12).date()
         result = estimate_energy_saving_each_user(start, db.session)
@@ -50,10 +55,26 @@ class GlobalChallengeTestCase(BuzznTestCase):
                 side_effect=SORTED_KEYS_ESTIMATION)
     @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
     def test_estimate_energy_saving_all_users(self, scan_iter, get):
-        """ Unit tests for function estimate_energy_saving_each_user() """
+        """ Unit tests for function estimate_energy_saving_each_user(). """
 
         start = datetime(2019, 3, 12).date()
         result = estimate_energy_saving_all_users(start, db.session)
 
         # Check result type
         self.assertIsInstance(result, float)
+
+    # pylint: disable=unused-argument
+    @mock.patch('sqlalchemy.engine.result.ResultProxy.first',
+                return_value=INDIVIDUAL_SAVING)
+    @mock.patch('sqlalchemy.create_engine')
+    def test_get_individual_saving(self, first, create_engine):
+        """ Unit tests for function get_individual_saving(). """
+
+        result = get_individual_saving(METER_ID)
+
+        # Check result types
+        self.assertIsInstance(result, (dict, type(None)))
+        if isinstance(result, dict):
+            for key, value in result.items():
+                self.assertIsInstance(key, str)
+                self.assertIsInstance(value, float)

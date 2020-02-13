@@ -1,0 +1,68 @@
+import logging
+from flask import Blueprint, jsonify
+from flask_api import status
+from flask_jwt_extended import get_jwt_identity
+from models.user import User
+from util.database import db, get_engine
+from util.error import UNKNOWN_USER, exception_message
+from util.login import login_required
+
+
+logger = logging.getLogger(__name__)
+IndividualGlobalChallenge = Blueprint('IndividualGlobalChallenge',
+                                      __name__)
+GroupGlobalChallenge = Blueprint('GroupGlobalChallenge', __name__)
+
+
+def get_individual_saving(meter_id):
+    """ Retrieve the last individual saving prognosis for the given meter id
+    from the SQLite database. """
+
+    # pylint: disable=line-too-long
+    query = "SELECT timestamp, saving FROM user_saving WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
+
+    try:
+        engine = get_engine()
+        with engine.connect() as con:
+
+            # Query last individual saving prognosis for the given meter id
+            individual_saving = con.execute(query).first()
+
+            timestamp = individual_saving[0].split('.')[0]
+            saving = individual_saving[1]
+            return {timestamp: saving}
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return None
+
+
+def get_community_saving():
+    """ Retrieve the last community saving prognosis from the SQLite database. """
+
+
+@IndividualGlobalChallenge.route('/individual-global-challenge', methods=['GET'])
+@login_required
+def individual_global_challenge():
+    """ Shows the individual saving prognosis for today in mWh.
+    :return: (a JSON object where the saving is mapped to the timestamp, 200) or
+    ({}, 206) if there is no value
+    :rtype: tuple
+    """
+
+    user_id = get_jwt_identity()
+    user = db.session.query(User).filter_by(id=user_id).first()
+    if user is None:
+        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+
+    result = {}
+
+    try:
+        result = get_individual_saving(user.meter_id)
+        return jsonify(result), status.HTTP_200_OK
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
