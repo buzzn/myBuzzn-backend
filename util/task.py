@@ -7,7 +7,10 @@ from discovergy.discovergy import Discovergy
 import redis
 from models.user import User
 from models.group import Group
+from models.savings import UserSaving, CommunitySaving
 from util.error import exception_message
+from util.energy_saving_calculation import estimate_energy_saving_each_user,\
+    estimate_energy_saving_all_users
 from util.database import create_session
 
 
@@ -99,6 +102,27 @@ def calc_support_year_start():
     return support_year_start
 
 
+def calc_support_year_start_datetime():
+    """ Calculate start of BAFA support year.
+    :return:
+    March, 12th the year before if today is between January, 1st and March, 11th 
+    March, 12th of the current year otherwise
+    :rtype: datetime.date in UTC
+    """
+
+    now = datetime.utcnow()
+    start_day = 12
+    start_month = 3
+    if (now.month < start_month) or (now.month == start_month and now.day <
+                                     start_day):
+        start_year = now.year - 1
+    else:
+        start_year = now.year
+    d = date(start_year, start_month, start_day)
+    t = time(0, 0)
+    return datetime.combine(d, t)
+
+
 def calc_support_week_start():
     """ Calculate start of BAFA support week.
     :return:
@@ -136,6 +160,32 @@ def calc_two_days_back():
     return round((datetime.utcnow() - timedelta(hours=48)).timestamp() * 1000)
 
 
+def write_savings(session):
+    """  Write the energy savings of each user and the community to the
+    sqlite database mybuzzn.db.
+    :return: an error if something went wrong, None otherwise
+    :rtype: util.error.Error if something went wrong, type(None) otherwise
+    """
+
+    start = calc_support_year_start_datetime()
+    try:
+        for key, value in estimate_energy_saving_each_user(start,
+                                                           session).items():
+
+            # Create UserSaving instance
+            session.add(UserSaving(
+                datetime.utcnow(), key, value))
+
+        # Create CommunitySaving instance
+        community_saving = estimate_energy_saving_all_users(start, session)
+        session.add(CommunitySaving(datetime.utcnow(), community_saving))
+
+        session.commit()
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+
+
 class Task:
     """ Handle discovergy login, data retrieval, populating and updating the
     redis database. """
@@ -151,10 +201,7 @@ class Task:
         self.d.login(email, password)
 
     def populate_redis(self):
-        """ Populate the redis database with all discovergy data from the past.
-        :return: an error if something went wrong, None otherwise
-        :rtype: util.error.Error if something went wrong, type(None) otherwise
-        """
+        """ Populate the redis database with all discovergy data from the past. """
 
         # pylint: disable=global-statement
         global last_data_flush
@@ -211,6 +258,7 @@ class Task:
                     end_of_day = round((datetime.utcfromtimestamp(
                         timestamp/1000) + timedelta(hours=24, minutes=59,
                                                     seconds=59)).timestamp() * 1000)
+
                     readings = self.d.get_readings(meter_id, timestamp,
                                                    end_of_day, 'one_hour')
 
@@ -278,10 +326,12 @@ class Task:
                 # Populate redis if last data flush was more than 24h ago
                 # pylint: disable=global-statement
                 global last_data_flush
+
                 if (last_data_flush is None) or (datetime.utcnow() -
                                                  last_data_flush >
-                                                 timedelta(minutes=24)):
+                                                 timedelta(hours=24)):
                     self.populate_redis()
+                    write_savings(create_session())
 
                 # Connect to sqlite database
                 session = create_session()
