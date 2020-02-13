@@ -16,7 +16,12 @@ GroupGlobalChallenge = Blueprint('GroupGlobalChallenge', __name__)
 
 def get_individual_saving(meter_id):
     """ Retrieve the last individual saving prognosis for the given meter id
-    from the SQLite database. """
+    from the SQLite database.
+    :param str meter_id: the user's meter id
+    :returns: the last saving together with its timestamp or None if there are
+    no values
+    :rtype: dict or type(None) if there are no values
+    """
 
     # pylint: disable=line-too-long
     query = "SELECT timestamp, saving FROM user_saving WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
@@ -39,7 +44,28 @@ def get_individual_saving(meter_id):
 
 
 def get_community_saving():
-    """ Retrieve the last community saving prognosis from the SQLite database. """
+    """ Retrieve the last community saving prognosis from the SQLite database.
+    :returns: the last saving together with its timestamp or None if there are
+    no values
+    :rtype: dict or type(None) if there are no values
+    """
+
+    query = "SELECT timestamp, saving FROM community_saving ORDER BY timestamp DESC"
+
+    try:
+        engine = get_engine()
+        with engine.connect() as con:
+
+            # Query last community saving prognosis
+            community_saving = con.execute(query).first()
+            timestamp = community_saving[0].split('.')[0]
+            saving = community_saving[1]
+            return {timestamp: saving}
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return None
 
 
 @IndividualGlobalChallenge.route('/individual-global-challenge', methods=['GET'])

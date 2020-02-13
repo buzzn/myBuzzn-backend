@@ -6,12 +6,13 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
-from routes.global_challenge import get_individual_saving
+from routes.global_challenge import get_individual_saving, get_community_saving
 from tests.test_energy_saving_calculation import SORTED_KEYS_ESTIMATION,\
     DATA_ESTIMATION
 
 
 INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
+COMMUNITY_SAVING = ('2020-02-13 16:20:21.977425', 85184267259376.5)
 METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
 
 
@@ -71,6 +72,21 @@ class GlobalChallengeTestCase(BuzznTestCase):
         """ Unit tests for function get_individual_saving(). """
 
         result = get_individual_saving(METER_ID)
+
+        # Check result types
+        self.assertIsInstance(result, (dict, type(None)))
+        if isinstance(result, dict):
+            for key, value in result.items():
+                self.assertIsInstance(key, str)
+                self.assertIsInstance(value, float)
+
+    # pylint: disable = unused-argument
+    @mock.patch('sqlalchemy.engine.result.ResultProxy.first', return_value=COMMUNITY_SAVING)
+    @mock.patch('sqlalchemy.create_engine')
+    def test_get_community_saving(self, first, create_engine):
+        """ Unit tests for function get_community_saving(). """
+
+        result = get_community_saving()
 
         # Check result types
         self.assertIsInstance(result, (dict, type(None)))
