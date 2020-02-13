@@ -11,7 +11,7 @@ from util.login import login_required
 logger = logging.getLogger(__name__)
 IndividualGlobalChallenge = Blueprint('IndividualGlobalChallenge',
                                       __name__)
-GroupGlobalChallenge = Blueprint('GroupGlobalChallenge', __name__)
+CommunityGlobalChallenge = Blueprint('CommunityGlobalChallenge', __name__)
 
 
 def get_individual_saving(meter_id):
@@ -86,6 +86,26 @@ def individual_global_challenge():
 
     try:
         result = get_individual_saving(user.meter_id)
+        return jsonify(result), status.HTTP_200_OK
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
+
+
+@CommunityGlobalChallenge.route('/community-global-challenge', methods=['GET'])
+def community_global_challenge():
+    """ Shows the community saving prognosis for today in mWh.
+    :return: (a JSON object where the saving is mapped to the timestamp, 200)
+    or ({}, 206) if there is no value
+    :rtype: tuple
+    """
+
+    result = {}
+
+    try:
+        result = get_community_saving()
         return jsonify(result), status.HTTP_200_OK
 
     except Exception as e:

@@ -7,6 +7,7 @@ from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
 from routes.disaggregation import GroupDisaggregation
+from routes.global_challenge import IndividualGlobalChallenge, CommunityGlobalChallenge
 from routes.profile import Profile
 from routes.set_password import SetPassword
 from routes.reset_password import ResetPassword
@@ -64,6 +65,8 @@ def setup_app(app_config):
     app.register_blueprint(GroupConsumptionHistory)
     app.register_blueprint(IndividualDisaggregation)
     app.register_blueprint(GroupDisaggregation)
+    app.register_blueprint(IndividualGlobalChallenge)
+    app.register_blueprint(CommunityGlobalChallenge)
     app.register_blueprint(Login)
     app.register_blueprint(Profile)
     app.register_blueprint(ResetPassword)
