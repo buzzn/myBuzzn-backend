@@ -105,7 +105,7 @@ def calc_support_year_start():
 def calc_support_year_start_datetime():
     """ Calculate start of BAFA support year.
     :return:
-    March, 12th the year before if today is between January, 1st and March, 11th 
+    March, 12th the year before if today is between January, 1st and March, 11th
     March, 12th of the current year otherwise
     :rtype: datetime.date in UTC
     """
