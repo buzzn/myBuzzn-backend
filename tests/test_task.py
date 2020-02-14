@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from discovergy.discovergy import Discovergy
 import redis
 from models.user import User, GenderType, StateType
@@ -7,8 +7,8 @@ from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.task import get_all_meter_ids, calc_term_boundaries, calc_end,\
-    calc_one_year_back, calc_support_year_start, calc_support_week_start,\
-    calc_one_week_back, calc_two_days_back, client_name, Task
+    calc_one_year_back, calc_support_year_start, calc_support_year_start_datetime,\
+    calc_support_week_start, calc_one_week_back, calc_two_days_back, client_name, Task
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
@@ -48,9 +48,9 @@ class TaskTestCase(BuzznTestCase):
         result = get_all_meter_ids(db.session)
 
         # Check return types
-        self.assertTrue(isinstance(result, list))
+        self.assertIsInstance(result, list)
         for meter_id in result:
-            self.assertTrue(isinstance(meter_id, str))
+            self.assertIsInstance(meter_id, str)
             self.assertTrue(meter_id.isalnum())
 
         # Check return values
@@ -110,7 +110,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_end()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def test_calc_one_year_back(self):
         """ Unit tests for function calc_one_year_back(). """
@@ -118,30 +118,51 @@ class TaskTestCase(BuzznTestCase):
         result = calc_one_year_back()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def test_calc_support_year_start(self):
         """ Unit tests for function calc_support_year_start().
-        Expect Mar-12 last year if today is between Jan-01 and
-        Mar-11.
+        Expect Mar-12 last year if today is between Jan-01 and Mar-11.
         Expect Mar-12 this year if today is after Mar-11.
         """
 
         result = calc_support_year_start()
 
         # Check result type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
         # Check result values
-        date = datetime.fromtimestamp(
+        d = datetime.fromtimestamp(
             float(result/1000))
-        self.assertEqual(date.day, 12)
-        self.assertEqual(date.month, 3)
-        if (datetime.utcnow().month < date.month) or (datetime.utcnow().day <
-                                                      date.day):
-            self.assertEqual(date.year, datetime.utcnow().year - 1)
+        self.assertEqual(d.day, 12)
+        self.assertEqual(d.month, 3)
+        if (datetime.utcnow().month < d.month) or (datetime.utcnow().day <
+                                                   d.day):
+            self.assertEqual(d.year, datetime.utcnow().year - 1)
         else:
-            self.assertEqual(date.year, datetime.utcnow().year)
+            self.assertEqual(d.year, datetime.utcnow().year)
+
+    def test_calc_support_year_start_datetime(self):
+        """ Unit tests for function calc_support_year_start_datetime().
+        Expect Mar-12 last year as datetime.datetime.date object if today is
+        between Jan-01 and Mar-11.
+        Expect Mar-12 this year as datetime.datetime.date object if today is
+        after Mar-11.
+        """
+
+        result = calc_support_year_start_datetime()
+
+        # Check result type
+        self.assertIsInstance(result, date)
+
+        # Check result values
+        self.assertEqual(result.day, 12)
+        self.assertEqual(result.month, 3)
+        if (datetime.utcnow().month < result.month) or (datetime.utcnow().day <
+                                                        result.day):
+            self.assertEqual(result.year, datetime.utcnow().year - 1)
+        else:
+            self.assertEqual(result.year, datetime.utcnow().year)
 
     def test_calc_support_week_start(self):
         """ Unit tests for function calc_support_week_start().
@@ -153,18 +174,18 @@ class TaskTestCase(BuzznTestCase):
         result = calc_support_week_start()
 
         # Check result type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
         # Check result values
-        date = datetime.fromtimestamp(
+        d = datetime.fromtimestamp(
             float(result/1000))
         if (datetime.utcnow().month == 3) and (11 < datetime.utcnow().day < 19):
-            self.assertEqual(date.year, datetime.utcnow().year)
-            self.assertEqual(date.month, 3)
-            self.assertEqual(date.day, 12)
+            self.assertEqual(d.year, datetime.utcnow().year)
+            self.assertEqual(d.month, 3)
+            self.assertEqual(d.day, 12)
         else:
-            self.assertEqual(date.date(), (datetime.utcnow() -
-                                           timedelta(days=7)).date())
+            self.assertEqual(d.date(), (datetime.utcnow() -
+                                        timedelta(days=7)).date())
 
     def test_calc_one_week_back(self):
         """ Unit tests for function calc_one_week_back(). """
@@ -172,7 +193,7 @@ class TaskTestCase(BuzznTestCase):
         result = calc_one_week_back()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def test_calc_two_days_back(self):
         """ Unit tests for function calc_two_days_back(). """
@@ -180,12 +201,12 @@ class TaskTestCase(BuzznTestCase):
         result = calc_two_days_back()
 
         # Check return type
-        self.assertTrue(isinstance(result, int))
+        self.assertIsInstance(result, int)
 
     def check_init(self):
         """ Unit tests for function Task.__init__(). """
 
         # Check class variables
-        self.assertTrue(isinstance(self.task.d, Discovergy))
-        self.assertTrue(isinstance(self.task.redis_client, redis.Redis))
+        self.assertIsInstance(self.task.d, Discovergy)
+        self.assertIsInstance(self.task.redis_client, redis.Redis)
         self.assertEqual(self.task.d.client_name, client_name)

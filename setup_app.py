@@ -54,6 +54,7 @@ def setup_app(app_config):
     from models.user import User
     from models.group import Group
     from models.loadprofile import LoadProfileEntry
+    from models.savings import UserSaving, CommunitySaving
     Migrate(app, db)
 
     # Login stuff
