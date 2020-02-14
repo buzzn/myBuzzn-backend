@@ -71,7 +71,7 @@ def get_community_saving():
 @IndividualGlobalChallenge.route('/individual-global-challenge', methods=['GET'])
 @login_required
 def individual_global_challenge():
-    """ Shows the individual saving prognosis for today in mWh.
+    """ Shows the individual saving prognosis for today in μWh.
     :return: (a JSON object where the saving is mapped to the timestamp, 200) or
     ({}, 206) if there is no value
     :rtype: tuple
@@ -96,7 +96,7 @@ def individual_global_challenge():
 
 @CommunityGlobalChallenge.route('/community-global-challenge', methods=['GET'])
 def community_global_challenge():
-    """ Shows the community saving prognosis for today in mWh.
+    """ Shows the community saving prognosis for today in μWh.
     :return: (a JSON object where the saving is mapped to the timestamp, 200)
     or ({}, 206) if there is no value
     :rtype: tuple
