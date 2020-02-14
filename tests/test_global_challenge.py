@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from unittest import mock
+from flask_api import status
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
@@ -12,7 +13,9 @@ from tests.test_energy_saving_calculation import SORTED_KEYS_ESTIMATION,\
 
 
 INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
+INDIVIDUAL_SAVING_DICT = {'2020-02-13 09:57:03': 3148577026610.7812}
 COMMUNITY_SAVING = ('2020-02-13 16:20:21.977425', 85184267259376.5)
+COMMUNITY_SAVING_DICT = {'2020-02-13 16:20:21', 85184267259376.5}
 METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
 
 
@@ -80,7 +83,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
                 self.assertIsInstance(key, str)
                 self.assertIsInstance(value, float)
 
-    # pylint: disable = unused-argument
+    # pylint: disable=unused-argument
     @mock.patch('sqlalchemy.engine.result.ResultProxy.first', return_value=COMMUNITY_SAVING)
     @mock.patch('sqlalchemy.create_engine')
     def test_get_community_saving(self, first, create_engine):
@@ -94,3 +97,22 @@ class GlobalChallengeTestCase(BuzznTestCase):
             for key, value in result.items():
                 self.assertIsInstance(key, str)
                 self.assertIsInstance(value, float)
+
+    # pylint: disable=unused-argument
+    @mock.patch('routes.global_challenge.get_individual_saving',
+                return_value=INDIVIDUAL_SAVING_DICT)
+    def test_individual_global_challenge(self, get_individual_saving):
+        """ Unit tests for individual_global_challenge(). """
+
+        # Check if route exists
+        login_request = self.client.post('/login', data=json.dumps({'user':
+                                                                    'test@test.net',
+                                                                    'password':
+                                                                    'some_password'}))
+        response = self.client.get('/individual-global-challenge',
+                                   headers={'Authorization': 'Bearer {}'.
+                                                             format(login_request.json
+                                                                    ["sessionToken"])})
+
+        # Check response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
