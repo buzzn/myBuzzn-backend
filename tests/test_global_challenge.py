@@ -1,3 +1,4 @@
+import ast
 from datetime import datetime
 import json
 from unittest import mock
@@ -116,3 +117,8 @@ class GlobalChallengeTestCase(BuzznTestCase):
 
         # Check response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check response content
+        self.assertIsInstance(response.data, bytes)
+        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')),
+                         INDIVIDUAL_SAVING_DICT)
