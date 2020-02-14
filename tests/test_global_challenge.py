@@ -101,7 +101,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('routes.global_challenge.get_individual_saving',
                 return_value=INDIVIDUAL_SAVING_DICT)
-    def test_individual_global_challenge(self, get_individual_saving):
+    def test_individual_global_challenge(self, _get_individual_saving):
         """ Unit tests for individual_global_challenge(). """
 
         # Check if route exists
