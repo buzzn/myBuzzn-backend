@@ -15,7 +15,8 @@ Format
 ======
 
 * e.g. as JSON object: 
-```{
+```
+{
   "gender" => str,
   "first_name" => str, 
   "name" => str, 
