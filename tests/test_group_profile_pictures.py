@@ -2,7 +2,7 @@ import json
 from models.user import User, GenderType, StateType
 from models.group import Group
 from models.user import User
-# from routes.group_profile_pictures import get_group_members
+from routes.group_profile_pictures import get_group_members
 from tests.buzzn_test_case import BuzznTestCase
 from tests.test_profile import sample_avatar
 from util.database import db
@@ -64,3 +64,18 @@ class GroupProfilePictures(BuzznTestCase):
                                          'flatSize': 35.0,
                                          'inhabitants': 4,
                                          'avatar': sample_avatar}))
+
+    def test_get_group_members(self):
+        """ Unit tests for function get_group_members(). """
+
+        result = get_group_members(1)
+
+        # Check result types
+        self.assertIsInstance(result, list)
+        for group_member in result:
+            self.assertIsInstance(group_member, dict)
+            self.assertIsInstance(group_member.get('id'), int)
+            self.assertIsInstance(group_member.get('avatar'), bytes)
+
+            # Check result values
+            self.assertTrue(len(group_member['avatar']) > 100)
