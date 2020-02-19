@@ -125,8 +125,9 @@ class WebsocketProvider:
     def create_data(self, user_id):
         """ Create a data package with the latest available data.
         :param int user_id: the user's id
-        :return: {str => int, str => int, str => int, str => float, str => {str
-        => int, str => int}}
+        :return: the group's overall consumption, the group's overall
+        production and each group user's id, meter id, consumption and
+        self-sufficiency
         :rtype: dict
         """
 
