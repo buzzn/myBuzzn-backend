@@ -17,6 +17,10 @@ UNKNOWN_USER = Error('Unknown user', 'This user is not known.')
 NO_USERS = Error('No users', 'There are no users in the database.')
 UNKNOWN_GROUP = Error('Unknown group', 'This group is not known.')
 NO_METER_ID = Error('No meter id', 'No meter id was received.')
+NO_GLOBAL_CHALLENGE = Error(
+    'No global challenge',
+    'There are not enough historical energy values to calculate the saving\
+            prognosis for this user.')
 exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 
 
