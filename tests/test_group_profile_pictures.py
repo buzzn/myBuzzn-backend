@@ -1,4 +1,7 @@
+import ast
 import json
+from unittest import mock
+from flask_api import status
 from models.user import User, GenderType, StateType
 from models.group import Group
 from models.user import User
@@ -6,6 +9,11 @@ from routes.group_profile_pictures import get_group_members
 from tests.buzzn_test_case import BuzznTestCase
 from tests.test_profile import sample_avatar
 from util.database import db
+
+
+DATA = [{'id': 1, 'avatar': sample_avatar},
+        {'id': 2, 'avatar': sample_avatar},
+        {'id': 3, 'avatar': sample_avatar}]
 
 
 class GroupProfilePictures(BuzznTestCase):
@@ -79,3 +87,26 @@ class GroupProfilePictures(BuzznTestCase):
 
             # Check result values
             self.assertTrue(len(group_member['avatar']) > 100)
+
+    # pylint: disable=unused-argument
+    @mock.patch('routes.group_profile_pictures.get_group_members',
+                return_value=DATA)
+    def test_group_profile_pictures(self, _get_group_members):
+        """ Unit tests for group_profile_pictures(). """
+
+        # Check if route exists
+        login_request = self.client.post('/login', data=json.dumps({'user':
+                                                                    'test@test.net',
+                                                                    'password':
+                                                                    'some_password'}))
+        response = self.client.get('/assets/group-profile-pictures',
+                                   headers={'Authorization': 'Bearer {}'.
+                                                             format(login_request.json
+                                                                    ["sessionToken"])})
+
+        # Check response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check response content
+        self.assertIsInstance(response.data, bytes)
+        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')), DATA)
