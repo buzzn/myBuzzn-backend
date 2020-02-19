@@ -1,10 +1,10 @@
 import json
-from unittest import mock
+from unittest import mock, skip
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.websocket_provider import WebsocketProvider, get_parameters
+from util.websocket_provider import WebsocketProvider, get_group_meter_id
 
 
 GROUP_LAST_READING = {'type': 'reading',
@@ -78,6 +78,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
 
+    @skip
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
@@ -104,6 +105,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
             self.assertEqual(item1.get('consumption'),
                              item2.get('consumption'))
 
+    @skip
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
@@ -128,17 +130,13 @@ class WebsocketProviderTestCase(BuzznTestCase):
         # Check return value
         self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
 
-    def test_get_parameters(self):
+    def test_get_group_meter_id(self):
         """ Unit tests for function get_parameters(). """
 
-        result = get_parameters(1)
+        result = get_group_meter_id(1)
 
         # Check result values
-        self.assertEqual(result[0], METER_ID)
-        self.assertEqual(result[1], GROUP_METER_ID)
-        self.assertEqual(result[2], GROUP_MEMBERS)
-        self.assertEqual(result[3], INHABITANTS)
-        self.assertEqual(result[4], FLAT_SIZE)
+        self.assertEqual(result, GROUP_METER_ID)
 
         # Check result type
-        self.assertTrue(isinstance(result, tuple))
+        self.assertIsInstance(result, str)
