@@ -163,8 +163,6 @@ def calc_two_days_back():
 def write_savings(session):
     """  Write the energy savings of each user and the community to the
     sqlite database mybuzzn.db.
-    :return: an error if something went wrong, None otherwise
-    :rtype: util.error.Error if something went wrong, type(None) otherwise
     """
 
     start = calc_support_year_start_datetime()
