@@ -1,5 +1,4 @@
-from flask import Blueprint, request
-from flask_api import status
+from flask import Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.group import Group
 from models.user import User
