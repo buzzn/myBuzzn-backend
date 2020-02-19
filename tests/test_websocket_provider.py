@@ -4,7 +4,8 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.websocket_provider import WebsocketProvider, get_group_meter_id
+from util.websocket_provider import WebsocketProvider, get_group_meter_id,\
+    get_group_members
 
 
 GROUP_LAST_READING = {'type': 'reading',
@@ -44,12 +45,13 @@ INDIVIDUAL_FIRST_READING = {'type': 'reading',
                             'values': {'power': 13374273, 'power3': 3902020,
                                        'energyOut': 0, 'power1': 3565876,
                                        'energy': 3055907952664000, 'power2': 4029106}}
-GROUP_MEMBERS = [{'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf'}, {
-    'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98'}]
-METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
+GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
+                  'inhabitants': 2, 'flat_size': 60.0},
+                 {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
+                  'inhabitants': 2, 'flat_size': 60.0},
+                 {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
+                  'inhabitants': 2, 'flat_size': 60.0}]
 GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
-INHABITANTS = 2
-FLAT_SIZE = 60.0
 
 
 class WebsocketProviderTestCase(BuzznTestCase):
@@ -67,11 +69,17 @@ class WebsocketProviderTestCase(BuzznTestCase):
         test_user.set_password('some_password')
         test_user.state = StateType.ACTIVE
         db.session.add(test_user)
-        db.session.add(User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
-                            'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
-                            1))
-        db.session.add(User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
-                            'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
+        test_user2 = User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
+                          'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
+                          1)
+        test_user2.flat_size = 60.0
+        test_user2.inhabitants = 2
+        db.session.add(test_user2)
+        test_user3 = User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
+                          'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1)
+        test_user3.flat_size = 60.0
+        test_user3.inhabitants = 2
+        db.session.add(test_user3)
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
         db.session.commit()
@@ -105,7 +113,6 @@ class WebsocketProviderTestCase(BuzznTestCase):
             self.assertEqual(item1.get('consumption'),
                              item2.get('consumption'))
 
-    @skip
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
@@ -131,7 +138,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
 
     def test_get_group_meter_id(self):
-        """ Unit tests for function get_parameters(). """
+        """ Unit tests for function get_group_meter_id(). """
 
         result = get_group_meter_id(1)
 
@@ -140,3 +147,21 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
         # Check result type
         self.assertIsInstance(result, str)
+
+    def test_get_group_members(self):
+        """ Unit tests for function get_group_members(). """
+
+        result = get_group_members(1)
+
+        # Check result types
+        self.assertIsInstance(result, list)
+        for group_user in result:
+            self.assertIsInstance(group_user, dict)
+            self.assertIsInstance(group_user.get('id'), int)
+            self.assertIsInstance(group_user.get('meter_id'), str)
+            self.assertIsInstance(group_user.get('inhabitants'), int)
+            self.assertIsInstance(group_user.get('flat_size'), float)
+
+            # Check result values
+            self.assertEqual(
+                group_user, GROUP_MEMBERS[result.index(group_user)])
