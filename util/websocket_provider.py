@@ -32,7 +32,7 @@ def get_group_members(user_id):
     """ Get the parameters from the database to create a group data packet for
     the given user.
     :param int user_id: the user's id
-    :return: the group members' id, inhabitants and flat size, respectively
+    :return: the group members' ids, inhabitants and flat sizes
     :rtype: [dict]
     """
 
