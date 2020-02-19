@@ -6,6 +6,7 @@ import redis
 from models.group import Group
 from models.user import User
 from util.database import db
+from util.error import exception_message
 
 
 logger = logging.getLogger(__name__)
@@ -14,24 +15,37 @@ redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 
 
-def get_parameters(user_id):
-    """ Get the parameters from the database to create data packet for the
-    given user.
+def get_group_meter_id(user_id):
+    """ Get the group meter id from the SQLite database for the given user.
     :param int user_id: the user's id
-    :return: meter_id, group_meter_id, [{str => int, str => str}, ...],
-    inhabitants, flat_size
-    :rtype: tuple
+    :return: the group meter id of the group the user belongs to
+    :rtype: int
     """
 
     user = db.session.query(User).filter_by(id=user_id).first()
     group = db.session.query(Group).filter_by(id=user.group_id).first()
+
+    return group.group_meter_id
+
+
+def get_group_members(user_id):
+    """ Get the parameters from the database to create a group data packet for
+    the given user.
+    :param int user_id: the user's id
+    :return: the group members' id, inhabitants and flat size, respectively
+    :rtype: [dict]
+    """
+
+    user = db.session.query(User).filter_by(id=user_id).first()
     group_users = db.session.query(User).filter_by(
-        group_id=user.group_id).filter(User.id.isnot(user_id)).all()
+        group_id=user.group_id).all()
     group_members = []
     for group_user in group_users:
-        group_members.append(
-            dict(id=group_user.id, meter_id=group_user.meter_id))
-    return user.meter_id, group.group_meter_id, group_members, user.inhabitants, user.flat_size
+        group_members.append(dict(id=group_user.id, meter_id=group_user.meter_id,
+                                  inhabitants=group_user.inhabitants,
+                                  flat_size=group_user.flat_size))
+
+    return group_members
 
 
 class WebsocketProvider:
@@ -102,7 +116,8 @@ class WebsocketProvider:
                                                      - float(first_energy_value))
 
         except Exception as e:
-            logger.error("Exception: %s", e)
+            message = exception_message(e)
+            logger.error(message)
 
             # Return result
             return 0.0
@@ -115,30 +130,33 @@ class WebsocketProvider:
         :rtype: dict
         """
 
-        now = round(datetime.now().timestamp() * 1e3)
+        now = round(datetime.utcnow().timestamp() * 1e3)
 
         try:
-            meter_id, group_meter_id, group_members, inhabitants, flat_size = get_parameters(
-                user_id)
+            group_meter_id = get_group_meter_id(user_id)
             group_last_reading = self.get_last_reading(group_meter_id)
-            individual_last_reading = self.get_last_reading(meter_id)
-            usersConsumption = []
-            usersConsumption.append(dict(
-                id=user_id,
-                consumption=individual_last_reading.get('values').get('energy')))
-            for member in group_members:
-                reading = self.get_last_reading(member.get('meter_id'))
-                usersConsumption.append(dict(id=member.get('id'),
-                                             consumption=reading.get('values').get('energy')))
+            hitlist = []
+
+            for member in get_group_members(user_id):
+                member_id = member.get('id')
+                member_meter_id = member.get('meter_id')
+                member_reading = self.get_last_reading(member_meter_id)
+                member_consumption = member_reading.get('values').get('energy')
+                member_self_sufficiency = self.self_sufficiency(
+                    member_meter_id, member.get('inhabitants'),
+                    member.get('flat_size'))
+                hitlist.append(dict(id=member_id, meter_id=member_meter_id,
+                                    consumption=member_consumption,
+                                    self_sufficiency=member_self_sufficiency))
+
             return dict(date=now,
-                        groupConsumption=group_last_reading.get(
+                        group_consumption=group_last_reading.get(
                             'values').get('energy'),
-                        groupProduction=group_last_reading.get(
+                        group_production=group_last_reading.get(
                             'values').get('energyOut'),
-                        selfSufficiency=self.self_sufficiency(
-                            meter_id, inhabitants, flat_size),
-                        usersConsumption=usersConsumption)
+                        hitlist=hitlist)
 
         except Exception as e:
-            logger.error("Exception: %s", e)
+            message = exception_message(e)
+            logger.error(message)
             return {}
