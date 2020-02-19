@@ -11,8 +11,25 @@ from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
 
 
-logging.basicConfig()
-logger = logging.getLogger('util/energy_saving_calculation')
+# logging
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter(
+    '%(asctime)s | %(name)s | %(levelname)s: %(message)s')
+logger.setLevel(logging.DEBUG)
+
+# replace with whatever logfile you see fit for production
+logfile = 'task_worker.log'
+filehandler = logging.FileHandler(filename=logfile, mode='w')
+filehandler.setFormatter(formatter)
+filehandler.setLevel(logging.ERROR)
+
+# console handler
+streamhandler = logging.StreamHandler()
+streamhandler.setLevel(logging.INFO)
+
+logger.addHandler(filehandler)
+logger.addHandler(streamhandler)
+
 redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
@@ -163,8 +180,8 @@ def calc_estimated_energy_consumption(meter_id, start):
         meter_id, start)
 
     if energy_consumption_last_term is None or energy_consumption_ongoing_term is None:
-        logger.info('No estimated energy consumption available for meter_id % s from\
-                    % s on', meter_id, str(start))
+        logger.info('No estimated energy consumption available for meter_id %s from\
+                    %s on', meter_id, str(start))
         return None
 
     return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
@@ -184,8 +201,9 @@ def calc_estimated_energy_saving(meter_id, start):
     estimated_energy_consumption = calc_estimated_energy_consumption(
         meter_id, start)
     if energy_consumption_last_term is None or estimated_energy_consumption is None:
-        logger.info('No estimated energy saving available for meter_id % s from\
-                    % s on', meter_id, str(start))
+        message = 'No estimated energy saving available for meter_id {} from {} on'.format(
+            meter_id, str(start))
+        logger.error(message)
         return None
 
     return energy_consumption_last_term - estimated_energy_consumption

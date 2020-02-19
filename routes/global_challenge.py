@@ -4,7 +4,7 @@ from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from models.user import User
 from util.database import db, get_engine
-from util.error import UNKNOWN_USER, exception_message
+from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, exception_message
 from util.login import login_required
 
 
@@ -82,16 +82,16 @@ def individual_global_challenge():
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
-    result = {}
-
     try:
         result = get_individual_saving(user.meter_id)
+        if result is None:
+            return NO_GLOBAL_CHALLENGE.to_json(), status.HTTP_206_PARTIAL_CONTENT
         return jsonify(result), status.HTTP_200_OK
 
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
-        return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
+        return jsonify({}), status.HTTP_206_PARTIAL_CONTENT
 
 
 @CommunityGlobalChallenge.route('/community-global-challenge', methods=['GET'])
