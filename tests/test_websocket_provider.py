@@ -30,15 +30,15 @@ GROUPMEMBER3_LAST_READING = {'type': 'reading',
 DATA = {"date": 1582102636258,
         "group_consumption": 2466839634000,
         "group_production": 2189063000,
-        "hitlist": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
-                     "consumption": 3603609657330000,
-                     "self_sufficiency": 1.1093780095648228e-13},
-                    {"id": 2, "meter_id": "52d7c87f8c26433dbd095048ad30c8cf",
-                     "consumption": 190585532038000,
-                     "self_sufficiency": 1.2037243127210752e-12},
-                    {"id": 3, "meter_id": "117154df05874f41bfdaebcae6abfe98",
-                     "consumption": 1500976759905000,
-                     "self_sufficiency": 1.5915618042558239e-13}]}
+        "group_users": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
+                         "consumption": 3603609657330000,
+                         "self_sufficiency": 1.1093780095648228e-13},
+                        {"id": 2, "meter_id": "52d7c87f8c26433dbd095048ad30c8cf",
+                         "consumption": 190585532038000,
+                         "self_sufficiency": 1.2037243127210752e-12},
+                        {"id": 3, "meter_id": "117154df05874f41bfdaebcae6abfe98",
+                         "consumption": 1500976759905000,
+                         "self_sufficiency": 1.5915618042558239e-13}]}
 RETURN_VALUES = [GROUP_LAST_READING, GROUPMEMBER1_LAST_READING,
                  GROUPMEMBER2_LAST_READING, GROUPMEMBER3_LAST_READING]
 SELF_SUFFICIENCIES = [1.1093780095648228e-13,
@@ -111,7 +111,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
         # Check return values
         for param in 'group_consumption', 'group_production':
             self.assertEqual(data.get(param), DATA.get(param))
-        for item1, item2 in zip(data.get('hitlist'), DATA.get('hitlist')):
+        for item1, item2 in zip(data.get('group_users'), DATA.get('group_users')):
             self.assertEqual(item1.get('id'), item2.get('id'))
             self.assertEqual(item1.get('meter_id'), item2.get('meter_id'))
             self.assertEqual(item1.get('consumption'),

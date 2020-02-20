@@ -136,7 +136,7 @@ class WebsocketProvider:
         try:
             group_meter_id = get_group_meter_id(user_id)
             group_last_reading = self.get_last_reading(group_meter_id)
-            hitlist = []
+            group_users = []
 
             for member in get_group_members(user_id):
                 member_id = member.get('id')
@@ -146,16 +146,16 @@ class WebsocketProvider:
                 member_self_sufficiency = self.self_sufficiency(
                     member_meter_id, member.get('inhabitants'),
                     member.get('flat_size'))
-                hitlist.append(dict(id=member_id, meter_id=member_meter_id,
-                                    consumption=member_consumption,
-                                    self_sufficiency=member_self_sufficiency))
+                group_users.append(dict(id=member_id, meter_id=member_meter_id,
+                                        consumption=member_consumption,
+                                        self_sufficiency=member_self_sufficiency))
 
             return dict(date=now,
                         group_consumption=group_last_reading.get(
                             'values').get('energy'),
                         group_production=group_last_reading.get(
                             'values').get('energyOut'),
-                        hitlist=hitlist)
+                        group_users=group_users)
 
         except Exception as e:
             message = exception_message(e)
