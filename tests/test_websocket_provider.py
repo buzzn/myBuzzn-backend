@@ -4,7 +4,8 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.websocket_provider import WebsocketProvider, get_parameters
+from util.websocket_provider import WebsocketProvider, get_group_meter_id,\
+    get_group_members
 
 
 GROUP_LAST_READING = {'type': 'reading',
@@ -13,43 +14,48 @@ GROUP_LAST_READING = {'type': 'reading',
                                  'voltage2': 231900, 'voltage3': 231500,
                                  'energyOut1': 0, 'power': 21520,
                                  'energyOut2': 0, 'power3': 0, 'power1': 1700,
-                                 'energy': 2166410580000, 'power2': 19820}}
-INDIVIDUAL_LAST_READING = {'type': 'reading',
-                           'values': {'power': -182590, 'power3': -2730,
-                                      'energyOut': 0, 'power1': -173960,
-                                      'energy': 3603609657330000, 'power2': -5900}}
+                                 'energy': 2466839634000, 'power2': 19820}}
 GROUPMEMBER1_LAST_READING = {'type': 'reading',
+                             'values': {'power': -182590, 'power3': -2730,
+                                        'energyOut': 0, 'power1': -173960,
+                                        'energy': 3603609657330000, 'power2': -5900}}
+GROUPMEMBER2_LAST_READING = {'type': 'reading',
                              'values': {'power': 187570, 'power3': 35180,
                                         'energyOut': 0, 'power1': 125670,
                                         'energy': 190585532038000, 'power2': 26720}}
-GROUPMEMBER2_LAST_READING = {'type': 'reading',
+GROUPMEMBER3_LAST_READING = {'type': 'reading',
                              'values': {'power': 4160580, 'power3': 1361800,
                                         'energyOut': 0, 'power1': 1410390,
                                         'energy': 1500976759905000, 'power2': 1388390}}
-DATA = {"groupConsumption": 2166410580000, "groupProduction": 2189063000,
-        "selfSufficiency": 2.1909736445530789e-13, "usersConsumption": [{
-            "id": 1,
-            "consumption": 3603609657330000
-        }, {
-            "id": 2,
-            "consumption": 190585532038000
-        }, {
-            "id": 3,
-            "consumption": 1500976759905000
-        }]}
-RETURN_VALUES = [GROUP_LAST_READING, INDIVIDUAL_LAST_READING,
-                 GROUPMEMBER1_LAST_READING, GROUPMEMBER2_LAST_READING]
-SELF_SUFFICIENCY = 2.1909736445530789e-13
-INDIVIDUAL_FIRST_READING = {'type': 'reading',
-                            'values': {'power': 13374273, 'power3': 3902020,
-                                       'energyOut': 0, 'power1': 3565876,
-                                       'energy': 3055907952664000, 'power2': 4029106}}
-GROUP_MEMBERS = [{'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf'}, {
-    'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98'}]
-METER_ID = 'b4234cd4bed143a6b9bd09e347e17d34'
+DATA = {"date": 1582102636258,
+        "group_consumption": 2466839634000,
+        "group_production": 2189063000,
+        "group_users": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
+                         "consumption": 3603609657330000,
+                         "self_sufficiency": 1.1093780095648228e-13},
+                        {"id": 2, "meter_id": "52d7c87f8c26433dbd095048ad30c8cf",
+                         "consumption": 190585532038000,
+                         "self_sufficiency": 1.2037243127210752e-12},
+                        {"id": 3, "meter_id": "117154df05874f41bfdaebcae6abfe98",
+                         "consumption": 1500976759905000,
+                         "self_sufficiency": 1.5915618042558239e-13}]}
+RETURN_VALUES = [GROUP_LAST_READING, GROUPMEMBER1_LAST_READING,
+                 GROUPMEMBER2_LAST_READING, GROUPMEMBER3_LAST_READING]
+SELF_SUFFICIENCIES = [1.1093780095648228e-13,
+                      1.2037243127210752e-12,
+                      1.5915618042558239e-13]
+GROUPMEMBER1_FIRST_READING = {'type': 'reading',
+                              'values': {'power': 13374273, 'power3': 3902020,
+                                         'energyOut': 0, 'power1': 3565876,
+                                         'energy': 3055907952664000, 'power2': 4029106}}
+GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
+                  'inhabitants': 2, 'flat_size': 60.0},
+                 {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
+                  'inhabitants': 2, 'flat_size': 60.0},
+                 {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
+                  'inhabitants': 2, 'flat_size': 60.0}]
 GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
-INHABITANTS = 2
-FLAT_SIZE = 60.0
+SELF_SUFFICIENCY = 2.1909736445530789e-13
 
 
 class WebsocketProviderTestCase(BuzznTestCase):
@@ -67,11 +73,17 @@ class WebsocketProviderTestCase(BuzznTestCase):
         test_user.set_password('some_password')
         test_user.state = StateType.ACTIVE
         db.session.add(test_user)
-        db.session.add(User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
-                            'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
-                            1))
-        db.session.add(User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
-                            'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
+        test_user2 = User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
+                          'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf',
+                          1)
+        test_user2.flat_size = 60.0
+        test_user2.inhabitants = 2
+        db.session.add(test_user2)
+        test_user3 = User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
+                          'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1)
+        test_user3.flat_size = 60.0
+        test_user3.inhabitants = 2
+        db.session.add(test_user3)
         db.session.add(Group('TestGroup',
                              '269e682dbfd74a569ff4561b6416c999'))
         db.session.commit()
@@ -84,7 +96,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
     @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
                 side_effect=RETURN_VALUES)
     @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
-                return_value=SELF_SUFFICIENCY)
+                side_effect=SELF_SUFFICIENCIES)
     def test_create_data(self, socketio, get_last_reading, self_sufficiency):
         """ Unit tests for function create_data(). """
 
@@ -97,20 +109,23 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.assertTrue(isinstance(data, dict))
 
         # Check return values
-        for param in 'groupConsumption', 'groupProduction', 'selfSufficiency':
+        for param in 'group_consumption', 'group_production':
             self.assertEqual(data.get(param), DATA.get(param))
-        for item1, item2 in zip(data.get('usersConsumption'), DATA.get('usersConsumption')):
+        for item1, item2 in zip(data.get('group_users'), DATA.get('group_users')):
             self.assertEqual(item1.get('id'), item2.get('id'))
+            self.assertEqual(item1.get('meter_id'), item2.get('meter_id'))
             self.assertEqual(item1.get('consumption'),
                              item2.get('consumption'))
+            self.assertEqual(item1.get('self_sufficiency'),
+                             item2.get('self_sufficiency'))
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
-                return_value=INDIVIDUAL_LAST_READING)
+                return_value=GROUPMEMBER1_LAST_READING)
     @mock.patch('util.websocket_provider.WebsocketProvider.get_first_reading',
-                return_value=INDIVIDUAL_FIRST_READING)
+                return_value=GROUPMEMBER1_FIRST_READING)
     def test_self_sufficiency(self, socketio, get_last_reading,
                               get_first_reading):
         """ Unit tests for function self_sufficiency(). """
@@ -128,17 +143,31 @@ class WebsocketProviderTestCase(BuzznTestCase):
         # Check return value
         self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
 
-    def test_get_parameters(self):
-        """ Unit tests for function get_parameters(). """
+    def test_get_group_meter_id(self):
+        """ Unit tests for function get_group_meter_id(). """
 
-        result = get_parameters(1)
+        result = get_group_meter_id(1)
 
         # Check result values
-        self.assertEqual(result[0], METER_ID)
-        self.assertEqual(result[1], GROUP_METER_ID)
-        self.assertEqual(result[2], GROUP_MEMBERS)
-        self.assertEqual(result[3], INHABITANTS)
-        self.assertEqual(result[4], FLAT_SIZE)
+        self.assertEqual(result, GROUP_METER_ID)
 
         # Check result type
-        self.assertTrue(isinstance(result, tuple))
+        self.assertIsInstance(result, str)
+
+    def test_get_group_members(self):
+        """ Unit tests for function get_group_members(). """
+
+        result = get_group_members(1)
+
+        # Check result types
+        self.assertIsInstance(result, list)
+        for group_user in result:
+            self.assertIsInstance(group_user, dict)
+            self.assertIsInstance(group_user.get('id'), int)
+            self.assertIsInstance(group_user.get('meter_id'), str)
+            self.assertIsInstance(group_user.get('inhabitants'), int)
+            self.assertIsInstance(group_user.get('flat_size'), float)
+
+            # Check result values
+            self.assertEqual(
+                group_user, GROUP_MEMBERS[result.index(group_user)])
