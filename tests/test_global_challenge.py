@@ -8,13 +8,18 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
-from routes.global_challenge import get_individual_saving, get_community_saving
+from routes.global_challenge import get_individual_saving, get_community_saving,\
+    get_individual_baseline
 from tests.test_energy_saving_calculation import SORTED_KEYS_ESTIMATION,\
     DATA_ESTIMATION
 
 
 INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
-INDIVIDUAL_SAVING_DICT = {'2020-02-13 09:57:03': 3148577026610.7812}
+INDIVIDUAL_SAVING_DICT = {'2020-02-13 09:57:03.620809': 3148577026610.7812}
+INDIVIDUAL_BASELINE = ('2020-02-21 09:40:04', 53011346257574)
+INDIVIDUAL_BASELINE_DICT = {'2020-02-21 09:40:04': 53011346257574}
+INDIVIDUAL_GLOBAL_CHALLENGE = {'baseline': {'2020-02-21 09:40:04': 53011346257574},
+                               'saving': {'2020-02-13 09:57:03.620809': 3148577026610.7812}}
 COMMUNITY_SAVING = ('2020-02-13 16:20:21.977425', 85184267259376.5)
 COMMUNITY_SAVING_DICT = {'2020-02-13 16:20:21': 85184267259376.5}
 METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
@@ -84,6 +89,10 @@ class GlobalChallengeTestCase(BuzznTestCase):
                 self.assertIsInstance(key, str)
                 self.assertIsInstance(value, float)
 
+                # Check result values
+                self.assertEqual(key, INDIVIDUAL_SAVING[0].split('.')[0])
+                self.assertEqual(value, INDIVIDUAL_SAVING[1])
+
     # pylint: disable=unused-argument
     @mock.patch('sqlalchemy.engine.result.ResultProxy.first', return_value=COMMUNITY_SAVING)
     @mock.patch('sqlalchemy.create_engine')
@@ -100,9 +109,32 @@ class GlobalChallengeTestCase(BuzznTestCase):
                 self.assertIsInstance(value, float)
 
     # pylint: disable=unused-argument
+    @mock.patch('sqlalchemy.engine.result.ResultProxy.first',
+                return_value=INDIVIDUAL_BASELINE)
+    @mock.patch('sqlalchemy.create_engine')
+    def test_get_individual_baseline(self, first, create_engine):
+        """ Unit tests for function get_individual_baseline(). """
+
+        result = get_individual_baseline(METER_ID)
+
+        # Check result types
+        self.assertIsInstance(result, (dict, type(None)))
+        if isinstance(result, dict):
+            for key, value in result.items():
+                self.assertIsInstance(key, str)
+                self.assertIsInstance(value, int)
+
+                # Check result values
+                self.assertEqual(key, INDIVIDUAL_BASELINE[0].split('.')[0])
+                self.assertEqual(value, INDIVIDUAL_BASELINE[1])
+
+    # pylint: disable=unused-argument
     @mock.patch('routes.global_challenge.get_individual_saving',
                 return_value=INDIVIDUAL_SAVING_DICT)
-    def test_individual_global_challenge(self, _get_individual_saving):
+    @mock.patch('routes.global_challenge.get_individual_baseline',
+                return_value=INDIVIDUAL_BASELINE_DICT)
+    def test_individual_global_challenge(self, _get_individual_saving,
+                                         _get_individual_baseline):
         """ Unit tests for individual_global_challenge(). """
 
         # Check if route exists
@@ -120,8 +152,9 @@ class GlobalChallengeTestCase(BuzznTestCase):
 
         # Check response content
         self.assertIsInstance(response.data, bytes)
+
         self.assertEqual(ast.literal_eval(response.data.decode('utf-8')),
-                         INDIVIDUAL_SAVING_DICT)
+                         INDIVIDUAL_GLOBAL_CHALLENGE)
 
     # pylint: disable=unused-argument
     @mock.patch('routes.global_challenge.get_community_saving',

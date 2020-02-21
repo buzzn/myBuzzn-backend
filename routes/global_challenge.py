@@ -4,7 +4,7 @@ from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from models.user import User
 from util.database import db, get_engine
-from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, exception_message
+from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, NO_BASELINE, exception_message
 from util.login import login_required
 
 
@@ -36,6 +36,35 @@ def get_individual_saving(meter_id):
             timestamp = individual_saving[0].split('.')[0]
             saving = individual_saving[1]
             return {timestamp: saving}
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return None
+
+
+def get_individual_baseline(meter_id):
+    """ Retrieve the last baseline value for the given meter id from the SQLite
+    database.
+    :param str meter_id: the user's meter id
+    :returns: the last baseline value together with its timestamp or None if
+    there are no values
+    :rtype: dict or type(None) if there are no values
+    """
+
+    # pylint: disable=line-too-long
+    query = "SELECT timestamp, baseline FROM base_line WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
+
+    try:
+        engine = get_engine()
+        with engine.connect() as con:
+
+            # Query last baseline value for the given meter id
+            individual_baseline = con.execute(query).first()
+
+            timestamp = individual_baseline[0].split('.')[0]
+            baseline = individual_baseline[1]
+            return {timestamp: baseline}
 
     except Exception as e:
         message = exception_message(e)
@@ -82,16 +111,26 @@ def individual_global_challenge():
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
+    result = {}
+
     try:
-        result = get_individual_saving(user.meter_id)
-        if result is None:
+        saving = get_individual_saving(user.meter_id)
+        if saving is None:
             return NO_GLOBAL_CHALLENGE.to_json(), status.HTTP_206_PARTIAL_CONTENT
+
+        baseline = get_individual_baseline(user.meter_id)
+        if baseline is None:
+            return NO_BASELINE.to_json(), status.HTTP_206_PARTIAL_CONTENT
+
+        result['saving'] = saving
+        result['baseline'] = baseline
+
         return jsonify(result), status.HTTP_200_OK
 
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
-        return jsonify({}), status.HTTP_206_PARTIAL_CONTENT
+        return jsonify(result), status.HTTP_206_PARTIAL_CONTENT
 
 
 @CommunityGlobalChallenge.route('/community-global-challenge', methods=['GET'])
