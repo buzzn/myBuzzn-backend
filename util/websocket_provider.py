@@ -126,7 +126,7 @@ class WebsocketProvider:
         """ Create a data package with the latest available data.
         :param int user_id: the user's id
         :return: the group's overall consumption, the group's overall
-        production and each group user's id, meter id, consumption and
+        production and each group user's id, meter id, consumption, power and
         self-sufficiency
         :rtype: dict
         """
@@ -143,11 +143,13 @@ class WebsocketProvider:
                 member_meter_id = member.get('meter_id')
                 member_reading = self.get_last_reading(member_meter_id)
                 member_consumption = member_reading.get('values').get('energy')
+                member_power = member_reading.get('values').get('power')
                 member_self_sufficiency = self.self_sufficiency(
                     member_meter_id, member.get('inhabitants'),
                     member.get('flat_size'))
                 group_users.append(dict(id=member_id, meter_id=member_meter_id,
                                         consumption=member_consumption,
+                                        power=member_power,
                                         self_sufficiency=member_self_sufficiency))
 
             return dict(date=now,
