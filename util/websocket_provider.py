@@ -165,8 +165,8 @@ class WebsocketProvider:
             else:
                 group_consumption = group_last_reading.get(
                     'values').get('energy')
-                group_consumption = group_last_reading.get(
-                    'values').get('energy')
+                group_production = group_last_reading.get(
+                    'values').get('energyOut')
             return dict(date=round(datetime.utcnow().timestamp() * 1e3),
                         group_consumption=group_consumption,
                         group_production=group_production,
