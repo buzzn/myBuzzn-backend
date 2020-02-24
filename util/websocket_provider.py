@@ -98,28 +98,31 @@ class WebsocketProvider:
         :param str meter_id: the user's meter id
         :param int inhabitants: number of people in the user's flat
         :param float flat_size: the user's flat size
-        :return: the user's self-sufficiency value, 0.0 if there is no history
+        :return: the user's self-sufficiency value or 0.0 if there are no
+        readings for the user
         :rtype: float
         """
 
         try:
-            # Get last energy value
-            last_energy_value = self.get_last_reading(
-                meter_id).get('values').get('energy')
+            # Get last reading for user
+            last_reading = self.get_last_reading(meter_id)
 
-            # Get first energy value
-            first_energy_value = self.get_first_reading(
-                meter_id).get('values').get('energy')
+            # Get first reading for user
+            first_reading = self.get_first_reading(meter_id)
+
+            if len(first_reading) == 0 or len(first_reading) == 0:
+                self.logger.error(
+                    'No readings for meter id %s in the database.' % meter_id)
+                return 0.0
 
             # Return result
-            return (float(inhabitants) * flat_size)/(float(last_energy_value)
-                                                     - float(first_energy_value))
+            return (float(inhabitants) *
+                    flat_size)/(float(last_reading.get('values').get('energy'))
+                                - float(first_reading.get('values').get('energy')))
 
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
-
-            # Return result
             return 0.0
 
     def create_data(self, user_id):
@@ -131,8 +134,6 @@ class WebsocketProvider:
         :rtype: dict
         """
 
-        now = round(datetime.utcnow().timestamp() * 1e3)
-
         try:
             group_meter_id = get_group_meter_id(user_id)
             group_last_reading = self.get_last_reading(group_meter_id)
@@ -142,19 +143,34 @@ class WebsocketProvider:
                 member_id = member.get('id')
                 member_meter_id = member.get('meter_id')
                 member_reading = self.get_last_reading(member_meter_id)
-                member_consumption = member_reading.get('values').get('energy')
-                member_self_sufficiency = self.self_sufficiency(
-                    member_meter_id, member.get('inhabitants'),
-                    member.get('flat_size'))
+                if len(member_reading) == 0:
+                    self.logger.error(
+                        'No readings for meter id %s in the database.' %
+                        member_meter_id)
+                    member_consumption = None
+                    member_self_sufficiency = None
+                else:
+                    member_consumption = member_reading.get(
+                        'values').get('energy')
+                    member_self_sufficiency = self.self_sufficiency(
+                        member_meter_id, member.get('inhabitants'), member.get('flat_size'))
                 group_users.append(dict(id=member_id, meter_id=member_meter_id,
                                         consumption=member_consumption,
                                         self_sufficiency=member_self_sufficiency))
 
-            return dict(date=now,
-                        group_consumption=group_last_reading.get(
-                            'values').get('energy'),
-                        group_production=group_last_reading.get(
-                            'values').get('energyOut'),
+            if len(group_last_reading) == 0:
+                self.logger.error(
+                    'No readings for meter id %s in the database.' % group_meter_id)
+                group_consumption = None
+                group_production = None
+            else:
+                group_consumption = group_last_reading.get(
+                    'values').get('energy')
+                group_consumption = group_last_reading.get(
+                    'values').get('energy')
+            return dict(date=round(datetime.utcnow().timestamp() * 1e3),
+                        group_consumption=group_consumption,
+                        group_production=group_production,
                         group_users=group_users)
 
         except Exception as e:
