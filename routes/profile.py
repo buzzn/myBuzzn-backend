@@ -15,6 +15,7 @@ from util.database import db
 
 Profile = Blueprint('Profile', __name__)
 
+
 @Profile.route('/profile', methods=['GET'])
 @jwt_required
 def profile():
@@ -26,7 +27,7 @@ def profile():
     if target_user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
-    target_profile = {k:v for k, v in target_user.__dict__.items() if k in (
+    target_profile = {k: v for k, v in target_user.__dict__.items() if k in (
         'id', 'name', 'nick', 'mail', 'inhabitants', 'groupId'
     )}
 
@@ -45,14 +46,16 @@ def profile():
         target_profile['groupAddress'] = target_group.name
     return json.dumps(target_profile), status.HTTP_200_OK
 
+
 @Profile.route('/profile', methods=['PUT'])
 @jwt_required
 def put_profile():
-    """Changes the profile to the given values.
+    """ Updates the profile to the given value(s).
     :param int flatSize: The user's new flat size.
     :param str inhabitants: The flat's new inhabitants of the user.
     :param int name: The user's new name.
     """
+
     user_id = get_jwt_identity()
     target_user = User.query.filter_by(id=user_id).first()
 
@@ -60,18 +63,29 @@ def put_profile():
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
     j = request.get_json(force=True)
-    target_user.flat_size = float(j['flatSize'])
-    target_user.inhabitants = int(j['inhabitants'])
-    target_user.nick = j['nick']
 
-    b = j['avatar']
-    decoded = base64.b64decode(b)
-    bio = BytesIO(decoded)
-    avatar = Image.open(bio)
-    avatar.thumbnail((1024, 1024), Image.ANTIALIAS)
-    buffered = BytesIO()
-    avatar.save(buffered, format="JPEG")
-    target_user.avatar = base64.b64encode(buffered.getvalue())
+    # Change flat size only if parameter exists
+    if 'flatSize' in j:
+        target_user.flat_size = float(j['flatSize'])
+
+    # Change inhabitants only if parameter exists
+    if 'inhabitants' in j:
+        target_user.inhabitants = int(j['inhabitants'])
+
+    # Change nick only if parameter exists
+    if 'nick' in j:
+        target_user.nick = j['nick']
+
+    # Change avatar only if parameter exists
+    if 'avatar' in j:
+        b = j['avatar']
+        decoded = base64.b64decode(b)
+        bio = BytesIO(decoded)
+        avatar = Image.open(bio)
+        avatar.thumbnail((1024, 1024), Image.ANTIALIAS)
+        buffered = BytesIO()
+        avatar.save(buffered, format="JPEG")
+        target_user.avatar = base64.b64encode(buffered.getvalue())
 
     db.session.commit()
 
