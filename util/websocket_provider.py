@@ -111,7 +111,7 @@ class WebsocketProvider:
             first_reading = self.get_first_reading(meter_id)
 
             if len(first_reading) == 0 or len(first_reading) == 0:
-                self.logger.error(
+                logger.error(
                     'No readings for meter id %s in the database.' % meter_id)
                 return 0.0
 
@@ -144,9 +144,8 @@ class WebsocketProvider:
                 member_meter_id = member.get('meter_id')
                 member_reading = self.get_last_reading(member_meter_id)
                 if len(member_reading) == 0:
-                    self.logger.error(
-                        'No readings for meter id %s in the database.' %
-                        member_meter_id)
+                    logger.error(
+                        'No readings for meter id %s in the database.', member_meter_id)
                     member_consumption = None
                     member_self_sufficiency = None
                 else:
@@ -159,8 +158,8 @@ class WebsocketProvider:
                                         self_sufficiency=member_self_sufficiency))
 
             if len(group_last_reading) == 0:
-                self.logger.error(
-                    'No readings for meter id %s in the database.' % group_meter_id)
+                logger.error(
+                    'No readings for meter id %s in the database.', group_meter_id)
                 group_consumption = None
                 group_production = None
             else:
