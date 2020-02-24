@@ -112,7 +112,7 @@ class WebsocketProvider:
 
             if len(first_reading) == 0 or len(first_reading) == 0:
                 logger.error(
-                    'No readings for meter id %s in the database.' % meter_id)
+                    'No readings for meter id %s in the database.', meter_id)
                 return 0.0
 
             # Return result
