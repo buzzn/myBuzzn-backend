@@ -126,14 +126,19 @@ class ProfileTestCase(BuzznTestCase):
 
         self.assertEqual(actual.nick, 'newNick')
 
-        # response = self.client.put(
-        #     '/profile',
-        #     headers={'Authorization': 'Bearer {}'.format(
-        #         login_request.json["sessionToken"])},
-        #     data=json.dumps({'nick': 'newNick',
-        #                      'flatSize': 33,
-        #                      'inhabitants': 4,
-        #                      'avatar': sample_avatar}))
-        # self.assertEqual(actual.inhabitants, 4)
-        # self.assertEqual(actual.nick, 'newNick')
-        # self.assertTrue(len(actual.avatar) > 100)
+    def test_set_avatar(self):
+        """ Expect an avatar change if a new one is provided. """
+
+        login_request = self.client.post('/login', data=json.dumps({'user':
+                                                                    'User@Some.net',
+                                                                    'password':
+                                                                    'some_password'}))
+        response = self.client.put('/profile', headers={'Authorization':
+                                                        'Bearer {}'.format(login_request.json["sessionToken"])},
+                                   data=json.dumps({'avatar': sample_avatar}))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        actual = User.query.filter_by(id=self.target_user.id).first()
+
+        self.assertTrue(len(actual.avatar) > 100)
