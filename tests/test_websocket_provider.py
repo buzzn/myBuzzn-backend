@@ -16,30 +16,30 @@ GROUP_LAST_READING = {'type': 'reading',
                                  'energyOut2': 0, 'power3': 0, 'power1': 1700,
                                  'energy': 2466839634000, 'power2': 19820}}
 GROUPMEMBER1_LAST_READING = {'type': 'reading',
-                             'values': {'power': -182590, 'power3': -2730,
+                             'values': {'power': 20032100, 'power3': -2730,
                                         'energyOut': 0, 'power1': -173960,
                                         'energy': 3603609657330000, 'power2': -5900}}
 GROUPMEMBER2_LAST_READING = {'type': 'reading',
-                             'values': {'power': 187570, 'power3': 35180,
+                             'values': {'power': 734100, 'power3': 35180,
                                         'energyOut': 0, 'power1': 125670,
                                         'energy': 190585532038000, 'power2': 26720}}
 GROUPMEMBER3_LAST_READING = {'type': 'reading',
-                             'values': {'power': 4160580, 'power3': 1361800,
+                             'values': {'power': 5877540, 'power3': 1361800,
                                         'energyOut': 0, 'power1': 1410390,
                                         'energy': 1500976759905000, 'power2': 1388390}}
 DATA = {"date": 1582102636258,
         "group_consumption": 2466839634000,
         "group_production": 2189063000,
         "group_users": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
-                         "consumption": 3603609657330000,
+                         "consumption": 3603609657330000, "power": 20032100,
                          "self_sufficiency": 1.1093780095648228e-13},
                         {"id": 2, "meter_id": "52d7c87f8c26433dbd095048ad30c8cf",
-                         "consumption": 190585532038000,
+                         "consumption": 190585532038000, "power": 734100,
                          "self_sufficiency": 1.2037243127210752e-12},
                         {"id": 3, "meter_id": "117154df05874f41bfdaebcae6abfe98",
-                         "consumption": 1500976759905000,
+                         "consumption": 1500976759905000, "power": 5877540,
                          "self_sufficiency": 1.5915618042558239e-13}]}
-RETURN_VALUES = [GROUP_LAST_READING, GROUPMEMBER1_LAST_READING,
+RETURN_VALUES = [GROUPMEMBER1_LAST_READING,
                  GROUPMEMBER2_LAST_READING, GROUPMEMBER3_LAST_READING]
 SELF_SUFFICIENCIES = [1.1093780095648228e-13,
                       1.2037243127210752e-12,
@@ -56,6 +56,18 @@ GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                   'inhabitants': 2, 'flat_size': 60.0}]
 GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
 SELF_SUFFICIENCY = 2.1909736445530789e-13
+MEMBER_DATA = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
+                'consumption': 3603609657330000, 'power': 20032100,
+                'self_sufficiency': 1.1093780095648228e-13},
+               {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
+                'consumption': 190585532038000, 'power': 734100,
+                'self_sufficiency': 1.2037243127210752e-12},
+               {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
+                'consumption': 1500976759905000, 'power': 5877540,
+                'self_sufficiency': 1.5915618042558239e-13}]
+GROUPMEMBER1_DATA = {'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
+                     'consumption': 3603609657330000, 'power': 20032100,
+                     'self_sufficiency': 2.1909736445530789e-13}
 
 
 class WebsocketProviderTestCase(BuzznTestCase):
@@ -90,14 +102,38 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
 
+    # pylint: disable=unused-argument
+    @mock.patch('flask_socketio.SocketIO')
+    @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
+                return_value=GROUPMEMBER1_LAST_READING)
+    @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
+                return_value=SELF_SUFFICIENCY)
+    def test_create_member_data(self, socketio, _get_last_reading,
+                                _self_sufficiency):
+        """ Unit tests for function create_member_data(). """
+
+        ws = WebsocketProvider()
+        test_user = db.session.query(
+            User).filter_by(name='User').first()
+        group_members = get_group_members(test_user.id)
+
+        data = ws.create_member_data(group_members[0])
+
+        # Check return type
+        self.assertTrue(isinstance(data, dict))
+
+        # Check return values
+        for param in 'id', 'meter_id', 'consumption', 'power', 'self_sufficiency':
+            self.assertEqual(data.get(param), GROUPMEMBER1_DATA.get(param))
+
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
-                side_effect=RETURN_VALUES)
-    @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
-                side_effect=SELF_SUFFICIENCIES)
-    def test_create_data(self, socketio, get_last_reading, self_sufficiency):
+                return_value=GROUP_LAST_READING)
+    @mock.patch('util.websocket_provider.WebsocketProvider.create_member_data',
+                side_effect=MEMBER_DATA)
+    def test_create_data(self, socketio, get_last_reading, _create_member_data):
         """ Unit tests for function create_data(). """
 
         ws = WebsocketProvider()
@@ -116,6 +152,8 @@ class WebsocketProviderTestCase(BuzznTestCase):
             self.assertEqual(item1.get('meter_id'), item2.get('meter_id'))
             self.assertEqual(item1.get('consumption'),
                              item2.get('consumption'))
+            self.assertEqual(item1.get('power'),
+                             item2.get('power'))
             self.assertEqual(item1.get('self_sufficiency'),
                              item2.get('self_sufficiency'))
 

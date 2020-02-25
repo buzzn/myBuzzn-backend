@@ -125,11 +125,41 @@ class WebsocketProvider:
             logger.error(message)
             return 0.0
 
+    def create_member_data(self, member):
+        """ Create a data package for a group member to include in a websocket
+        data package.
+        :param dict member: a group member's parameters
+        :return: a group member data package
+        :rtype: dict
+        """
+
+        member_id = member.get('id')
+        member_meter_id = member.get('meter_id')
+        member_reading = self.get_last_reading(member_meter_id)
+        if len(member_reading) == 0:
+            logger.error(
+                'No readings for meter id %s in the database.', member_meter_id)
+            member_consumption = None
+            member_power = None
+            member_self_sufficiency = None
+        else:
+            member_consumption = member_reading.get('values').get('energy')
+            member_power = member_reading.get('values').get('power')
+            member_self_sufficiency = self.self_sufficiency(
+                member_meter_id, member.get('inhabitants'), member.get('flat_size'))
+
+        member_data = dict(id=member_id,
+                           meter_id=member_meter_id,
+                           consumption=member_consumption,
+                           power=member_power,
+                           self_sufficiency=member_self_sufficiency)
+        return member_data
+
     def create_data(self, user_id):
         """ Create a data package with the latest available data.
         :param int user_id: the user's id
         :return: the group's overall consumption, the group's overall
-        production and each group user's id, meter id, consumption and
+        production and each group user's id, meter id, consumption, power and
         self-sufficiency
         :rtype: dict
         """
@@ -140,22 +170,8 @@ class WebsocketProvider:
             group_users = []
 
             for member in get_group_members(user_id):
-                member_id = member.get('id')
-                member_meter_id = member.get('meter_id')
-                member_reading = self.get_last_reading(member_meter_id)
-                if len(member_reading) == 0:
-                    logger.error(
-                        'No readings for meter id %s in the database.', member_meter_id)
-                    member_consumption = None
-                    member_self_sufficiency = None
-                else:
-                    member_consumption = member_reading.get(
-                        'values').get('energy')
-                    member_self_sufficiency = self.self_sufficiency(
-                        member_meter_id, member.get('inhabitants'), member.get('flat_size'))
-                group_users.append(dict(id=member_id, meter_id=member_meter_id,
-                                        consumption=member_consumption,
-                                        self_sufficiency=member_self_sufficiency))
+                member_data = self.create_member_data(member)
+                group_users.append(member_data)
 
             if len(group_last_reading) == 0:
                 logger.error(
@@ -167,6 +183,7 @@ class WebsocketProvider:
                     'values').get('energy')
                 group_production = group_last_reading.get(
                     'values').get('energyOut')
+
             return dict(date=round(datetime.utcnow().timestamp() * 1e3),
                         group_consumption=group_consumption,
                         group_production=group_production,
