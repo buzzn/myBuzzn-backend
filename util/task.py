@@ -5,12 +5,13 @@ from datetime import datetime, timedelta, date, time
 import logging
 from discovergy.discovergy import Discovergy
 import redis
+from models.baseline import BaseLine
 from models.user import User
 from models.group import Group
 from models.savings import UserSaving, CommunitySaving
 from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
-    estimate_energy_saving_all_users
+    estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
 
 
@@ -162,7 +163,7 @@ def calc_two_days_back():
 
 def write_savings(session):
     """  Write the energy savings of each user and the community to the
-    sqlite database mybuzzn.db.
+    SQLite database.
     """
 
     start = calc_support_year_start_datetime()
@@ -177,6 +178,23 @@ def write_savings(session):
         # Create CommunitySaving instance
         community_saving = estimate_energy_saving_all_users(start, session)
         session.add(CommunitySaving(datetime.utcnow(), community_saving))
+
+        session.commit()
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+
+
+def write_baselines(session):
+    """ Write the baseline for each user to the SQLite database. """
+
+    start = calc_support_year_start_datetime()
+    try:
+        for meter_id in get_all_user_meter_ids(session):
+            baseline = calc_energy_consumption_last_term(meter_id, start)
+
+            # Create BaseLine instance
+            session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
 
         session.commit()
     except Exception as e:
@@ -325,14 +343,15 @@ class Task:
                 # pylint: disable=global-statement
                 global last_data_flush
 
+                # Connect to sqlite database
+                session = create_session()
+
                 if (last_data_flush is None) or (datetime.utcnow() -
                                                  last_data_flush >
                                                  timedelta(hours=24)):
                     self.populate_redis()
-                    write_savings(create_session())
-
-                # Connect to sqlite database
-                session = create_session()
+                    write_savings(session)
+                    write_baselines(session)
 
                 all_meter_ids = get_all_meter_ids(session)
                 end = calc_end()

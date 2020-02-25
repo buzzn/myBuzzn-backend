@@ -21,6 +21,8 @@ NO_GLOBAL_CHALLENGE = Error(
     'No global challenge',
     'There are not enough historical energy values to calculate the saving\
             prognosis for this user.')
+NO_BASELINE = Error('No baseline', 'There are not enough historical energy\
+                    values to calculate the baseline for this user.')
 exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 
 

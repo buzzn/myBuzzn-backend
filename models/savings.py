@@ -13,7 +13,7 @@ class UserSaving(db.Model):
     def __init__(self, timestamp, meter_id, saving):
         """ Creates a new user saving.
         :param datetime.datetime timestamp: the UTC datetime
-        :param int id: the user's id
+        :param str meter_id: the user's meter id
         :param float saving: the user's saving
         """
 
