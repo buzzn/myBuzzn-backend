@@ -65,6 +65,9 @@ MEMBER_DATA = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
                 'consumption': 1500976759905000, 'power': 5877540,
                 'self_sufficiency': 1.5915618042558239e-13}]
+GROUPMEMBER1_DATA = {'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
+                     'consumption': 3603609657330000, 'power': 20032100,
+                     'self_sufficiency': 2.1909736445530789e-13}
 
 
 class WebsocketProviderTestCase(BuzznTestCase):
@@ -102,12 +105,26 @@ class WebsocketProviderTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
-                side_effect=RETURN_VALUES)
+                return_value=GROUPMEMBER1_LAST_READING)
     @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
-                side_effect=SELF_SUFFICIENCIES)
+                return_value=SELF_SUFFICIENCY)
     def test_create_member_data(self, socketio, _get_last_reading,
                                 _self_sufficiency):
         """ Unit tests for function create_member_data(). """
+
+        ws = WebsocketProvider()
+        test_user = db.session.query(
+            User).filter_by(name='User').first()
+        group_members = get_group_members(test_user.id)
+
+        data = ws.create_member_data(group_members[0])
+
+        # Check return type
+        self.assertTrue(isinstance(data, dict))
+
+        # Check return values
+        for param in 'id', 'meter_id', 'consumption', 'power', 'self_sufficiency':
+            self.assertEqual(data.get(param), GROUPMEMBER1_DATA.get(param))
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
@@ -137,8 +154,8 @@ class WebsocketProviderTestCase(BuzznTestCase):
                              item2.get('consumption'))
             self.assertEqual(item1.get('power'),
                              item2.get('power'))
-        #     self.assertEqual(item1.get('self_sufficiency'),
-        #                      item2.get('self_sufficiency'))
+            self.assertEqual(item1.get('self_sufficiency'),
+                             item2.get('self_sufficiency'))
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
