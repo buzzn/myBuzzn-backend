@@ -110,7 +110,7 @@ class WebsocketProvider:
             # Get first reading for user
             first_reading = self.get_first_reading(meter_id)
 
-            if len(first_reading) == 0 or len(first_reading) == 0:
+            if len(first_reading) == 0 or len(last_reading) == 0:
                 logger.error(
                     'No readings for meter id %s in the database.', meter_id)
                 return 0.0
