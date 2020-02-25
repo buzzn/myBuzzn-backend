@@ -75,7 +75,8 @@ class ProfileTestCase(BuzznTestCase):
         self.assertEqual(response.json['groupAddress'], '')
 
     def test_set_flat_size(self):
-        """ Expect a flatSize change if a new one is provided. """
+        """ Expect flatSize change if a new value is provided. """
+
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'User@Some.net',
                                                           'password': 'some_password'}))
@@ -93,15 +94,15 @@ class ProfileTestCase(BuzznTestCase):
         self.assertEqual(actual.flat_size, 33)
 
     def test_set_inhabitants(self):
-        """ Expect an inhabitants change if a new one is provided. """
+        """ Expect inhabitants change if a new value is provided. """
 
-        login_request = self.client.post('/login', data=json.dumps({'user':
-                                                                    'User@Some.net',
-                                                                    'password':
-                                                                    'some_password'}))
-        response = self.client.put('/profile', headers={'Authorization':
-                                                        'Bearer {}'.format(login_request.json["sessionToken"])},
-                                   data=json.dumps({'inhabitants': 4}))
+        login_request = self.client.post('/login', data=json.dumps({'user': 'User@Some.net',
+                                                                    'password': 'some_password'}))
+
+        response = self.client.put(
+            '/profile', headers={'Authorization': 'Bearer {}'.format(
+                login_request.json["sessionToken"])},
+            data=json.dumps({'inhabitants': 4}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -110,15 +111,15 @@ class ProfileTestCase(BuzznTestCase):
         self.assertEqual(actual.inhabitants, 4)
 
     def test_set_nick(self):
-        """ Expect a nick change if a new one is provided. """
+        """ Expect nick change if a new value is provided. """
 
-        login_request = self.client.post('/login', data=json.dumps({'user':
-                                                                    'User@Some.net',
-                                                                    'password':
-                                                                    'some_password'}))
-        response = self.client.put('/profile', headers={'Authorization':
-                                                        'Bearer {}'.format(login_request.json["sessionToken"])},
-                                   data=json.dumps({'nick': 'newNick'}))
+        login_request = self.client.post('/login', data=json.dumps({'user': 'User@Some.net',
+                                                                    'password': 'some_password'}))
+
+        response = self.client.put(
+            '/profile', headers={'Authorization': 'Bearer {}'.format(
+                login_request.json["sessionToken"])},
+            data=json.dumps({'nick': 'newNick'}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -127,18 +128,20 @@ class ProfileTestCase(BuzznTestCase):
         self.assertEqual(actual.nick, 'newNick')
 
     def test_set_avatar(self):
-        """ Expect an avatar change if a new one is provided. """
+        """ Expect avatar change if a new value is provided. """
 
-        login_request = self.client.post('/login', data=json.dumps({'user':
-                                                                    'User@Some.net',
-                                                                    'password':
-                                                                    'some_password'}))
-        response = self.client.put('/profile', headers={'Authorization':
-                                                        'Bearer {}'.format(login_request.json["sessionToken"])},
-                                   data=json.dumps({'avatar': sample_avatar}))
+        login_request = self.client.post('/login', data=json.dumps({'user': 'User@Some.net',
+                                                                    'password': 'some_password'}))
+
+        response = self.client.put(
+            '/profile', headers={'Authorization': 'Bearer {}'.format(
+                login_request.json["sessionToken"])},
+            data=json.dumps({'avatar': sample_avatar}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         actual = User.query.filter_by(id=self.target_user.id).first()
 
+        # The avatar is compressed and encoded as 200x200px image in the upload
+        # process, so the return value cannot equal the original avatar
         self.assertTrue(len(actual.avatar) > 100)
