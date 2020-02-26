@@ -51,8 +51,12 @@ def define_base_values(meter_id, inhabitants, date):
 
     day_zero = date - timedelta(days=1)
 
+    consumption = get_meter_reading_date(meter_id, day_zero)
+    if consumption is None:
+        return None
+
     # Convert consumption from µWh to kWh
-    consumption = get_meter_reading_date(meter_id, day_zero)/1e9
+    consumption_kwh = consumption/1e9
 
     consumption_cumulated = consumption
 
@@ -66,7 +70,8 @@ def define_base_values(meter_id, inhabitants, date):
 
     moving_average_annualized = moving_average * 365
 
-    base_values = dict(date=datetime.strftime(day_zero, '%Y-%m-%d'), consumption=consumption,
+    base_values = dict(date=datetime.strftime(day_zero, '%Y-%m-%d'),
+                       consumption=consumption_kwh,
                        consumption_cumulated=consumption_cumulated,
                        inhabitants=inhabitants, pkv=pkv,
                        pkv_cumulated=pkv_cumulated, days=days,
