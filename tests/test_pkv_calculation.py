@@ -16,9 +16,9 @@ USER_CONSUMPTION = [
     b'{"type": "reading", "values": {"energy": 18687322714815}}',
     b'{"type": "reading", "values": {"energy": 18687322714815}}']
 
-BASE_VALUES = {'date': '2020-02-25', 'consumption': 3737464.542963,
-               'consumption_cumulated': 3737464.542963, 'inhabitants': 2,
-               'pkv': 1868732.2714815, 'pkv_cumulated': 1868732.2714815,
+BASE_VALUES = {'date': '2020-02-25', 'consumption': 18687.322714815,
+               'consumption_cumulated': 18687.322714815, 'inhabitants': 2,
+               'pkv':  9343.6613574075, 'pkv_cumulated': 9343.6613574075,
                'days': 0, 'moving_average': 0, 'moving_average_annualized': 0}
 
 
@@ -54,7 +54,7 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.assertTrue(isinstance(result, dict))
 
         # Check return values
-        # for param in 'date', 'consumption', 'consumption_cumulated',\
-        # 'inhabitants', 'pkv', 'pkv_cumulated', 'days', 'moving_average'\
-        # 'moving_average_annualized':
-        # self.assertEqual(result.get(param), BASE_VALUES.get(param))
+        for param in 'date', 'consumption', 'consumption_cumulated',\
+                     'inhabitants', 'pkv', 'pkv_cumulated', 'days', 'moving_average'\
+                     'moving_average_annualized':
+            self.assertEqual(result.get(param), BASE_VALUES.get(param))
