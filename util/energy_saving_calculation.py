@@ -19,7 +19,7 @@ logger.setLevel(logging.DEBUG)
 
 # replace with whatever logfile you see fit for production
 logfile = '/tmp/task_worker.log'
-filehandler = logging.FileHandler(filename=logfile, mode='w')
+filehandler = logging.FileHandler(filename=logfile)
 filehandler.setFormatter(formatter)
 filehandler.setLevel(logging.ERROR)
 
