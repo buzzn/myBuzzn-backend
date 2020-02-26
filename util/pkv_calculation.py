@@ -51,12 +51,12 @@ def define_base_values(meter_id, inhabitants, date):
 
     day_zero = date - timedelta(days=1)
 
-    consumption = get_meter_reading_date(meter_id, day_zero)
-    if consumption is None:
+    consumption_mywh = get_meter_reading_date(meter_id, day_zero)
+    if consumption_mywh is None:
         return None
 
     # Convert consumption from µWh to kWh
-    consumption_kwh = consumption/1e9
+    consumption = consumption_mywh/1e9
 
     consumption_cumulated = consumption
 
@@ -71,10 +71,18 @@ def define_base_values(meter_id, inhabitants, date):
     moving_average_annualized = moving_average * 365
 
     base_values = dict(date=datetime.strftime(day_zero, '%Y-%m-%d'),
-                       consumption=consumption_kwh,
+                       consumption=consumption,
                        consumption_cumulated=consumption_cumulated,
                        inhabitants=inhabitants, pkv=pkv,
                        pkv_cumulated=pkv_cumulated, days=days,
                        moving_average=moving_average,
                        moving_average_annualized=moving_average_annualized)
     return base_values
+
+
+def calc_pkv(meter_id, inhabitants, date):
+    """ Calculate the Pro-Kopf-Verbrauch for a given user on a given date. """
+
+    print(meter_id)
+    print(inhabitants)
+    print(date)

@@ -41,12 +41,12 @@ class PKVCalculationTestCase(BuzznTestCase):
             '/login', data=json.dumps({'user': 'test@test.net', 'password': 'some_password'}))
 
     # pylint: disable=unused-argument
-    # @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
-    # @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION)
-    def test_define_base_values(self):  # , _get_meter_reading_date, _get):
+    @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
+    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION)
+    def test_define_base_values(self, _get_meter_reading_date, _get):
         """ Unit tests for function define_base_values(). """
 
-        start = datetime(2020, 2, 7).date()
+        start = datetime(2020, 2, 26).date()
         result = define_base_values(
             self.test_user.meter_id, self.test_user.inhabitants, start)
 
