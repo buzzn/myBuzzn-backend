@@ -85,7 +85,7 @@ def get_meter_reading_date(meter_id, date):
     timezone-unaware date to UTC.
     : param str meter_id: the meter id for which to get the value
     : param datetime.date date: the date for which to get the value
-    : return: the first reading for the given meter id on the given date or
+    : return: the last reading for the given meter id on the given date or
     None if there are no values
     : rtype: float or type(None)
     """
