@@ -16,10 +16,10 @@ USER_CONSUMPTION = [
     b'{"type": "reading", "values": {"energy": 18687322714815}}',
     b'{"type": "reading", "values": {"energy": 18687322714815}}']
 
-BASE_VALUES = {'date': '2020-02-25', 'consumption': 18687.322714815,
+BASE_VALUES = {'date': datetime(2020, 2, 25).date(), 'consumption': 18687.322714815,
                'consumption_cumulated': 18687.322714815, 'inhabitants': 2,
                'pkv':  9343.6613574075, 'pkv_cumulated': 9343.6613574075,
-               'days': 0, 'moving_average': 0, 'moving_average_annualized': 0}
+               'days': 0, 'moving_average': 0.0, 'moving_average_annualized': 0}
 
 
 class PKVCalculationTestCase(BuzznTestCase):
@@ -59,3 +59,9 @@ class PKVCalculationTestCase(BuzznTestCase):
                 'inhabitants', 'pkv', 'pkv_cumulated', 'days', 'moving_average'\
                     'moving_average_annualized':
                 self.assertEqual(result.get(param), BASE_VALUES.get(param))
+
+    # pylint: disable=unused-argument
+    # @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
+    # @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION)
+    def test_calc_pkv(self):  # , _get_meter_reading_date, _get):
+        """ Unit tests for function calc_pkv(). """
