@@ -40,8 +40,6 @@ def setup_app(app_config):
         def __init__(self, *args, **kwargs):
             super(JsonDefault, self).__init__(*args, **kwargs)
             self.mimetype = 'application/json'
-            self.headers['Access-Control-Allow-Origin'] = '*'
-            self.headers['Access-Control-Allow-Headers'] = '*'
 
     app.response_class = JsonDefault
 
