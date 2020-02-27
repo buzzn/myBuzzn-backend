@@ -21,6 +21,11 @@ BASE_VALUES = {'date': datetime(2020, 2, 25).date(), 'consumption': 18687.322714
                'pkv':  9343.6613574075, 'pkv_cumulated': 9343.6613574075,
                'days': 0, 'moving_average': 0.0, 'moving_average_annualized': 0}
 
+PKV = {'date': datetime(2020, 2, 26).date(), 'consumption': 18687.322714815,
+       'consumption_cumulated': 37356.64542963, 'inhabitants': 2,
+       'pkv':  9343.6613574075, 'pkv_cumulated': 18687.322714815,
+       'days': 1, 'moving_average': 9343.661357408, 'moving_average_annualized': 3410436}
+
 
 class PKVCalculationTestCase(BuzznTestCase):
     """ Unit tests for PKV calculation methods. """
