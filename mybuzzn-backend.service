@@ -1,0 +1,12 @@
+[Unit]
+Description=Run mybuzzn-backend as an flask socketio instance.
+
+[Service]
+WorkingDirectory=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend
+ExecStart=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend/env/bin/python mybuzzn-backend.py
+After=network.target
+User=mybuzznbackend
+Group=mybuzznbackend
+
+[Install]
+WantedBy=multi-user.target

@@ -113,27 +113,56 @@ pip install -r "requirements.txt"
 pip install git+https://github.com/buzzn/discovergy.git
 ```
 
-Create an endpoint in your webserver, for example for Apache, create a new site:
-```
-<VirtualHost *:80>
-  ServerName your-domain.net
-  ErrorLog /path/to/error/log
-  CustomLog /path/to/access.log combined
+Now create a systemd service `mybuzzn-backend.service`, which starts the socketio server we use to run
+the app in:
+```ini
+[Unit]
+Description=Run mybuzzn-backend as an flask socketio instance.
 
-  WSGIDaemonProcess mybuzznbackend user=mybuzznbackend-user group=mybuzznbackend-group threads=5 python-path=/path/to/python:/and/path/to/packages
-  WSGIScriptAlias / /path/to/mybuzzn/projectdir/mybuzznbackend.wsgi
-  WSGIPassAuthorization On # Important for authorization header to be passed to the app
+[Service]
+WorkingDirectory=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend
+ExecStart=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend/env/bin/python mybuzzn-backend.py
+After=network.target
+User=mybuzznbackend
+Group=mybuzznbackend
 
-    <Directory /path/to/project/>
-        WSGIProcessGroup mybuzznbackend
-        WSGIApplicationGroup %{GLOBAL}
-        Order deny,allow
-        Allow from all
-    </Directory>
-</VirtualHost>
+[Install]
+WantedBy=multi-user.target
 ```
-Make sure that `WSGIPassAuthorization` is set to `On` to grant the app
-authorization header access.
+Either store it on `/etc/systemd/system/` or create there a link pointing to it.
+Start it with `systemctl start mybuzzn-backend.service`.
+
+Create an endpoint in your webserver, for example for nginx, create a new
+server in `/etc/nginx/sites-available/mybuzzn-backend.net`
+```
+server {
+    listen 80;
+    server_name mybuzzn-backend.buzzn.net
+
+    error_log /var/www/mybuzzn-backend.buzzn.net/logs/error.log warn;
+    access_log /var/www/mybuzzn-backend.buzzn.net/logs/access.log combined;
+
+
+    # This is where our socketio server should respond
+    location / {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:5000;
+    }
+
+    # This is where the websocket should respond
+    location /socket.io {
+        include proxy_params;
+
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_pass http://127.0.0.1:5000/socket.io;
+    }
+}
+```
+And create a link from `/etc/nginx/sites-enable/mybuzzn-backend.net` pointing to
+it. Then restart nginx `systemctl restart nginx`
 
 Make sure a file `setup_environment.py` exists in the project root which sets
 environment variables like this:
@@ -168,10 +197,11 @@ After=network.target redis.service
 [Service]
 Type=simple
 Reastart=always
-ExecStart=/path/to/python/interpreter/in/environment /path/to/start_redis_task.py
+WorkingDirectory=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend
+ExecStart=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend/env/bin/python start_redis_task.py
 StandardOutput=journal
-User=mybuzznbackend-user
-Group=mybuzznbackend-group
+User=mybuzznbackend
+Group=mybuzznbackend
 
 [Install]
 WantedBy=multi-user.target⏎
@@ -180,10 +210,10 @@ WantedBy=multi-user.target⏎
 ### Upgrading to a new version
 To upgrade to a new version, go to the project root and run `git pull`.
 If something has changed on the models, run `source ./venv/bin/activate` to
-activate the python environment. Then run `./venv/bin/flask db upgrade` to
+activate the python environment. Then run `./flask db upgrade` to
 upgrade the database.
 
 Finally restart the redis task, which fills the redis database with meter
 readings and the webserver:
-`systemctl restart apache2.service redis-task.service`
+`systemctl restart apache2.service redis-task.service mybuzzn-backend.service`
 
