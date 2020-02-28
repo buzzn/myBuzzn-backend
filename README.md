@@ -129,7 +129,7 @@ Group=mybuzznbackend
 [Install]
 WantedBy=multi-user.target
 ```
-Either store it on `/etc/systemd/system/` or create there a link pointing to it.
+Either store it on /etc/systemd/system/ or create a link there pointing to it.
 Start it with `systemctl start mybuzzn-backend.service`.
 
 Create an endpoint in your webserver, for example for nginx, create a new
@@ -209,11 +209,11 @@ WantedBy=multi-user.target⏎
 
 ### Upgrading to a new version
 To upgrade to a new version, go to the project root and run `git pull`.
-If something has changed on the models, run `source ./venv/bin/activate` to
+If something has changed in the database models, run `source ./venv/bin/activate` to
 activate the python environment. Then run `./flask db upgrade` to
 upgrade the database.
 
-Finally restart the redis task, which fills the redis database with meter
-readings and the webserver:
+Finally restart the the web server and the redis task which fills the redis database with meter
+readings:
 `systemctl restart apache2.service redis-task.service mybuzzn-backend.service`
 
