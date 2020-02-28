@@ -1,4 +1,5 @@
 import json
+import logging
 from os import environ
 from threading import Lock
 import eventlet
@@ -8,12 +9,13 @@ from flask_socketio import SocketIO, emit
 from models.user import User
 from setup_app import setup_app
 from util.database import db
-from util.error import NO_METER_ID
+from util.error import NO_METER_ID, exception_message
 from util.websocket_provider import WebsocketProvider
 from models.user import User
 
 
 eventlet.monkey_patch()
+logger = logging.getLogger(__name__)
 
 
 class RunConfig():
@@ -53,15 +55,19 @@ def live():
 def background_thread():
     """ Emit server-generated live data to the clients every 60s. """
     while True:
-        socketio.sleep(60)
         with app.app_context():
-            for key in clients:
-                user = db.session.query(User).filter_by(
-                    meter_id=clients[key].get('meter_id')).first()
-                message = json.dumps(wp.create_data(user.id))
-                socketio.emit(
-                    'live_data', {'data': message}, namespace='/live', room=key)
-
+            socketio.sleep(1)
+            for key in dict(clients):
+                try:
+                    user = db.session.query(User).filter_by(
+                        meter_id=clients[key].get('meter_id')).first()
+                    message = json.dumps(wp.create_data(user.id))
+                    socketio.emit('live_data', {'data': message},
+                                  namespace='/live', room=key)
+                except Exception as e:
+                    message = exception_message(e)
+                    logger.error(message)
+                    del clients[key]
 
 @socketio.on('connect', namespace='/live')
 def connect():

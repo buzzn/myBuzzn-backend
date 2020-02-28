@@ -123,6 +123,8 @@ class WebsocketProvider:
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
+            logger.error("Can not calculate self sufficiency for meter_id %s",
+                         meter_id)
             return 0.0
 
     def create_member_data(self, member):
