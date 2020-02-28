@@ -82,5 +82,12 @@ def disconnect():
     del clients[request.sid]
 
 
+def run_server():
+    """Starts the app on port 5000.
+       This api call can used to start the app from another python script.
+    """
+    socketio.run(app, port=5000)
+
+
 if __name__ == "__main__":
     socketio.run(app, debug=True)
