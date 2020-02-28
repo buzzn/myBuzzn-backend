@@ -1,5 +1,5 @@
 [Unit]
-Description=Run mybuzzn-backend as an flask socketio instance.
+Description=Run mybuzzn-backend as a flask socketio instance.
 
 [Service]
 WorkingDirectory=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend
