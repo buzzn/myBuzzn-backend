@@ -4,7 +4,7 @@ from unittest import mock
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.pkv_calculation import define_base_values
+from util.pkv_calculation import define_base_values, calc_pkv
 
 
 SORTED_KEYS = [b'b4234cd4bed143a6b9bd09e347e17d34_2020-02-25 12:02:00',
@@ -21,7 +21,7 @@ BASE_VALUES = {'date': datetime(2020, 2, 25).date(), 'consumption': 18687.322714
                'pkv':  9343.6613574075, 'pkv_cumulated': 9343.6613574075,
                'days': 0, 'moving_average': 0.0, 'moving_average_annualized': 0}
 
-PKV = {'date': datetime(2020, 2, 26).date(), 'consumption': 18687.322714815,
+PKV = {'date': datetime(2020, 2, 25).date(), 'consumption': 18687.322714815,
        'consumption_cumulated': 37356.64542963, 'inhabitants': 2,
        'pkv':  9343.6613574075, 'pkv_cumulated': 18687.322714815,
        'days': 1, 'moving_average': 9343.661357408, 'moving_average_annualized': 3410436}
@@ -66,7 +66,19 @@ class PKVCalculationTestCase(BuzznTestCase):
                 self.assertEqual(result.get(param), BASE_VALUES.get(param))
 
     # pylint: disable=unused-argument
-    # @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
-    # @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION)
-    def test_calc_pkv(self):  # , _get_meter_reading_date, _get):
+    @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
+    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION)
+    def test_calc_pkv(self, _get_meter_reading_date, _get):
         """ Unit tests for function calc_pkv(). """
+
+        start = datetime(2020, 2, 25).date()
+        result = calc_pkv(
+            self.test_user.meter_id, self.test_user.inhabitants, start)
+
+        # Check result type
+        self.assertIsInstance(result, (dict, type(None)))
+
+        # Check result values
+        if isinstance(result, dict):
+            for param in 'date', 'consumption', 'inhabitants', 'pkv':
+                self.assertEqual(result.get(param), PKV.get(param))
