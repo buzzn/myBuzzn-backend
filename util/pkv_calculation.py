@@ -5,7 +5,6 @@ import os
 from dateutil import parser
 import redis
 import pytz
-from util.energy_saving_calculation import get_meter_reading_date
 from util.error import exception_message
 from util.redis_helpers import get_sorted_keys
 
@@ -87,6 +86,46 @@ def get_first_meter_reading_date(meter_id, date):
     return None
 
 
+def get_last_meter_reading_date(meter_id, date):
+    """ Return the last reading for the given meter id on the given day which
+    is stored in the redis database. As we were using unix timestamps as
+    basis for our dates all along, there is no need to convert the given,
+    timezone-unaware date to UTC.
+    : param str meter_id: the meter id for which to get the value
+    : param datetime.date date: the date for which to get the value
+    : return: the last reading for the given meter id on the given date or
+    None if there are no values
+    : rtype: float or type(None)
+    """
+
+    readings = []
+    data = None
+    naive_begin = datetime.combine(date, time(0, 0, 0))
+    naive_end = datetime.combine(date, time(23, 59, 59))
+    timezone = pytz.timezone('UTC')
+    begin = (timezone.localize(naive_begin)).timestamp()
+    end = (timezone.localize(naive_end)).timestamp()
+
+    for key in get_sorted_keys(redis_client, meter_id):
+        try:
+            data = json.loads(redis_client.get(key))
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
+        if data is not None and data.get('type') == 'reading':
+            reading_date = parser.parse(key[len(meter_id)+1:])
+            reading_timestamp = reading_date.timestamp()
+            if begin <= reading_timestamp <= end:
+                readings.append(data.get('values')['energy'])
+
+    if len(readings) > 0:
+        return readings[-1]
+
+    logger.info('No last reading available for meter id %s on %s',
+                meter_id, str(date))
+    return None
+
+
 def define_base_values(inhabitants, date):
     """ Define the base values for a user on a given date.
     :param int inhabitants: the number of inhabitants in the user's flat
@@ -156,13 +195,16 @@ def calc_pkv(meter_id, inhabitants, date):
             'The input parameter \'date\' cannot lie in the future.')
         return None
 
-    # Calculate consumption := last meter reading of date in kWh
-    consumption_mywh = get_meter_reading_date(meter_id, date)
-    if consumption_mywh is None:
-        return None
-    consumption = consumption_mywh/1e9
-
     # pylint: disable=fixme
+    # TODO
+    # Calculate consumption := last meter reading of date - first meter reading
+    # of date in kWh
+    consumption_mywh_last = get_last_meter_reading_date(meter_id, date)
+    consumption_mywh_first = get_first_meter_reading_date(meter_id, date)
+    if consumption_mywh_last is None or consumption_mywh_first is None:
+        return None
+    consumption = (consumption_mywh_last - consumption_mywh_first)/1e9
+
     # TODO
     # Calculate consumption_cumulated := consumption_cumulated of the day
     # before + consumption (kWh)
