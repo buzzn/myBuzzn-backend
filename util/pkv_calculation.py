@@ -87,10 +87,8 @@ def get_first_meter_reading_date(meter_id, date):
     return None
 
 
-def define_base_values(meter_id, inhabitants, date):
-    """ Create the base values for the user with the given meter id for the
-    given date.
-    :param str meter_id: the user's meter id
+def define_base_values(inhabitants, date):
+    """ Define the base values for a user on a given date.
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the start date of the calculation which cannot
     lie in the future
@@ -108,19 +106,8 @@ def define_base_values(meter_id, inhabitants, date):
     # Define day_zero := Berechnungsstart - 1 Tag
     day_zero = date - timedelta(days=1)
 
-    # Calculate consumption := last meter reading of the day before calculation
-    # start - first meter reading of the day before calculation start (kWh)
-    consumption_mywh_last = get_meter_reading_date(meter_id, day_zero)
-
-    print(consumption_mywh_last)
-
-    consumption_mywh_first = get_first_meter_reading_date(meter_id, day_zero)
-
-    print(consumption_mywh_first)
-
-    if consumption_mywh_first is None or consumption_mywh_last is None:
-        return None
-    consumption = (consumption_mywh_last - consumption_mywh_first)/1e9
+    # Define consumption := 0
+    consumption = 0.0
 
     # On day_zero, consumption_cumulated := consumption (kWh)
     consumption_cumulated = consumption
