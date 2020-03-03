@@ -36,7 +36,7 @@ class RunConfig():
 app = setup_app(RunConfig())
 thread = None
 thread_lock = Lock()
-socketio = SocketIO(app, async_mode='eventlet')
+socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
 
@@ -47,7 +47,7 @@ def live():
     if meter_id is None:
         return NO_METER_ID.to_json(), status.HTTP_400_BAD_REQUEST
     session['meter_id'] = meter_id
-    return Response(render_template('live.html', async_mode=socketio.async_mode))
+    return Response(render_template('live.html'))
 
 
 def background_thread():
@@ -80,6 +80,13 @@ def connect():
 @socketio.on('disconnect', namespace='/live')
 def disconnect():
     del clients[request.sid]
+
+
+def run_server():
+    """Starts the app on port 5000.
+       This api call can used to start the app from another python script.
+    """
+    socketio.run(app, port=5000)
 
 
 if __name__ == "__main__":

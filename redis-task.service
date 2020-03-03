@@ -1,0 +1,15 @@
+[Unit]
+Description=Fill redis db with current reading values
+After=network.target redis.service
+
+[Service]
+Type=simple
+Reastart=always
+WorkingDirectory=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend
+ExecStart=/var/www/mybuzzn-backend.buzzn.net/mybuzznbackend/env/bin/python start_redis_task.py
+StandardOutput=journal
+User=mybuzznbackend
+Group=mybuzznbackend
+
+[Install]
+WantedBy=multi-user.target⏎
