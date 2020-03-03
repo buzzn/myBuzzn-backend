@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+# This is a copy of the flask script,
+# which runs various flask tasks.
+# Except that this one does include include environment variables from
+# the setup_environment.
+
+import re
+import sys
+import setup_environment # Sets the environment variables of mybuzzn-backend
+
+from flask.cli import main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())
