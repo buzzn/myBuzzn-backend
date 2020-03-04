@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from unittest import mock
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.pkv_calculation import define_base_values, calc_pkv,\
-    get_first_meter_reading_date
+    get_first_meter_reading_date, check_input_parameter_date
 
 
 SORTED_KEYS_DAY_ONE = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-25 12:02:00',
@@ -71,6 +71,23 @@ class PKVCalculationTestCase(BuzznTestCase):
         db.session.commit()
         self.client.post(
             '/login', data=json.dumps({'user': 'test@test.net', 'password': 'some_password'}))
+
+    def test_check_input_parameter_date(self):
+        """ Unit tests for function check_input_parameter_date().
+        Expect False if the date to check lies in the future, True otherwise. """
+
+        good_date = datetime(2020, 1, 2).date()
+        bad_date = datetime.today().date() + timedelta(days=1)
+        result_good_date = check_input_parameter_date(good_date)
+        result_bad_date = check_input_parameter_date(bad_date)
+
+        # Check result types
+        self.assertIsInstance(result_good_date, bool)
+        self.assertIsInstance(result_bad_date, bool)
+
+        # Check result values
+        self.assertEqual(result_good_date, True)
+        self.assertEqual(result_bad_date, False)
 
     def test_define_base_values(self):
         """ Unit tests for function define_base_values(). """
