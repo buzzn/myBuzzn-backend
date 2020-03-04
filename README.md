@@ -89,7 +89,21 @@ Run tests
 ```bash
 python -m unittest
 ```
+## Calculating Code Coverage
+Install Coverage.py
+```bash
+pip install coverage
+```
+Calculate code coverage
+```bash
+coverage run -m unittest
+```
+All unittests are run and the code coverage is calculated. 
 
+Show code coverage report
+```bash
+coverage report -m
+```
 ## Linter
 ```bash
 pylint app.py apitests models routes tests util
