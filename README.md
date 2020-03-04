@@ -96,8 +96,10 @@ pip install coverage
 ```
 Calculate code coverage
 ```bash
-coverage run -m
+coverage run -m unittest
 ```
+All unittests are run and the code coverage is calculated. 
+
 Show code coverage report
 ```bash
 coverage report -m
