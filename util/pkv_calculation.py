@@ -196,6 +196,7 @@ def calc_pkv(meter_id, inhabitants, date):
 
     # Retrieve data for the day before from the SQLite database
     data_day_before = get_data_day_before(date, meter_id)
+
     if data_day_before is None:
         logger.info(
             'There is no data for the day before %s in the database for meter_id\
