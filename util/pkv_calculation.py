@@ -5,8 +5,7 @@ import os
 from dateutil import parser
 import redis
 import pytz
-# from models.pkv import PKV
-# from util.database import create_session
+from util.database import get_engine
 from util.energy_saving_calculation import get_last_meter_reading_date
 from util.error import exception_message
 from util.redis_helpers import get_sorted_keys
@@ -47,6 +46,31 @@ def check_input_parameter_date(date):
     if date > today:
         return False
     return True
+
+
+def get_data_day_before(date, meter_id):
+    """ Get the values from the day before from the SQLite database.
+    :param datetime.date: the request date
+    :param str meter_id: the user's meter id
+    :return: date, meter_id, consumption, consumption_cumulated, inhabitants,
+    pkv, pkv_cumulated, days, moving_average and moving_average_annualized
+    """
+
+    day_before = date - timedelta(days=1)
+
+    try:
+        # Connect to sqlite database
+        engine = get_engine()
+        with engine.connect() as con:
+
+            # pylint: disable=line-too-long
+            return con.execute(
+                "SELECT * FROM PKV WHERE meter_id = \'" + meter_id + "\' AND date = \'" + str(day_before) + "\'").first()
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return None
 
 
 def get_first_meter_reading_date(meter_id, date):
@@ -149,8 +173,8 @@ def calc_pkv(meter_id, inhabitants, date):
     :param str meter_id: the user's meter id
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the calculation day which cannot lie in the future
-    :return: the pkv values for the given meter id and date or None on wrong
-    date parameter
+    :return: the pkv values for the given meter id and date or None if there is
+    an error
     :rtype: dict or type(None)
     """
 
@@ -167,38 +191,53 @@ def calc_pkv(meter_id, inhabitants, date):
 
     if consumption_mywh_last is None or consumption_mywh_first is None:
         return None
+
     consumption = (consumption_mywh_last - consumption_mywh_first)/1e9
 
-    # pylint: disable=fixme
-    # TODO
-    # Calculate consumption_cumulated := consumption_cumulated of the day
-    # before + consumption (kWh)
+    # Retrieve data for the day before from the SQLite database
+    data_day_before = get_data_day_before(date, meter_id)
+    if data_day_before is None:
+        logger.info(
+            'There is no data for the day before %s in the database for meter_id\
+                            %s.', date, meter_id)
+        return None
 
-    # Calculate pkv (Pro-Kopf-Verbrauch) := consumption/inhabitants (kWh)
-    pkv = consumption/inhabitants
+    try:
+        # Calculate consumption_cumulated := consumption_cumulated of the day
+        # before + consumption (kWh)
+        consumption_cumulated = data_day_before[2] + consumption
 
-    # TODO
-    # Calculate pkv_cumulated := pkv_cumulated := pkv_cumulated of the day
-    # before + pkv (kWh)
+        # Calculate pkv (Pro-Kopf-Verbrauch) := consumption/inhabitants (kWh)
+        pkv = consumption/inhabitants
 
-    # TODO
-    # Calculate days (since calculation start) := days of the day before + 1
-    # (number)
+        # Calculate pkv_cumulated := pkv_cumulated of the day
+        # before + pkv (kWh)
+        pkv_cumulated = data_day_before[6] + pkv
 
-    # TODO
+        # Calculate days (since calculation start) := days of the day before + 1
+        # (number)
+        days = data_day_before[7] + 1
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return None
+
     # Calculate moving_average := pkv_cumulated/days (kWh)
+    moving_average = pkv_cumulated/days
 
     # Calculate moving_average_annualized := moving_average * 365 (kWh, rounded)
+    moving_average_annualized = round(moving_average * 365)
 
     # Return base values as dict
     pkv = dict(date=date,
                consumption=consumption,
-               # consumption_cumulated=consumption_cumulated,
+               consumption_cumulated=consumption_cumulated,
                inhabitants=inhabitants,
                pkv=pkv,
-               # pkv_cumulated=pkv_cumulated,
-               # days=days,
-               # moving_average=moving_average,
-               # moving_average_annualized=moving_average_annualized
+               pkv_cumulated=pkv_cumulated,
+               days=days,
+               moving_average=moving_average,
+               moving_average_annualized=moving_average_annualized
                )
     return pkv

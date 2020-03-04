@@ -24,10 +24,10 @@ BASE_VALUES = {'date': datetime(2020, 2, 25).date(), 'consumption': 0.0,
                'pkv_cumulated': 0.0, 'days': 0, 'moving_average': 0.0,
                'moving_average_annualized': 0}
 
-PKV = {'date': datetime(2020, 2, 25).date(), 'consumption': 21.749714,
-       'consumption_cumulated': 37356.64542963, 'inhabitants': 2,
-       'pkv':  10.874857, 'pkv_cumulated': 18687.322714815,
-       'days': 1, 'moving_average': 9343.661357408, 'moving_average_annualized': 3410436}
+PKV_DAY_ONE = {'date': datetime(2020, 2, 25).date(), 'consumption': 21.749714,
+               'consumption_cumulated': 21.749714, 'inhabitants': 2,
+               'pkv':  10.874857, 'pkv_cumulated': 10.874857,
+               'days': 1, 'moving_average': 10.874857, 'moving_average_annualized': 3969}
 
 
 class PKVCalculationTestCase(BuzznTestCase):
@@ -79,8 +79,10 @@ class PKVCalculationTestCase(BuzznTestCase):
 
         # Check result values
         if isinstance(result, dict):
-            for param in 'date', 'consumption', 'inhabitants', 'pkv':
-                self.assertEqual(result.get(param), PKV.get(param))
+            for param in 'date', 'consumption', 'consumption_cumulated',\
+                         'inhabitants', 'pkv', 'pkv_cumulated', 'days',\
+                         'moving_average', 'moving_average_annualized':
+                self.assertEqual(result.get(param), PKV_DAY_ONE.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
