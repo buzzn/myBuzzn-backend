@@ -78,7 +78,7 @@ def calc_ratio_values(start):
     return ratio_values
 
 
-def get_meter_reading_date(meter_id, date):
+def get_last_meter_reading_date(meter_id, date):
     """ Return the last reading for the given meter id on the given day which
     is stored in the redis database. As we were using unix timestamps as
     basis for our dates all along, there is no need to convert the given,
@@ -130,8 +130,8 @@ def calc_energy_consumption_last_term(meter_id, start):
 
     begin = (datetime(start.year - 1, start.month, start.day)).date()
     end = start - timedelta(days=1)
-    last_meter_reading = get_meter_reading_date(meter_id, end)
-    first_meter_reading = get_meter_reading_date(meter_id, begin)
+    last_meter_reading = get_last_meter_reading_date(meter_id, end)
+    first_meter_reading = get_last_meter_reading_date(meter_id, begin)
 
     if last_meter_reading is None or first_meter_reading is None:
         logger.info('No energy consumption available for %s between %s and %s',
@@ -152,8 +152,8 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     """
 
     end = datetime.utcnow().date()
-    last_meter_reading = get_meter_reading_date(meter_id, end)
-    first_meter_reading = get_meter_reading_date(meter_id, start)
+    last_meter_reading = get_last_meter_reading_date(meter_id, end)
+    first_meter_reading = get_last_meter_reading_date(meter_id, start)
 
     if last_meter_reading is None or first_meter_reading is None:
         logger.info('No energy consumption available for %s between %s and %s',
