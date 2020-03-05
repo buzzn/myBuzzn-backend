@@ -8,11 +8,13 @@ import redis
 from models.baseline import BaseLine
 from models.user import User
 from models.group import Group
+from models.pkv import PKV
 from models.savings import UserSaving, CommunitySaving
 from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
+from util.pkv_calculation import define_base_values, calc_pkv
 
 
 logging.basicConfig()
@@ -28,11 +30,17 @@ last_data_flush = None
 
 
 def get_all_meter_ids(session):
-    """ Get all meter ids from sqlite database. """
+    """ Get all meter ids from the SQLite database. """
 
     return [meter_id[0] for meter_id in session.query(User.meter_id).all()]\
         + [group_meter_id[0]
            for group_meter_id in session.query(Group.group_meter_id).all()]
+
+
+def get_all_users(session):
+    """ Get all users from the SQLite database. """
+
+    return session.query(User).all()
 
 
 def calc_term_boundaries():
@@ -162,7 +170,7 @@ def calc_two_days_back():
 
 
 def write_savings(session):
-    """  Write the energy savings of each user and the community to the
+    """ Write the energy savings of each user and the community to the
     SQLite database.
     """
 
@@ -200,6 +208,32 @@ def write_baselines(session):
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
+
+
+def write_base_values(session):
+    """ Write the base values for each user to the SQLite database. """
+
+    start = calc_support_year_start_datetime().date()
+    try:
+        for user in get_all_users(session):
+            base_values = define_base_values(user.inhabitants, start)
+
+            # Create PKV instance
+            session.add(PKV(start, user.meter_id, base_values['consumption'],
+                            base_values['consumption_cumulated'],
+                            base_values['inhabitants'], base_values['pkv'],
+                            base_values['pkv_cumulated'], base_values['days'],
+                            base_values['moving_average'],
+                            base_values['moving_average_annualized']))
+
+        session.commit()
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+
+
+def write_pkv(session):
+    """ Write the pkv for each user to the SQLite database. """
 
 
 class Task:
@@ -326,6 +360,14 @@ class Task:
             except Exception as e:
                 message = exception_message(e)
                 logger.error(message)
+
+        # Write base values for all users to the SQLite database
+        try:
+            write_base_values(session)
+
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
 
     def update_redis(self):
         """ Update the redis database every 60s with the latest discovergy

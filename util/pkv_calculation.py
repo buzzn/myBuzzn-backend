@@ -57,6 +57,7 @@ def get_data_day_before(date, meter_id):
     """
 
     day_before = date - timedelta(days=1)
+    day_before_str = str(day_before) + ' 00:00:00.000000'
 
     try:
         # Connect to sqlite database
@@ -66,8 +67,14 @@ def get_data_day_before(date, meter_id):
             # pylint: disable=fixme
             # TODO - use SQLAlchemy queries
             # pylint: disable=line-too-long
-            result = con.execute("SELECT * FROM PKV WHERE meter_id = \'" + meter_id +
-                                 "\' AND date = \'" + str(day_before) + " 00:00:00" + "\'").first()
+            query_str = (
+                "SELECT * FROM PKV WHERE meter_id = '%s' AND date = '%s'" %
+                (meter_id, day_before_str))
+
+            result = con.execute(query_str).first()
+
+            print(result)
+
             return result
 
     except Exception as e:
