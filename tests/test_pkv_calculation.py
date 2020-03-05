@@ -38,9 +38,9 @@ USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
     USER_CONSUMPTION_DAY_TWO
 
 RETURN_VALUES_DAY_ONE = (
-    '2020-02-24', '52d7c87f8c26433dbd095048ad30c8cf', 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+    '2020-02-24 00:00:00', '52d7c87f8c26433dbd095048ad30c8cf', 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
 
-RETURN_VALUES_DAY_TWO = ('2020-02-25', '52d7c87f8c26433dbd095048ad30c8cf',
+RETURN_VALUES_DAY_TWO = ('2020-02-25 00:00:00', '52d7c87f8c26433dbd095048ad30c8cf',
                          21.749714, 21.749714, 2, 10.874857, 10.874857, 1, 10.874857, 3969)
 
 BASE_VALUES = {'date': datetime(2020, 2, 25).date(), 'consumption': 0.0,
@@ -76,16 +76,17 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
 
+        day_zero = datetime(2020, 2, 24).date()
+        day_one = datetime(2020, 2, 25).date()
         self.base_values = PKV(
-            datetime(2020, 2, 24).date(), self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PKV(
-            datetime(2020, 2, 25).date(
-            ), self.test_user.meter_id, 21.749714, 21.749714, 2,
-            10.874857, 10.874857, 1, 10.874857, 3969)
+            day_zero, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+        self.pkv_day_one = PKV(day_one, self.test_user.meter_id, 21.749714, 21.749714, 2,
+                               10.874857, 10.874857, 1, 10.874857, 3969)
         db.session.add(self.base_values)
         db.session.add(self.pkv_day_one)
 
         db.session.commit()
+
         self.client.post(
             '/login', data=json.dumps({'user': 'test@test.net', 'password': 'some_password'}))
 
@@ -176,8 +177,7 @@ class PKVCalculationTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_TWO)
     @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_TWO_TWICE)
-    @mock.patch('sqlalchemy.engine.result.ResultProxy.first',
-                return_value=RETURN_VALUES_DAY_TWO)
+    @mock.patch('sqlalchemy.engine.result.ResultProxy.first', return_value=RETURN_VALUES_DAY_TWO)
     def test_calc_pkv_day_two(self, _get_meter_reading_date, _get, first):
         """ Unit tests for function calc_pkv() on day 2. """
         day_two = datetime(2020, 2, 26).date()

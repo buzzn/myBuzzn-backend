@@ -63,9 +63,12 @@ def get_data_day_before(date, meter_id):
         engine = get_engine()
         with engine.connect() as con:
 
+            # pylint: disable=fixme
+            # TODO - use SQLAlchemy queries
             # pylint: disable=line-too-long
-            return con.execute(
-                "SELECT * FROM PKV WHERE meter_id = \'" + meter_id + "\' AND date = \'" + str(day_before) + "\'").first()
+            result = con.execute("SELECT * FROM PKV WHERE meter_id = \'" + meter_id +
+                                 "\' AND date = \'" + str(day_before) + " 00:00:00" + "\'").first()
+            return result
 
     except Exception as e:
         message = exception_message(e)
