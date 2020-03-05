@@ -108,6 +108,9 @@ coverage report -m
 ```bash
 pylint app.py apitests models routes tests util
 ```
+##Logfile
+Replace the logfile in the logger_configuration with a suitable logfile for production.
+
 ## How to deploy
 This chapter describes how to get a production instance running.
 ### Setup a new instance
