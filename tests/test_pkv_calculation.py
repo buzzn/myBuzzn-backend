@@ -2,9 +2,11 @@ from datetime import datetime, timedelta
 import json
 from unittest import mock
 from sqlalchemy.engine.result import RowProxy
+from sqlalchemy import create_engine
 from models.pkv import PKV
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
+from tests.buzzn_test_case import TestConfig
 from util.database import db
 from util.pkv_calculation import define_base_values, calc_pkv,\
     get_first_meter_reading_date, check_input_parameter_date,\
@@ -56,6 +58,8 @@ PKV_DAY_TWO = {'date': datetime(2020, 2, 26).date(), 'consumption': 15.0,
                'pkv': 7.5, 'pkv_cumulated': 18.374857, 'days': 2,
                'moving_average': 9.1874285, 'moving_average_annualized': 3353}
 
+ENGINE = create_engine(TestConfig.SQLALCHEMY_DATABASE_URI)
+
 
 class PKVCalculationTestCase(BuzznTestCase):
     """ Unit tests for PKV calculation methods. """
@@ -102,7 +106,9 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.assertEqual(result_good_date, True)
         self.assertEqual(result_bad_date, False)
 
-    def test_get_data_day_before(self):
+    # pylint: disable=unused-argument
+    @mock.patch('sqlalchemy.create_engine', return_value=ENGINE)
+    def test_get_data_day_before(self, _create_engine):
         """ Unit tests for function get_data_day_before(). """
 
         start = datetime(2020, 2, 25).date()
