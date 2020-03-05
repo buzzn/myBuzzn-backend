@@ -1,4 +1,5 @@
 import logging
+import logging.config
 from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
@@ -7,7 +8,7 @@ from models.user import User
 from util.error import NO_USERS, exception_message
 from util.login import login_required
 
-
+logging.config.fileConfig(fname='./../util/logger_configuration.conf', disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 GroupProfilePictures = Blueprint('GroupProfilePictures', '__name__')
 

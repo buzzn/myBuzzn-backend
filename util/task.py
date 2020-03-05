@@ -3,6 +3,7 @@ import os
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
 import logging
+import logging.config
 from discovergy.discovergy import Discovergy
 import redis
 from models.baseline import BaseLine
@@ -15,9 +16,8 @@ from util.energy_saving_calculation import estimate_energy_saving_each_user,\
 from util.database import create_session
 
 
-logging.basicConfig()
+logging.config.fileConfig(fname='logger_configuration.conf', disable_existing_loggers=False)
 logger = logging.getLogger('util/task')
-logging.getLogger().setLevel(logging.INFO)
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']

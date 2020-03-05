@@ -2,6 +2,7 @@ from datetime import datetime, time, timedelta
 import json
 import os
 import logging
+import logging.config
 from dateutil import parser
 import redis
 import pytz
@@ -10,25 +11,7 @@ from util.error import exception_message
 from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
 
-
-# logging
-logger = logging.getLogger(__name__)
-formatter = logging.Formatter(
-    '%(asctime)s | %(name)s | %(levelname)s: %(message)s')
-logger.setLevel(logging.DEBUG)
-
-# replace with whatever logfile you see fit for production
-logfile = '/tmp/task_worker.log'
-filehandler = logging.FileHandler(filename=logfile, mode='w')
-filehandler.setFormatter(formatter)
-filehandler.setLevel(logging.ERROR)
-
-# console handler
-streamhandler = logging.StreamHandler()
-streamhandler.setLevel(logging.INFO)
-
-logger.addHandler(filehandler)
-logger.addHandler(streamhandler)
+logging.config.fileConfig(fname='logger_configuration.conf', disable_existing_loggers=False)
 
 redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
