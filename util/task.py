@@ -14,7 +14,7 @@ from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
-from util.pkv_calculation import define_base_values, calc_pkv
+from util.pkv_calculation import define_base_values  # , calc_pkv
 
 
 logging.basicConfig()
@@ -235,6 +235,10 @@ def write_base_values(session):
 def write_pkv(session):
     """ Write the pkv for each user to the SQLite database. """
 
+    start = datetime.today().date() - timedelta(day=1)
+    print(start)
+    print(type(session))
+
 
 class Task:
     """ Handle discovergy login, data retrieval, populating and updating the
@@ -361,39 +365,39 @@ class Task:
                 message = exception_message(e)
                 logger.error(message)
 
-        # Write base values for all users to the SQLite database
-        try:
-            write_base_values(session)
-
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-
     def update_redis(self):
         """ Update the redis database every 60s with the latest discovergy
         data. """
 
         logger.info("Started redis task at %s",
                     datetime.now().strftime("%H:%M:%S"))
+        try:
+            # Connect to SQLite database
+            session = create_session()
+
+            # Write base values for all users to the SQLite database
+            write_base_values(session)
+
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
+
         while True:
             stdlib_time.sleep(60)
             logger.info("Fill redis at %s",
                         datetime.now().strftime("%H:%M:%S"))
-
             try:
                 # Populate redis if last data flush was more than 24h ago
                 # pylint: disable=global-statement
                 global last_data_flush
 
-                # Connect to sqlite database
-                session = create_session()
-
                 if (last_data_flush is None) or (datetime.utcnow() -
                                                  last_data_flush >
                                                  timedelta(hours=24)):
                     self.populate_redis()
-                    write_savings(session)
                     write_baselines(session)
+                    write_savings(session)
+                    write_pkv(session)
 
                 all_meter_ids = get_all_meter_ids(session)
                 end = calc_end()
