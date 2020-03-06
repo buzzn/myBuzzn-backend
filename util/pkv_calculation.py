@@ -72,9 +72,6 @@ def get_data_day_before(date, meter_id):
                 (meter_id, day_before_str))
 
             result = con.execute(query_str).first()
-
-            print(result)
-
             return result
 
     except Exception as e:
