@@ -1,4 +1,6 @@
 import logging
+import logging.config
+from os import path
 from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
@@ -7,7 +9,8 @@ from util.database import db, get_engine
 from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, NO_BASELINE, exception_message
 from util.login import login_required
 
-
+log_file_path = path.join(path.dirname(path.abspath(__file__)), '../util/logger_configuration.conf')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 IndividualGlobalChallenge = Blueprint('IndividualGlobalChallenge',
                                       __name__)

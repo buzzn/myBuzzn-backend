@@ -1,7 +1,9 @@
 import json
 import os
+from os import path
 from datetime import datetime
 import logging
+import logging.config
 from dateutil import parser
 import redis
 from flask import Blueprint, jsonify, request
@@ -14,7 +16,8 @@ from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required
 from util.redis_helpers import get_sorted_keys
 
-
+log_file_path = path.join(path.dirname(path.abspath(__file__)), '../util/logger_configuration.conf')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 IndividualConsumptionHistory = Blueprint('IndividualConsumptionHistory',
                                          __name__)
