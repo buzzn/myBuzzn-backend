@@ -5,6 +5,8 @@ import os
 from dateutil import parser
 import redis
 import pytz
+from sqlalchemy import extract
+from models.pkv import PKV
 from util.database import get_engine
 from util.energy_saving_calculation import get_last_meter_reading_date
 from util.error import exception_message
@@ -78,6 +80,31 @@ def get_data_day_before(date, meter_id):
         message = exception_message(e)
         logger.error(message)
         return None
+
+
+def get_data_day_before_session(dt, meter_id, session):
+    """ Get the values from the day before from the SQLite database.
+    :param datetime.date: the request date
+    :param str meter_id: the user's meter id
+    :param sqlalchemy.orm.scoping.scoped_session session: the database session
+    :return: date, meter_id, consumption, consumption_cumulated, inhabitants,
+    pkv, pkv_cumulated, days, moving_average and moving_average_annualized
+    """
+
+    day_before = dt - timedelta(days=1)
+    try:
+        result = session.query(PKV).filter_by(
+            meter_id=meter_id).filter(extract('year', PKV.date) == day_before.year,
+                                      extract(
+                                          'month', PKV.date) == day_before.month,
+                                      extract('day', PKV.date) == day_before.day).all()
+
+        return result
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+        return []
 
 
 def get_first_meter_reading_date(meter_id, date):

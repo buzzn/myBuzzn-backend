@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 import json
-from unittest import mock, skip
-from sqlalchemy.engine.result import RowProxy
+from unittest import mock
 from models.pkv import PKV
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.pkv_calculation import define_base_values, calc_pkv,\
     get_first_meter_reading_date, check_input_parameter_date,\
-    get_data_day_before
+    get_data_day_before_session
 
 
 SORTED_KEYS_DAY_ONE = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-25 12:02:00',
@@ -72,11 +71,13 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
 
-        day_zero = datetime(2020, 2, 24).date()
-        day_one = datetime(2020, 2, 25).date()
+        self.day_zero = (datetime.today() - timedelta(days=2)).date()
+        self.day_one = (datetime.today() - timedelta(days=1)).date()
+        self.today = datetime.today().date()
+
         self.base_values = PKV(
-            day_zero, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PKV(day_one, self.test_user.meter_id, 21.749714, 21.749714, 2,
+            self.day_zero, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+        self.pkv_day_one = PKV(self.day_one, self.test_user.meter_id, 21.749714, 21.749714, 2,
                                10.874857, 10.874857, 1, 10.874857, 3969)
         db.session.add(self.base_values)
         db.session.add(self.pkv_day_one)
@@ -103,32 +104,30 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.assertEqual(result_good_date, True)
         self.assertEqual(result_bad_date, False)
 
-    @skip
-    def test_get_data_day_before(self):
+    def test_get_data_day_before_session(self):
         """ Unit tests for function get_data_day_before(). """
 
-        start = datetime(2020, 2, 25).date()
-        day_zero = datetime(2020, 2, 24).date()
-        data_day_before = get_data_day_before(start, self.test_user.meter_id)
-        data_day_zero = get_data_day_before(day_zero,
-                                            self.test_user.meter_id)
+        data_day_zero = get_data_day_before_session(
+            self.day_zero, self.test_user.meter_id, db.session)
+        data_day_one = get_data_day_before_session(
+            self.day_one, self.test_user.meter_id, db.session)
 
         # Check return types
-        self.assertIsInstance(data_day_before, RowProxy)
-        self.assertIsInstance(data_day_zero, type(None))
-        self.assertIsInstance(data_day_before[0], str)
-        self.assertIsInstance(data_day_before[1], str)
-        self.assertIsInstance(data_day_before[2], float)
-        self.assertIsInstance(data_day_before[3], float)
-        self.assertIsInstance(data_day_before[4], int)
-        self.assertIsInstance(data_day_before[5], float)
-        self.assertIsInstance(data_day_before[6], float)
-        self.assertIsInstance(data_day_before[7], int)
-        self.assertIsInstance(data_day_before[8], float)
-        self.assertIsInstance(data_day_before[9], int)
+        self.assertIsInstance(data_day_zero, list)
+        self.assertIsInstance(data_day_one, list)
+        # self.assertIsInstance(data_day_before[0], str)
+        # self.assertIsInstance(data_day_before[1], str)
+        # self.assertIsInstance(data_day_before[2], float)
+        # self.assertIsInstance(data_day_before[3], float)
+        # self.assertIsInstance(data_day_before[4], int)
+        # self.assertIsInstance(data_day_before[5], float)
+        # self.assertIsInstance(data_day_before[6], float)
+        # self.assertIsInstance(data_day_before[7], int)
+        # self.assertIsInstance(data_day_before[8], float)
+        # self.assertIsInstance(data_day_before[9], int)
 
-        # Check return sizes
-        self.assertEqual(len(data_day_before), 10)
+        # # Check return sizes
+        # self.assertEqual(len(data_day_before), 10)
 
     def test_define_base_values(self):
         """ Unit tests for function define_base_values(). """
