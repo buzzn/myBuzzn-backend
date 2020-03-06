@@ -14,7 +14,7 @@ from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
-from util.pkv_calculation import define_base_values  # , calc_pkv
+from util.pkv_calculation import define_base_values, calc_pkv
 
 
 logging.basicConfig()
@@ -80,15 +80,6 @@ def calc_end():
     return round(datetime.utcnow().timestamp() * 1000)
 
 
-def calc_one_year_back():
-    """ Calculate timestamp of one year back in time. """
-
-    # Multiply the result of timestamp() from the standard library by 1000 and
-    # round it to have no decimal places to match the timestamp format required
-    # by the discovergy API
-    return round((datetime.utcnow() - timedelta(days=365)).timestamp() * 1000)
-
-
 def calc_support_year_start():
     """ Calculate start of BAFA support year.
     :return:
@@ -151,15 +142,6 @@ def calc_support_week_start():
     return support_week_start
 
 
-def calc_one_week_back():
-    """ Calculate timestamp of one week back in time. """
-
-    # Multiply the result of timestamp() from the standard library by 1000 and
-    # round it to have no decimal places to match the timestamp format required
-    # by the discovergy API
-    return round((datetime.utcnow() - timedelta(days=7)).timestamp() * 1000)
-
-
 def calc_two_days_back():
     """ Calculate timestamp of 48 hours back in time. """
 
@@ -210,16 +192,30 @@ def write_baselines(session):
         logger.error(message)
 
 
-def write_base_values(session):
+def write_base_values_or_pkv(session):
+    """ If yesterday was the start of the support year, write yesterday's
+    base the base values for all users to the SQLite database.
+    Otherwise, write yesterday's pkv for all users to the QLite database.
+    """
+
+    yesterday = (datetime.today() - timedelta(days=1)).date()
+    support_year_start = calc_support_year_start_datetime().date()
+
+    if yesterday == support_year_start:
+        write_base_values(support_year_start - timedelta(days=1), session)
+    else:
+        write_pkv(yesterday, session)
+
+
+def write_base_values(dt, session):
     """ Write the base values for each user to the SQLite database. """
 
-    start = calc_support_year_start_datetime().date()
     try:
         for user in get_all_users(session):
-            base_values = define_base_values(user.inhabitants, start)
+            base_values = define_base_values(user.inhabitants, dt)
 
             # Create PKV instance
-            session.add(PKV(start, user.meter_id, base_values['consumption'],
+            session.add(PKV(dt, user.meter_id, base_values['consumption'],
                             base_values['consumption_cumulated'],
                             base_values['inhabitants'], base_values['pkv'],
                             base_values['pkv_cumulated'], base_values['days'],
@@ -232,12 +228,25 @@ def write_base_values(session):
         logger.error(message)
 
 
-def write_pkv(session):
+def write_pkv(dt, session):
     """ Write the pkv for each user to the SQLite database. """
 
-    start = datetime.today().date() - timedelta(day=1)
-    print(start)
-    print(type(session))
+    try:
+        for user in get_all_users(session):
+            pkv = calc_pkv(user.meter_id, user.inhabitants, dt)
+
+            # Create PKV instance
+            session.add(PKV(dt, user.meter_id, pkv['consumption'],
+                            pkv['consumption_cumulated'],
+                            pkv['inhabitants'], pkv['pkv'],
+                            pkv['pkv_cumulated'], pkv['days'],
+                            pkv['moving_average'],
+                            pkv['moving_average_annualized']))
+
+        session.commit()
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
 
 
 class Task:
@@ -371,16 +380,6 @@ class Task:
 
         logger.info("Started redis task at %s",
                     datetime.now().strftime("%H:%M:%S"))
-        try:
-            # Connect to SQLite database
-            session = create_session()
-
-            # Write base values for all users to the SQLite database
-            write_base_values(session)
-
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
 
         while True:
             stdlib_time.sleep(60)
@@ -391,13 +390,16 @@ class Task:
                 # pylint: disable=global-statement
                 global last_data_flush
 
+                # Connect to SQLite database
+                session = create_session()
+
                 if (last_data_flush is None) or (datetime.utcnow() -
                                                  last_data_flush >
                                                  timedelta(hours=24)):
                     self.populate_redis()
                     write_baselines(session)
                     write_savings(session)
-                    write_pkv(session)
+                    write_base_values_or_pkv(session)
 
                 all_meter_ids = get_all_meter_ids(session)
                 end = calc_end()
