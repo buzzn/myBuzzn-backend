@@ -3,7 +3,8 @@ from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from models.user import User
-from util.database import db, get_engine
+from models.savings import UserSaving
+from util.database import db, get_engine, create_session
 from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, NO_BASELINE, exception_message
 from util.login import login_required
 
@@ -24,14 +25,21 @@ def get_individual_saving(meter_id):
     """
 
     # pylint: disable=line-too-long
-    query = "SELECT timestamp, saving FROM user_saving WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
+    #query = "SELECT timestamp, saving FROM user_saving WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
+
 
     try:
         engine = get_engine()
-        with engine.connect() as con:
+        with engine.connect():
 
             # Query last individual saving prognosis for the given meter id
-            individual_saving = con.execute(query).first()
+            saving = []
+            session = create_session()
+            for row in session.query(UserSaving) \
+                    .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()):
+                saving.append((row.timestamp, row.saving))
+
+            individual_saving = saving.first()
 
             timestamp = individual_saving[0].split('.')[0]
             saving = individual_saving[1]
