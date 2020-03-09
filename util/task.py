@@ -198,17 +198,23 @@ def write_base_values_or_pkv(session):
     Otherwise, write yesterday's pkv for all users to the QLite database.
     """
 
-    yesterday = (datetime.today() - timedelta(days=1)).date()
-    support_year_start = calc_support_year_start_datetime().date()
+    yesterday_date = (datetime.today() - timedelta(days=1)).date()
+    yesterday_time = time(0, 0, 0)
+    yesterday = datetime.combine(yesterday_date, yesterday_time)
+    support_year_start = calc_support_year_start_datetime()
+    day_zero = support_year_start - timedelta(days=1)
 
     if yesterday == support_year_start:
-        write_base_values(support_year_start - timedelta(days=1), session)
+        write_base_values(day_zero, session)
     else:
         write_pkv(yesterday, session)
 
 
 def write_base_values(dt, session):
-    """ Write the base values for each user to the SQLite database. """
+    """ Write the base values for each user to the SQLite database.
+    :param datetime dt: the date to write the values for
+    :param sqlalchemy.orm.scoping.scoped_session session: the database session
+    """
 
     try:
         for user in get_all_users(session):
@@ -229,11 +235,14 @@ def write_base_values(dt, session):
 
 
 def write_pkv(dt, session):
-    """ Write the pkv for each user to the SQLite database. """
+    """ Write the pkv for each user to the SQLite database.
+    :param datetime dt: the date to write the values for
+    :param sqlalchemy.orm.scoping.scoped_session session: the database session
+    """
 
     try:
         for user in get_all_users(session):
-            pkv = calc_pkv(user.meter_id, user.inhabitants, dt)
+            pkv = calc_pkv(user.meter_id, user.inhabitants, dt, session)
 
             # Create PKV instance
             session.add(PKV(dt, user.meter_id, pkv['consumption'],
