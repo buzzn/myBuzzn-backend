@@ -1,8 +1,6 @@
 from datetime import datetime, time, timedelta
 import json
 import os
-from os import path
-import logging
 import logging.config
 from dateutil import parser
 import redis
@@ -14,8 +12,6 @@ from util.redis_helpers import get_sorted_keys
 
 
 # logging
-log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logger_configuration.conf')
-logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 
 redis_host = os.environ['REDIS_HOST']

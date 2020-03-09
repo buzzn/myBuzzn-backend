@@ -1,9 +1,7 @@
 from datetime import datetime
 import json
-import logging
 import logging.config
 import os
-from os import path
 import redis
 from models.group import Group
 from models.user import User
@@ -11,8 +9,6 @@ from util.database import db
 from util.error import exception_message
 
 
-log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logger_configuration.conf')
-logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']

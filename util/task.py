@@ -1,9 +1,7 @@
 import json
 import os
-from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
-import logging
 import logging.config
 from discovergy.discovergy import Discovergy
 import redis
@@ -17,8 +15,6 @@ from util.energy_saving_calculation import estimate_energy_saving_each_user,\
 from util.database import create_session
 
 
-log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logger_configuration.conf')
-logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger('util/task')
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']

@@ -1,8 +1,6 @@
 import json
 import os
-from os import path
 from datetime import datetime, timedelta
-import logging
 import logging.config
 from dateutil import parser
 import redis
@@ -15,8 +13,7 @@ from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required, get_parameters
 from util.redis_helpers import get_sorted_keys
 
-log_file_path = path.join(path.dirname(path.abspath(__file__)), '../util/logger_configuration.conf')
-logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
+
 logger = logging.getLogger(__name__)
 IndividualDisaggregation = Blueprint('IndividualDisaggregation', __name__)
 GroupDisaggregation = Blueprint('GroupDisaggregation', __name__)
