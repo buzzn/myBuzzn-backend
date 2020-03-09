@@ -7,7 +7,6 @@ import redis
 import pytz
 from sqlalchemy import extract
 from models.pkv import PKV
-from util.database import create_session
 from util.energy_saving_calculation import get_last_meter_reading_date
 from util.error import exception_message
 from util.redis_helpers import get_sorted_keys
@@ -122,7 +121,7 @@ def get_first_meter_reading_date(meter_id, date):
 def define_base_values(inhabitants, date):
     """ Define the base values for a user on a given date.
     :param int inhabitants: the number of inhabitants in the user's flat
-    :param datetime.date date: the start date of the calculation which cannot
+    :param datetime date: the start date of the calculation which cannot
     lie in the future
     :return: the base values for the given meter id and date or None on wrong
     date parameter
