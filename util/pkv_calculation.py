@@ -39,7 +39,7 @@ redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
 
 def check_input_parameter_date(date):
     """ Check if date does not lie in the future.
-    :param datetime.date date: the date to be checked
+    :param datetime date: the date to be checked
     :return: True if date does not lie in the future, False otherwise
     """
 
