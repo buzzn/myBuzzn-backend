@@ -12,7 +12,7 @@ def get_copyright():
     try:
         copyright_file = open(copyright_path, 'r')
     except Exception:
-        return Error('Copyright not found', 'Copyright is not available.').to_json(), \
-               status.HTTP_404_NOT_FOUND
+        return (Error('Copyright not found', 'Copyright is not available.').to_json(),
+                status.HTTP_404_NOT_FOUND)
     copyright_text = copyright_file.read()
     return jsonify(copyright=copyright_text), status.HTTP_200_OK
