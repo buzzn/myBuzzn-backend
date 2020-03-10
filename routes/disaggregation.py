@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
-import logging
+import logging.config
 from dateutil import parser
 import redis
 from flask import Blueprint, jsonify, request

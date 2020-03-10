@@ -1,5 +1,7 @@
 import json
 from os import environ
+from os import path
+import logging.config
 from threading import Lock
 import eventlet
 from flask import render_template, Response, request, session
@@ -33,6 +35,8 @@ class RunConfig():
     BUZZN_MAILER = environ.get('BUZZN_MAILER')
 
 
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'util/logger_configuration.conf')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 app = setup_app(RunConfig())
 thread = None
 thread_lock = Lock()
