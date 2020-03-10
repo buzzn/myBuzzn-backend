@@ -197,7 +197,7 @@ def calc_pkv(meter_id, inhabitants, date, session):
     if consumption_mywh_last is None or consumption_mywh_first is None:
         return None
 
-    consumption = (consumption_mywh_last - consumption_mywh_first)/1e9
+    consumption = (consumption_mywh_last - consumption_mywh_first)/1e7
 
     # Retrieve data for the day before from the SQLite database
     data_day_before = get_data_day_before(date, meter_id, session)
