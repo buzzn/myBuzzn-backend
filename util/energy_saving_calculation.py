@@ -5,9 +5,9 @@ import logging.config
 from dateutil import parser
 import redis
 import pytz
+from sqlalchemy.sql import func, and_
 from models.user import User
 from models.loadprofile import LoadProfileEntry
-from sqlalchemy.sql import func, and_
 from util.error import exception_message
 from util.database import get_engine, create_session
 from util.redis_helpers import get_sorted_keys
