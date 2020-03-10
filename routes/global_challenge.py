@@ -3,7 +3,8 @@ from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from models.user import User
-from models.savings import UserSaving
+from models.savings import UserSaving, CommunitySaving
+from models.baseline import BaseLine
 from util.database import db, get_engine, create_session
 from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, NO_BASELINE, exception_message
 from util.login import login_required
@@ -33,13 +34,13 @@ def get_individual_saving(meter_id):
         with engine.connect():
 
             # Query last individual saving prognosis for the given meter id
-            saving = []
+            query_result = []
             session = create_session()
             for row in session.query(UserSaving) \
                     .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()):
-                saving.append((row.timestamp, row.saving))
+                query_result.append((row.timestamp, row.saving))
 
-            individual_saving = saving.first()
+            individual_saving = query_result.first()
 
             timestamp = individual_saving[0].split('.')[0]
             saving = individual_saving[1]
@@ -61,14 +62,20 @@ def get_individual_baseline(meter_id):
     """
 
     # pylint: disable=line-too-long
-    query = "SELECT timestamp, baseline FROM base_line WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
+    # query = "SELECT timestamp, baseline FROM base_line WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
 
     try:
         engine = get_engine()
-        with engine.connect() as con:
+        with engine.connect():
 
             # Query last baseline value for the given meter id
-            individual_baseline = con.execute(query).first()
+            query_result = []
+            session = create_session()
+            for row in session.query(BaseLine) \
+                    .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()):
+                query_result.append((row.timestamp, row.baseline))
+
+            individual_baseline = query_result.first()
 
             timestamp = individual_baseline[0].split('.')[0]
             baseline = individual_baseline[1]
@@ -87,14 +94,20 @@ def get_community_saving():
     :rtype: dict or type(None) if there are no values
     """
 
-    query = "SELECT timestamp, saving FROM community_saving ORDER BY timestamp DESC"
+    # query = "SELECT timestamp, saving FROM community_saving ORDER BY timestamp DESC"
 
     try:
         engine = get_engine()
-        with engine.connect() as con:
+        with engine.connect():
 
             # Query last community saving prognosis
-            community_saving = con.execute(query).first()
+            query_result = []
+            session = create_session()
+            for row in session.query(CommunitySaving).order_by(CommunitySaving.timestamp.desc()):
+                query_result.append((row.timestamp, row.saving))
+
+            community_saving = query_result.first()
+
             timestamp = community_saving[0].split('.')[0]
             saving = community_saving[1]
             return {timestamp: saving}

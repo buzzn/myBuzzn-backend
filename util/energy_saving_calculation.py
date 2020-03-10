@@ -6,8 +6,10 @@ from dateutil import parser
 import redis
 import pytz
 from models.user import User
+from models.loadprofile import LoadProfileEntry
+from sqlalchemy.sql import func, and_
 from util.error import exception_message
-from util.database import get_engine
+from util.database import get_engine, create_session
 from util.redis_helpers import get_sorted_keys
 
 
@@ -42,9 +44,15 @@ def calc_ratio_values(start):
     try:
         with engine.connect() as con:
             # Query total energy which should be ~ 1.000.000 kWh
-            energy_total = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'"
-                                       + str(start) + "\' AND \'" + str(end) +
-                                       '\' ORDER BY date').first()[0]
+            #energy_total = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'"
+             #                          + str(start) + "\' AND \'" + str(end) +
+              #                         '\' ORDER BY date').first()[0]
+
+            session = create_session()
+            qry = session.query(func.sum(LoadProfileEntry.energy)) \
+                .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end))
+            query_result = qry.order_by(LoadProfileEntry.date)
+            energy_total = query_result.first()[0]
 
             # Query sum of energy promilles
             energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
