@@ -56,6 +56,7 @@ def get_data_day_before(dt, meter_id, session):
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     :return: date, meter_id, consumption, consumption_cumulated, inhabitants,
     pkv, pkv_cumulated, days, moving_average and moving_average_annualized
+    :rtype: list
     """
 
     day_before = dt - timedelta(days=1)
@@ -204,8 +205,22 @@ def calc_pkv(meter_id, inhabitants, date, session):
     if data_day_before is None:
         logger.info(
             'There is no data for the day before %s in the database for meter_id\
-                            %s.', date, meter_id)
+                    %s.', date, meter_id)
         return None
+
+    return build_data_package(data_day_before, consumption, inhabitants, date)
+
+
+def build_data_package(data_day_before, consumption, inhabitants, date):
+    """ Build a PKV data package from the retrieved database values.
+    :param list data_day_before: the data from the day before the date in
+    question from the SQLite database (result of get_data_day_before())
+    :param float consumption: the date's calculated consumption
+    :param int inhabitants: the number of inhabitants in the user's flat
+    :param datetime.date date: the date to build the data package for
+    :return: a data package with all relevant user values on the given date
+    :rtype: dict
+    """
 
     try:
         # Calculate consumption_cumulated := consumption_cumulated of the day
@@ -235,14 +250,13 @@ def calc_pkv(meter_id, inhabitants, date, session):
     moving_average_annualized = round(moving_average * 365)
 
     # Return base values as dict
-    pkv = dict(date=date,
-               consumption=consumption,
-               consumption_cumulated=consumption_cumulated,
-               inhabitants=inhabitants,
-               pkv=pkv,
-               pkv_cumulated=pkv_cumulated,
-               days=days,
-               moving_average=moving_average,
-               moving_average_annualized=moving_average_annualized
-               )
-    return pkv
+    return dict(date=date,
+                consumption=consumption,
+                consumption_cumulated=consumption_cumulated,
+                inhabitants=inhabitants,
+                pkv=pkv,
+                pkv_cumulated=pkv_cumulated,
+                days=days,
+                moving_average=moving_average,
+                moving_average_annualized=moving_average_annualized
+                )
