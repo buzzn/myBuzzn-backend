@@ -49,9 +49,9 @@ def calc_ratio_values(start):
               #                         '\' ORDER BY date').first()[0]
 
             session = create_session()
-            qry = session.query(func.sum(LoadProfileEntry.energy)) \
-                .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end))
-            query_result = qry.order_by(LoadProfileEntry.date)
+            query_result = session.query(func.sum(LoadProfileEntry.energy)) \
+                .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end)) \
+                .order_by(LoadProfileEntry.date)
             energy_total = query_result.first()[0]
 
             # Query sum of energy promilles
