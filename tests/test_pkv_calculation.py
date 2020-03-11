@@ -7,16 +7,27 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.pkv_calculation import define_base_values, calc_pkv,\
     get_first_meter_reading_date, check_input_parameter_date,\
-    get_data_day_before
+    get_data_day_before, build_data_package
 
+DAY_ONE = datetime.today() - timedelta(days=1)
+KEY1_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
+    DAY_ONE.strftime('%Y-%m-%d') + ' 12:02:00'
+KEY2_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
+    DAY_ONE.strftime('%Y-%m-%d') + ' 12:07:00'
+KEY3_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
+    DAY_ONE.strftime('%Y-%m-%d') + ' 12:40:00'
+SORTED_KEYS_DAY_ONE = [bytes(KEY1_DAY_ONE, 'utf-8'), bytes(
+    KEY2_DAY_ONE, 'utf-8'), bytes(KEY3_DAY_ONE, 'utf-8')]
 
-SORTED_KEYS_DAY_ONE = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-25 12:02:00',
-                       b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-25 12:07:40',
-                       b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-25 12:14:34']
-
-SORTED_KEYS_DAY_TWO = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-26 12:02:00',
-                       b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-26 12:07:40',
-                       b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-26 12:14:34']
+DAY_TWO = datetime.today()
+KEY1_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
+    DAY_TWO.strftime('%Y-%m-%d') + ' 12:02:00'
+KEY2_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
+    DAY_TWO.strftime('%Y-%m-%d') + ' 12:07:00'
+KEY3_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
+    DAY_TWO.strftime('%Y-%m-%d') + ' 12:40:00'
+SORTED_KEYS_DAY_TWO = [bytes(KEY1_DAY_TWO, 'utf-8'), bytes(
+    KEY2_DAY_TWO, 'utf-8'), bytes(KEY3_DAY_TWO, 'utf-8')]
 
 USER_CONSUMPTION_DAY_ONE = [
     b'{"type": "reading", "values": {"energy": 198360858657000}}',
@@ -34,26 +45,19 @@ USER_CONSUMPTION_DAY_ONE_TWICE = USER_CONSUMPTION_DAY_ONE +\
 USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
     USER_CONSUMPTION_DAY_TWO
 
-RETURN_VALUES_DAY_ONE = ('2020-02-24 00:00:00.000000', '52d7c87f8c26433dbd095048ad30c8cf',
-                         0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-
-RETURN_VALUES_DAY_TWO = ('2020-02-25 00:00:00.000000', '52d7c87f8c26433dbd095048ad30c8cf',
-                         21.749714, 21.749714, 2, 10.874857, 10.874857, 1, 10.874857, 3969)
-
 BASE_VALUES = {'date': datetime(2020, 2, 25, 0, 0, 0), 'consumption': 0.0,
                'consumption_cumulated': 0.0, 'inhabitants': 2, 'pkv': 0.0,
                'pkv_cumulated': 0.0, 'days': 0, 'moving_average': 0.0,
                'moving_average_annualized': 0}
 
-PKV_DAY_ONE = {'date': datetime(2020, 2, 25, 0, 0, 0), 'consumption': 21.749714,
-               'consumption_cumulated': 21.749714, 'inhabitants': 2,
-               'pkv':  10.874857, 'pkv_cumulated': 10.874857,
-               'days': 1, 'moving_average': 10.874857, 'moving_average_annualized': 3969}
-
-PKV_DAY_TWO = {'date': datetime(2020, 2, 26, 0, 0, 0), 'consumption': 15.0,
-               'consumption_cumulated': 36.749714, 'inhabitants': 2,
-               'pkv': 7.5, 'pkv_cumulated': 18.374857, 'days': 2,
-               'moving_average': 9.1874285, 'moving_average_annualized': 3353}
+DAY_ZERO = datetime.today() - timedelta(days=2)
+TEST_USER_METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
+BASE_VALUES = PKV(DAY_ZERO, TEST_USER_METER_ID,
+                  0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+PKV_DAY_ONE = PKV(DAY_ONE, TEST_USER_METER_ID, 2174.9714, 2174.9714, 2,
+                  1087.4857, 1087.4857, 1, 1087.4857, 396932)
+PKV_DAY_TWO = PKV(DAY_TWO, TEST_USER_METER_ID, 1500.0, 3674.9714, 2, 750.0,
+                  1837.4857, 2, 918.74285, 335341)
 
 
 class PKVCalculationTestCase(BuzznTestCase):
@@ -71,14 +75,10 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
 
-        self.day_zero = (datetime.today() - timedelta(days=2))
-        self.day_one = (datetime.today() - timedelta(days=1))
-        self.today = datetime.today().date()
-
         self.base_values = PKV(
-            self.day_zero, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PKV(self.day_one, self.test_user.meter_id, 21.749714, 21.749714, 2,
-                               10.874857, 10.874857, 1, 10.874857, 3969)
+            DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+        self.pkv_day_one = PKV(DAY_ONE, self.test_user.meter_id, 2174.9714, 2174.9714, 2,
+                               1087.4857, 1087.4857, 1, 1087.4857, 396932)
         db.session.add(self.base_values)
         db.session.add(self.pkv_day_one)
 
@@ -108,9 +108,9 @@ class PKVCalculationTestCase(BuzznTestCase):
         """ Unit tests for function get_data_day_before(). """
 
         data_day_zero = get_data_day_before(
-            self.day_zero, self.test_user.meter_id, db.session)
+            DAY_ZERO, self.test_user.meter_id, db.session)
         data_day_one = get_data_day_before(
-            self.day_one, self.test_user.meter_id, db.session)
+            DAY_ONE, self.test_user.meter_id, db.session)
 
         # Check return types
         self.assertIsInstance(data_day_zero, type(None))
@@ -131,7 +131,7 @@ class PKVCalculationTestCase(BuzznTestCase):
     def test_define_base_values(self):
         """ Unit tests for function define_base_values(). """
 
-        start = datetime(2020, 2, 26, 0, 0, 0)
+        start = DAY_ONE
         result = define_base_values(self.test_user.inhabitants, start)
 
         # Check return type
@@ -139,20 +139,20 @@ class PKVCalculationTestCase(BuzznTestCase):
 
         # Check return values
         if isinstance(result, dict):
-            for param in 'date', 'consumption', 'consumption_cumulated',\
-                'inhabitants', 'pkv', 'pkv_cumulated', 'days', 'moving_average'\
-                    'moving_average_annualized':
-                self.assertEqual(result.get(param), BASE_VALUES.get(param))
+            for param in 'date.year', 'date.month', 'date.day', 'consumption',\
+                         'consumption_cumulated', 'inhabitants', 'pkv',\
+                         'pkv_cumulated', 'days', 'moving_average',\
+                         'moving_average_annualized':
+                self.assertEqual(result.get(param),
+                                 BASE_VALUES.__dict__.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
     @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_TWICE)
-    @mock.patch('sqlalchemy.engine.result.ResultProxy.first',
-                return_value=RETURN_VALUES_DAY_ONE)
-    def test_calc_pkv(self, _get_meter_reading_date, _get, first):
+    def test_calc_pkv(self, _scan_iter, _get):
         """ Unit tests for function calc_pkv(). """
 
-        start = datetime(2020, 2, 25, 0, 0, 0)
+        start = DAY_ONE
         result_day_one = calc_pkv(
             self.test_user.meter_id, self.test_user.inhabitants, start, db.session)
 
@@ -161,21 +161,19 @@ class PKVCalculationTestCase(BuzznTestCase):
 
         # Check result values
         if isinstance(result_day_one, dict):
-            for param in 'date', 'consumption', 'consumption_cumulated',\
-                         'inhabitants', 'pkv', 'pkv_cumulated', 'days',\
-                         'moving_average', 'moving_average_annualized':
+            for param in 'date.year', 'date.month', 'date.day', 'consumption',\
+                         'consumption_cumulated', 'inhabitants', 'pkv',\
+                         'pkv_cumulated', 'days', 'moving_average', 'moving_average_annualized':
                 self.assertEqual(result_day_one.get(
-                    param), PKV_DAY_ONE.get(param))
+                    param), PKV_DAY_ONE.__dict__.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_TWO)
     @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_TWO_TWICE)
-    @mock.patch('sqlalchemy.engine.result.ResultProxy.first', return_value=RETURN_VALUES_DAY_TWO)
-    def test_calc_pkv_day_two(self, _get_meter_reading_date, _get, first):
+    def test_calc_pkv_day_two(self, _scan_iter, _get):
         """ Unit tests for function calc_pkv() on day 2. """
-        day_two = datetime(2020, 2, 26, 0, 0, 0)
         result_day_two = calc_pkv(self.test_user.meter_id,
-                                  self.test_user.inhabitants, day_two,
+                                  self.test_user.inhabitants, DAY_TWO,
                                   db.session)
 
         # Check result type
@@ -183,20 +181,57 @@ class PKVCalculationTestCase(BuzznTestCase):
 
         # Check result values
         if isinstance(result_day_two, dict):
-            for param in 'date', 'consumption', 'consumption_cumulated',\
-                         'inhabitants', 'pkv', 'pkv_cumulated', 'days',\
-                         'moving_average', 'moving_average_annualized':
+            for param in 'date.year', 'date.month', 'date.day', 'consumption',\
+                         'consumption_cumulated', 'inhabitants', 'pkv',\
+                         'pkv_cumulated', 'days', 'moving_average', 'moving_average_annualized':
                 self.assertEqual(result_day_two.get(
-                    param), PKV_DAY_TWO.get(param))
+                    param), PKV_DAY_TWO.__dict__.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
     @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE)
     def test_get_first_meter_reading_date(self, scan_iter, get):
-        """ Unit tests for function get_first_meter_reading_date() """
+        """ Unit tests for function get_first_meter_reading_date(). """
 
-        start = datetime(2020, 2, 25).date()
+        start = DAY_ONE.date()
         result = get_first_meter_reading_date(self.test_user.meter_id, start)
 
         # Check result types
         self.assertIsInstance(result, (int, type(None)))
+
+    def test_build_data_package(self):
+        """ Unit tests for function build_data_package(). """
+
+        data_package_day_one = build_data_package(BASE_VALUES,
+                                                  PKV_DAY_ONE.consumption,
+                                                  PKV_DAY_ONE.inhabitants,
+                                                  PKV_DAY_ONE.date)
+
+        # Check return types
+        self.assertIsInstance(data_package_day_one, dict)
+        self.assertIsInstance(data_package_day_one.get('date'), datetime)
+        self.assertIsInstance(data_package_day_one.get('consumption'), float)
+        self.assertIsInstance(data_package_day_one.get(
+            'consumption_cumulated'), float)
+        self.assertIsInstance(data_package_day_one.get('inhabitants'), int)
+        self.assertIsInstance(data_package_day_one.get('pkv'), float)
+        self.assertIsInstance(data_package_day_one.get('pkv_cumulated'), float)
+        self.assertIsInstance(data_package_day_one.get('days'), int)
+        self.assertIsInstance(
+            data_package_day_one.get('moving_average'), float)
+        self.assertIsInstance(data_package_day_one.get(
+            'moving_average_annualized'), int)
+
+        # Check return values
+        self.assertEqual(data_package_day_one['consumption_cumulated'],
+                         BASE_VALUES.consumption_cumulated +
+                         PKV_DAY_ONE.consumption)
+        self.assertEqual(data_package_day_one['pkv'],
+                         PKV_DAY_ONE.consumption/PKV_DAY_ONE.inhabitants)
+        self.assertEqual(data_package_day_one['pkv_cumulated'],
+                         BASE_VALUES.pkv_cumulated + data_package_day_one['pkv'])
+        self.assertEqual(data_package_day_one['days'], BASE_VALUES.days + 1)
+        self.assertEqual(data_package_day_one['moving_average'],
+                         data_package_day_one['pkv_cumulated']/data_package_day_one['days'])
+        self.assertEqual(data_package_day_one['moving_average_annualized'],
+                         round(data_package_day_one['moving_average'] * 365))
