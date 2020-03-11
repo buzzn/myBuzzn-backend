@@ -5,7 +5,7 @@ import logging.config
 from dateutil import parser
 import redis
 import pytz
-from sqlalchemy.sql import func, and_
+from sqlalchemy.sql import func
 from models.user import User
 from models.loadprofile import LoadProfileEntry
 from util.error import exception_message
@@ -37,9 +37,9 @@ def calc_ratio_values(start):
     """
 
     end = datetime(start.year + 1, start.month, start.day).date()
-    #term_end = datetime.utcnow().date()
+    term_end = datetime.utcnow().date()
     engine = get_engine()
-    #energy_total = 0.0
+    energy_total = 0.0
     ratio_values = 0.0
     try:
         with engine.connect():
@@ -50,7 +50,7 @@ def calc_ratio_values(start):
 
             session = create_session()
             query_total_result = session.query(func.sum(LoadProfileEntry.energy)) \
-                .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end)) \
+                .filter(LoadProfileEntry.date.between(start, end)) \
                 .order_by(LoadProfileEntry.date)
             energy_total = query_total_result.first()[0]
 
@@ -61,7 +61,7 @@ def calc_ratio_values(start):
                #                           + str(term_end) + '\' ORDER BY date').first()[0]
 
             query_promille_result = session.query(func.sum(LoadProfileEntry.energy)) \
-                .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end)) \
+                .filter(LoadProfileEntry.date.between(start, term_end)) \
                 .order_by(LoadProfileEntry.date)
             energy_promille = query_promille_result.first()[0]
 
