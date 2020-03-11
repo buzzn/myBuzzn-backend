@@ -11,7 +11,6 @@ from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
 
 
-# logging
 logger = logging.getLogger(__name__)
 redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
