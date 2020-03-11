@@ -16,7 +16,7 @@ def get_group_members(user_id):
     """ Get the parameters from the database to create a group picture list for
     the given user.
     :param in user_id: the user's id
-    :return: the group members' ids and profile pictures
+    :returns: the group members' ids and profile pictures
     :rtype: list
     """
 
