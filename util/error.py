@@ -19,10 +19,12 @@ UNKNOWN_GROUP = Error('Unknown group', 'This group is not known.')
 NO_METER_ID = Error('No meter id', 'No meter id was received.')
 NO_GLOBAL_CHALLENGE = Error(
     'No global challenge',
-    'There are not enough historical energy values to calculate the saving\
+    'There are not enough historical energy values to calculate the saving \
             prognosis for this user.')
-NO_BASELINE = Error('No baseline', 'There are not enough historical energy\
-                    values to calculate the baseline for this user.')
+NO_BASELINE = Error('No baseline', 'There are not enough historical energy \
+        values to calculate the baseline for this user.')
+NO_PKV = Error(
+    'No PKV', 'There is no PKV value for this user in the database.')
 exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 
 
