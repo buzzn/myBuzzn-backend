@@ -6,7 +6,7 @@ from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import get_all_user_meter_ids,\
-    calc_ratio_values, get_meter_reading_date,\
+    calc_ratio_values, get_last_meter_reading_date,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
     calc_estimated_energy_consumption, calc_estimated_energy_saving
 
@@ -115,11 +115,11 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
     @mock.patch('redis.Redis.get', side_effect=DATA)
-    def test_get_meter_reading_date(self, scan_iter, get):
-        """ Unit tests for function get_meter_reading_date() """
+    def test_get_last_meter_reading_date(self, scan_iter, get):
+        """ Unit tests for function get_last_meter_reading_date() """
 
         start = datetime(2020, 2, 7).date()
-        result = get_meter_reading_date(ALL_USER_METER_IDS[1], start)
+        result = get_last_meter_reading_date(ALL_USER_METER_IDS[1], start)
 
         # Check result types
         self.assertIsInstance(result, (int, type(None)))

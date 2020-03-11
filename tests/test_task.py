@@ -7,8 +7,8 @@ from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.task import get_all_meter_ids, calc_term_boundaries, calc_end,\
-    calc_one_year_back, calc_support_year_start, calc_support_year_start_datetime,\
-    calc_support_week_start, calc_one_week_back, calc_two_days_back, client_name, Task
+    calc_support_year_start, calc_support_year_start_datetime,\
+    calc_support_week_start, calc_two_days_back, client_name, Task
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
@@ -112,14 +112,6 @@ class TaskTestCase(BuzznTestCase):
         # Check return type
         self.assertIsInstance(result, int)
 
-    def test_calc_one_year_back(self):
-        """ Unit tests for function calc_one_year_back(). """
-
-        result = calc_one_year_back()
-
-        # Check return type
-        self.assertIsInstance(result, int)
-
     def test_calc_support_year_start(self):
         """ Unit tests for function calc_support_year_start().
         Expect Mar-12 last year if today is between Jan-01 and Mar-11.
@@ -186,14 +178,6 @@ class TaskTestCase(BuzznTestCase):
         else:
             self.assertEqual(d.date(), (datetime.utcnow() -
                                         timedelta(days=7)).date())
-
-    def test_calc_one_week_back(self):
-        """ Unit tests for function calc_one_week_back(). """
-
-        result = calc_one_week_back()
-
-        # Check return type
-        self.assertIsInstance(result, int)
 
     def test_calc_two_days_back(self):
         """ Unit tests for function calc_two_days_back(). """
