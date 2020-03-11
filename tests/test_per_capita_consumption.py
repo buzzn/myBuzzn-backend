@@ -40,7 +40,7 @@ class PKVTestCase(BuzznTestCase):
         self.assertIsInstance(result, dict)
 
         # Check result values
-        self.assertEqual(result[DAY_ONE.strftime('%Y-%m-%d')],
+        self.assertEqual(result[DAY_ONE.strftime('%Y-%m-%d %H:%M:%S')],
                          PKV_DAY_ONE.moving_average_annualized)
 
     def test_per_capita_consumption(self):
@@ -63,5 +63,6 @@ class PKVTestCase(BuzznTestCase):
         self.assertIsInstance(response.data, bytes)
 
         for key, value in ast.literal_eval(response.data.decode('utf-8')).items():
-            self.assertEqual(key, PKV_DAY_ONE.date.strftime('%Y-%m-%d'))
+            self.assertEqual(
+                key, PKV_DAY_ONE.date.strftime('%Y-%m-%d %H:%M:%S'))
             self.assertEqual(value, PKV_DAY_ONE.moving_average_annualized)

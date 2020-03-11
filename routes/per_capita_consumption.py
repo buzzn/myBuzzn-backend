@@ -25,7 +25,7 @@ def get_moving_average_annualized(meter_id):
         result = db.session.query(PKV.date, PKV.moving_average_annualized).filter_by(
             meter_id=meter_id).order_by(PKV.date.desc()).first()
 
-        timestamp = result[0].strftime('%Y-%m-%d')
+        timestamp = result[0].strftime('%Y-%m-%d %H:%M:%S')
         moving_average_annualized = result[1]
         return {timestamp: moving_average_annualized}
 
