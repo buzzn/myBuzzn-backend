@@ -37,28 +37,33 @@ def calc_ratio_values(start):
     """
 
     end = datetime(start.year + 1, start.month, start.day).date()
-    term_end = datetime.utcnow().date()
+    #term_end = datetime.utcnow().date()
     engine = get_engine()
-    energy_total = 0.0
+    #energy_total = 0.0
     ratio_values = 0.0
     try:
-        with engine.connect() as con:
+        with engine.connect():
             # Query total energy which should be ~ 1.000.000 kWh
             #energy_total = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'"
              #                          + str(start) + "\' AND \'" + str(end) +
               #                         '\' ORDER BY date').first()[0]
 
             session = create_session()
-            query_result = session.query(func.sum(LoadProfileEntry.energy)) \
+            query_total_result = session.query(func.sum(LoadProfileEntry.energy)) \
                 .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end)) \
                 .order_by(LoadProfileEntry.date)
-            energy_total = query_result.first()[0]
+            energy_total = query_total_result.first()[0]
 
             # Query sum of energy promilles
-            energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
-                                          + " WHERE date BETWEEN \'" +
-                                          str(start) + "\' AND \'"
-                                          + str(term_end) + '\' ORDER BY date').first()[0]
+            #energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
+             #                             + " WHERE date BETWEEN \'" +
+              #                            str(start) + "\' AND \'"
+               #                           + str(term_end) + '\' ORDER BY date').first()[0]
+
+            query_promille_result = session.query(func.sum(LoadProfileEntry.energy)) \
+                .filter(and_(LoadProfileEntry.date >= start, LoadProfileEntry.date <= end)) \
+                .order_by(LoadProfileEntry.date)
+            energy_promille = query_promille_result.first()[0]
 
         if (energy_promille is not None) and (energy_total is not None):
             ratio_values = energy_promille/energy_total
