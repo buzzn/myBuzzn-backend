@@ -1,4 +1,4 @@
-import logging
+import logging.config
 from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity

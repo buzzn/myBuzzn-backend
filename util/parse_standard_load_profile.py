@@ -1,13 +1,12 @@
 import csv
 from datetime import datetime, date, time
-import logging
+import logging.config
 import argparse
 import pytz
 from models.loadprofile import LoadProfileEntry
 from util.database import create_session
 
 
-logging.basicConfig()
 logger = logging.getLogger('util/parse_standard_load_profile')
 logging.getLogger().setLevel(logging.INFO)
 exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"

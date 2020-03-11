@@ -2,7 +2,7 @@ import json
 import os
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
-import logging
+import logging.config
 from discovergy.discovergy import Discovergy
 import redis
 from models.baseline import BaseLine
@@ -17,9 +17,7 @@ from util.database import create_session
 from util.pkv_calculation import define_base_values, calc_pkv
 
 
-logging.basicConfig()
 logger = logging.getLogger('util/task')
-logging.getLogger().setLevel(logging.INFO)
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']
