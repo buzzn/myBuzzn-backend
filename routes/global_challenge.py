@@ -36,7 +36,7 @@ def get_individual_saving(meter_id):
                     .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()):
                 query_result.append((row.timestamp, row.saving))
 
-            individual_saving = query_result.first()
+            individual_saving = query_result[0]
 
             timestamp = individual_saving[0].split('.')[0]
             saving = individual_saving[1]
@@ -67,7 +67,7 @@ def get_individual_baseline(meter_id):
                     .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()):
                 query_result.append((row.timestamp, row.baseline))
 
-            individual_baseline = query_result.first()
+            individual_baseline = query_result[0]
 
             timestamp = individual_baseline[0].split('.')[0]
             baseline = individual_baseline[1]
@@ -94,7 +94,7 @@ def get_community_saving():
             for row in db.session.query(CommunitySaving).order_by(CommunitySaving.timestamp.desc()):
                 query_result.append((row.timestamp, row.saving))
 
-            community_saving = query_result.first()
+            community_saving = query_result[0]
 
             timestamp = community_saving[0].split('.')[0]
             saving = community_saving[1]
