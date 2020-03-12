@@ -60,7 +60,6 @@ def background_thread():
     """ Emit server-generated live data to the clients every 60s. """
     while True:
         with app.app_context():
-            socketio.sleep(60)
             for key in dict(clients):
                 try:
                     user = db.session.query(User).filter_by(
@@ -72,6 +71,7 @@ def background_thread():
                     message = exception_message(e)
                     logger.error(message)
                     del clients[key]
+            socketio.sleep(20)
 
 @socketio.on('connect', namespace='/live')
 def connect():
