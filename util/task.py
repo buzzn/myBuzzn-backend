@@ -1,5 +1,6 @@
 import json
 import os
+from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
 import logging.config
@@ -17,7 +18,9 @@ from util.database import create_session
 from util.pkv_calculation import define_base_values, calc_pkv
 
 
-logger = logging.getLogger('util/task')
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logger_configuration.conf')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']
