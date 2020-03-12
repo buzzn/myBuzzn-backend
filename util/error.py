@@ -20,11 +20,11 @@ NO_METER_ID = Error('No meter id', 'No meter id was received.')
 NO_GLOBAL_CHALLENGE = Error(
     'No global challenge',
     'There are not enough historical energy values to calculate the saving \
-            prognosis for this user.')
+prognosis for this user.')
 NO_BASELINE = Error('No baseline', 'There are not enough historical energy \
-        values to calculate the baseline for this user.')
+values to calculate the baseline for this user.')
 NO_PER_CAPITA_CONSUMPTION = Error('No per capita consumption', 'There is no \
-        Per-Capita-Consumption value for this user in the database.')
+per capita consumption value for this user in the database.')
 exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 
 
