@@ -221,6 +221,43 @@ Group=mybuzznbackend
 WantedBy=multi-user.target⏎
 ```
 
+## Logging
+To ensure that the logger has the correct configuration, you must create a logger configuration file named ```logger_configuration.conf``` and save it under ```util```. The configuration file should look like this:
+```
+[loggers]
+keys=root
+
+[handlers]
+keys=consoleHandler,fileHandler
+
+[formatters]
+keys=consoleFormatter,fileFormatter
+
+[logger_root]
+level=DEBUG
+handlers=consoleHandler,fileHandler
+
+[handler_consoleHandler]
+class=StreamHandler
+level=INFO
+formatter=consoleFormatter
+args=(sys.stdout,)
+
+[handler_fileHandler]
+class=FileHandler
+level=ERROR
+formatter=fileFormatter
+args=('/var/www/mybuzzn-backend.buzzn.net/logs/logfile.log',)
+
+[formatter_consoleFormatter]
+format=%(name)s - %(levelname)s - %(message)s
+
+[formatter_fileFormatter]
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+```
+
+You can change the path of the logfile in  ```args=('/var/www/mybuzzn-backend.buzzn.net/logs/logfile.log',)``` under ```[handler_fileHandler]``` to what suits your production. When running it locally you can relace it with ```args=('logfile.log',)```.
+
 ### Upgrading to a new version
 To upgrade to a new version, go to the project root and run `git pull`.
 If something has changed in the database models, run `source ./venv/bin/activate` to
