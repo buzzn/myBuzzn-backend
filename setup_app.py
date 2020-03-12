@@ -13,6 +13,7 @@ from routes.set_password import SetPassword
 from routes.reset_password import ResetPassword
 from routes.login import Login
 from routes.group_profile_pictures import GroupProfilePictures
+from routes.per_capita_consumption import PerCapitaConsumption
 
 from util.database import db
 from util.error import UNKNOWN_RESOURCE
@@ -75,6 +76,7 @@ def setup_app(app_config):
     app.register_blueprint(SetPassword)
     app.register_blueprint(Admin)
     app.register_blueprint(GroupProfilePictures)
+    app.register_blueprint(PerCapitaConsumption)
 
     # Routes are called by the user, so they are actually used.
     #pylint: disable=unused-variable
