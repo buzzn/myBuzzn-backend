@@ -31,16 +31,16 @@ def get_individual_saving(meter_id):
 
     try:
             # Query last individual saving prognosis for the given meter id
-            query_result = []
-            for row in db.session.query(UserSaving) \
-                    .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()):
-                query_result.append((row.timestamp, row.saving))
+        query_result = []
+        for row in db.session.query(UserSaving) \
+                .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()).all():
+            query_result.append((row.timestamp, row.saving))
 
-            individual_saving = query_result[0]
+        individual_saving = query_result[0]
 
-            timestamp = individual_saving[0].split('.')[0]
-            saving = individual_saving[1]
-            return {timestamp: saving}
+        timestamp = individual_saving[0]
+        saving = individual_saving[1]
+        return {timestamp: saving}
 
     except Exception as e:
         message = exception_message(e)
@@ -61,17 +61,17 @@ def get_individual_baseline(meter_id):
     # query = "SELECT timestamp, baseline FROM base_line WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
 
     try:
-            # Query last baseline value for the given meter id
-            query_result = []
-            for row in db.session.query(BaseLine) \
-                    .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()):
-                query_result.append((row.timestamp, row.baseline))
+        # Query last baseline value for the given meter id
+        query_result = []
+        for row in db.session.query(BaseLine) \
+                .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()).all():
+            query_result.append((row.timestamp, row.baseline))
 
-            individual_baseline = query_result[0]
+        individual_baseline = query_result[0]
 
-            timestamp = individual_baseline[0].split('.')[0]
-            baseline = individual_baseline[1]
-            return {timestamp: baseline}
+        timestamp = individual_baseline[0]
+        baseline = individual_baseline[1]
+        return {timestamp: baseline}
 
     except Exception as e:
         message = exception_message(e)
@@ -89,16 +89,16 @@ def get_community_saving():
     # query = "SELECT timestamp, saving FROM community_saving ORDER BY timestamp DESC"
 
     try:
-            # Query last community saving prognosis
-            query_result = []
-            for row in db.session.query(CommunitySaving).order_by(CommunitySaving.timestamp.desc()):
-                query_result.append((row.timestamp, row.saving))
+        # Query last community saving prognosis
+        query_result = []
+        for row in db.session.query(CommunitySaving).order_by(CommunitySaving.timestamp.desc()).all():
+            query_result.append((row.timestamp, row.saving))
 
-            community_saving = query_result[0]
+        community_saving = query_result[0]
 
-            timestamp = community_saving[0].split('.')[0]
-            saving = community_saving[1]
-            return {timestamp: saving}
+        timestamp = community_saving[0]
+        saving = community_saving[1]
+        return {timestamp: saving}
 
     except Exception as e:
         message = exception_message(e)

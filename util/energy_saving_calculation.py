@@ -46,8 +46,8 @@ def calc_ratio_values(start):
 
         query_total_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
               .filter(LoadProfileEntry.date.between(start, end)) \
-                .order_by(LoadProfileEntry.date)
-        energy_total = query_total_result.first()[0]
+                .order_by(LoadProfileEntry.date).all()
+        energy_total = query_total_result[0][0]
 
             # Query sum of energy promilles
             #energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
@@ -57,8 +57,8 @@ def calc_ratio_values(start):
 
         query_promille_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
                 .filter(LoadProfileEntry.date.between(start, term_end)) \
-                .order_by(LoadProfileEntry.date)
-        energy_promille = query_promille_result.first()[0]
+                .order_by(LoadProfileEntry.date).all()
+        energy_promille = query_promille_result[0][0]
 
         if (energy_promille is not None) and (energy_total is not None):
             ratio_values = energy_promille/energy_total
