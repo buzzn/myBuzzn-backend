@@ -129,6 +129,11 @@ def define_base_values(inhabitants, date):
     :rtype: dict or type(None)
     """
 
+    # Check input parameter inhabitants
+    if inhabitants is None:
+        logger.info('Invalid inhabitants value None (must be an int value).')
+        return None
+
     # Check input parameter date
     if check_input_parameter_date(date) is False:
         logger.info(
