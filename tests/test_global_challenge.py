@@ -42,14 +42,20 @@ class GlobalChallengeTestCase(BuzznTestCase):
         test_user.set_password('some_password')
         test_user.state = StateType.ACTIVE
         test_first_timestamp = datetime(2020, 2, 13, 9, 57, 3)
-        test_first_user_saving = UserSaving(test_first_timestamp, '52d7c87f8c26433dbd095048ad30c8cf',
+        test_first_user_saving = UserSaving(test_first_timestamp,
+                                            '52d7c87f8c26433dbd095048ad30c8cf',
                                             3148577026610.7812)
         test_second_timestamp = datetime(2020, 1, 13, 9, 57, 3)
-        test_second_user_saving = UserSaving(test_second_timestamp, '52d7c87f8c26433dbd095048ad30c8cf',
+        test_second_user_saving = UserSaving(test_second_timestamp,
+                                             '52d7c87f8c26433dbd095048ad30c8cf',
                                              3148577026610.7812)
         test_third_timestamp = datetime(2020, 2, 21, 9, 40, 4)
-        test_first_user_baseline = BaseLine(test_third_timestamp, '52d7c87f8c26433dbd095048ad30c8cf', 53011346257574)
-        test_second_user_baseline = BaseLine(test_second_timestamp, '52d7c87f8c26433dbd095048ad30c8cf', 53011346257574)
+        test_first_user_baseline = BaseLine(test_third_timestamp,
+                                            '52d7c87f8c26433dbd095048ad30c8cf',
+                                            53011346257574)
+        test_second_user_baseline = BaseLine(test_second_timestamp,
+                                             '52d7c87f8c26433dbd095048ad30c8cf',
+                                             53011346257574)
         test_first_community_saving = CommunitySaving(test_first_timestamp, 85184267259376.5)
         test_second_community_saving = CommunitySaving(test_second_timestamp, 85184267259376.5)
         db.session.add(test_user)

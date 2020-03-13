@@ -91,7 +91,8 @@ def get_community_saving():
     try:
         # Query last community saving prognosis
         query_result = []
-        for row in db.session.query(CommunitySaving).order_by(CommunitySaving.timestamp.desc()).all():
+        for row in db.session.query(CommunitySaving).\
+                order_by(CommunitySaving.timestamp.desc()).all():
             query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
 
         community_saving = query_result[0]
