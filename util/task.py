@@ -232,6 +232,7 @@ def write_base_values(dt, session):
 
         session.commit()
     except Exception as e:
+        logger.error("Error while calculating pkv for %s at %s", user.meter_id, dt)
         message = exception_message(e)
         logger.error(message)
 
