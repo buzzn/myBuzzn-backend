@@ -45,11 +45,6 @@ USER_CONSUMPTION_DAY_ONE_TWICE = USER_CONSUMPTION_DAY_ONE +\
 USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
     USER_CONSUMPTION_DAY_TWO
 
-BASE_VALUES = {'date': datetime(2020, 2, 25, 0, 0, 0), 'consumption': 0.0,
-               'consumption_cumulated': 0.0, 'inhabitants': 2, 'pkv': 0.0,
-               'pkv_cumulated': 0.0, 'days': 0, 'moving_average': 0.0,
-               'moving_average_annualized': 0}
-
 DAY_ZERO = datetime.today() - timedelta(days=2)
 TEST_USER_METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
 BASE_VALUES = PKV(DAY_ZERO, TEST_USER_METER_ID,

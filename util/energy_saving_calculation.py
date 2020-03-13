@@ -30,7 +30,7 @@ def calc_ratio_values(start):
     """ Calculates the percentages of energy consumption for the specified
     term. A term is a year where the start may be specified by the caller.
     :param datetime.date start: the start date of the term
-    :return: sum of all standard load profile ratio values of the given term
+    :returns: sum of all standard load profile ratio values of the given term
     :rtype: float
     """
 
@@ -77,7 +77,7 @@ def get_last_meter_reading_date(meter_id, date):
     timezone-unaware date to UTC.
     : param str meter_id: the meter id for which to get the value
     : param datetime.date date: the date for which to get the value
-    : return: the last reading for the given meter id on the given date or
+    : returns: the last reading for the given meter id on the given date or
     None if there are no values
     : rtype: float or type(None)
     """
@@ -115,7 +115,7 @@ def calc_energy_consumption_last_term(meter_id, start):
     previous term for a given meter id.
     :param str meter_id: the meter id
     :param datetime.date start: the start date of the ongoing term
-    :return: the last meter reading minus the first meter reading of the given
+    :returns: the last meter reading minus the first meter reading of the given
     meter id or None if there are no values
     :rtype: int or type(None)
     """
@@ -138,7 +138,7 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     ongoing term for a given meter id.
     :param datetime meter_id: the meter id
     :param datetime.date start: the start date of the ongoing term
-    :return: the latest meter reading minus the first meter reading of the
+    :returns: the latest meter reading minus the first meter reading of the
     given meter id or None if there are no values
     :rtype: int or type(None)
     """
@@ -184,7 +184,7 @@ def calc_estimated_energy_saving(meter_id, start):
     using the standard load profile.
     :param str meter_id: the meter id
     :param datetime.date start: the start date of the given term
-    :return: the estimated energy saving
+    :returns: the estimated energy saving
     :rtype: float or None if there are no values
     """
 
@@ -205,7 +205,7 @@ def estimate_energy_saving_each_user(start, session):
     """ Calculate the estimated energy saving for each user.
     :param datetime.date start: the start date of the given term
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :return: the estimated energy saving of each user mapped to their meter id in the given term
+    :returns: the estimated energy saving of each user mapped to their meter id in the given term
     :rtype: dict
     """
 
@@ -223,7 +223,7 @@ def estimate_energy_saving_all_users(start, session):
     consumptions.
     :param datetime.date start: the start date of the given term
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :return: the estimated energy saving of all users in the given term
+    :returns: the estimated energy saving of all users in the given term
     :rtype: float
     """
 

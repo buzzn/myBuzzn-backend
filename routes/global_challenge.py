@@ -110,7 +110,7 @@ def get_community_saving():
 @login_required
 def individual_global_challenge():
     """ Shows the individual saving prognosis for today in μWh.
-    :return: (a JSON object where the saving is mapped to the timestamp, 200) or
+    :returns: (a JSON object where the saving is mapped to the timestamp, 200) or
     ({}, 206) if there is no value
     :rtype: tuple
     """

@@ -40,7 +40,7 @@ redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
 def check_input_parameter_date(date):
     """ Check if date does not lie in the future.
     :param datetime date: the date to be checked
-    :return: True if date does not lie in the future, False otherwise
+    :returns: True if date does not lie in the future, False otherwise
     """
 
     today = datetime.utcnow()
@@ -54,7 +54,7 @@ def get_data_day_before(dt, meter_id, session):
     :param datetime.date: the request date
     :param str meter_id: the user's meter id
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :return: date, meter_id, consumption, consumption_cumulated, inhabitants,
+    :returns: date, meter_id, consumption, consumption_cumulated, inhabitants,
     pkv, pkv_cumulated, days, moving_average and moving_average_annualized
     :rtype: list
     """
@@ -84,7 +84,7 @@ def get_first_meter_reading_date(meter_id, date):
     timezone-unaware date to UTC.
     : param str meter_id: the meter id for which to get the value
     : param datetime.date date: the date for which to get the value
-    : return: the last reading for the given meter id on the given date or
+    : returns: the last reading for the given meter id on the given date or
     None if there are no values
     : rtype: float or type(None)
     """
@@ -124,10 +124,15 @@ def define_base_values(inhabitants, date):
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime date: the start date of the calculation which cannot
     lie in the future
-    :return: the base values for the given meter id and date or None on wrong
+    :returns: the base values for the given meter id and date or None on wrong
     date parameter
     :rtype: dict or type(None)
     """
+
+    # Check input parameter inhabitants
+    if inhabitants is None:
+        logger.info('Invalid inhabitants value None (must be an int value).')
+        return None
 
     # Check input parameter date
     if check_input_parameter_date(date) is False:
@@ -177,7 +182,7 @@ def calc_pkv(meter_id, inhabitants, date, session):
     :param str meter_id: the user's meter id
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the calculation day which cannot lie in the future
-    :return: the pkv values for the given meter id and date or None if there is
+    :returns: the pkv values for the given meter id and date or None if there is
     an error
     :rtype: dict or type(None)
     """
@@ -218,7 +223,7 @@ def build_data_package(data_day_before, consumption, inhabitants, date):
     :param float consumption: the date's calculated consumption
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the date to build the data package for
-    :return: a data package with all relevant user values on the given date
+    :returns: a data package with all relevant user values on the given date
     :rtype: dict
     """
 

@@ -18,7 +18,7 @@ redis_db = os.environ['REDIS_DB']
 def get_group_meter_id(user_id):
     """ Get the group meter id from the SQLite database for the given user.
     :param int user_id: the user's id
-    :return: the group meter id of the group the user belongs to
+    :returns: the group meter id of the group the user belongs to
     :rtype: int
     """
 
@@ -123,6 +123,8 @@ class WebsocketProvider:
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
+            logger.error("Cannot calculate self-sufficiency for meter_id %s",
+                         meter_id)
             return 0.0
 
     def create_member_data(self, member):
