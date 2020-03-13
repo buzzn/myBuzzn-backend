@@ -34,7 +34,7 @@ def get_individual_saving(meter_id):
         query_result = []
         for row in db.session.query(UserSaving) \
                 .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()).all():
-            query_result.append((row.timestamp, row.saving))
+            query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
 
         individual_saving = query_result[0]
 
@@ -65,7 +65,7 @@ def get_individual_baseline(meter_id):
         query_result = []
         for row in db.session.query(BaseLine) \
                 .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()).all():
-            query_result.append((row.timestamp, row.baseline))
+            query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.baseline))
 
         individual_baseline = query_result[0]
 
@@ -92,7 +92,7 @@ def get_community_saving():
         # Query last community saving prognosis
         query_result = []
         for row in db.session.query(CommunitySaving).order_by(CommunitySaving.timestamp.desc()).all():
-            query_result.append((row.timestamp, row.saving))
+            query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
 
         community_saving = query_result[0]
 
