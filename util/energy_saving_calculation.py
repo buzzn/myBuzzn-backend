@@ -40,21 +40,12 @@ def calc_ratio_values(start):
     ratio_values = 0.0
     try:
             # Query total energy which should be ~ 1.000.000 kWh
-            #energy_total = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'"
-             #                          + str(start) + "\' AND \'" + str(end) +
-              #                         '\' ORDER BY date').first()[0]
-
         query_total_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
               .filter(LoadProfileEntry.date.between(start, end)) \
                 .order_by(LoadProfileEntry.date).all()
         energy_total = query_total_result[0][0]
 
             # Query sum of energy promilles
-            #energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
-             #                             + " WHERE date BETWEEN \'" +
-              #                            str(start) + "\' AND \'"
-               #                           + str(term_end) + '\' ORDER BY date').first()[0]
-
         query_promille_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
                 .filter(LoadProfileEntry.date.between(start, term_end)) \
                 .order_by(LoadProfileEntry.date).all()

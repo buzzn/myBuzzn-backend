@@ -26,8 +26,6 @@ def get_individual_saving(meter_id):
     """
 
     # pylint: disable=line-too-long
-    #query = "SELECT timestamp, saving FROM user_saving WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
-
 
     try:
             # Query last individual saving prognosis for the given meter id
@@ -58,10 +56,9 @@ def get_individual_baseline(meter_id):
     """
 
     # pylint: disable=line-too-long
-    # query = "SELECT timestamp, baseline FROM base_line WHERE meter_id = '%s' ORDER BY timestamp DESC" % meter_id
 
     try:
-        # Query last baseline value for the given meter id
+            # Query last baseline value for the given meter id
         query_result = []
         for row in db.session.query(BaseLine) \
                 .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()).all():
@@ -86,10 +83,8 @@ def get_community_saving():
     :rtype: dict or type(None) if there are no values
     """
 
-    # query = "SELECT timestamp, saving FROM community_saving ORDER BY timestamp DESC"
-
     try:
-        # Query last community saving prognosis
+            # Query last community saving prognosis
         query_result = []
         for row in db.session.query(CommunitySaving).\
                 order_by(CommunitySaving.timestamp.desc()).all():
