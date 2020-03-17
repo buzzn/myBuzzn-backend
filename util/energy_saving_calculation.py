@@ -39,13 +39,13 @@ def calc_ratio_values(start):
     energy_total = 0.0
     ratio_values = 0.0
     try:
-            # Query total energy which should be ~ 1.000.000 kWh
+        # Query total energy which should be ~ 1.000.000 kWh
         query_total_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
               .filter(LoadProfileEntry.date.between(start, end)) \
                 .order_by(LoadProfileEntry.date).all()
         energy_total = query_total_result[0][0]
 
-            # Query sum of energy promilles
+        # Query sum of energy promilles
         query_promille_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
                 .filter(LoadProfileEntry.date.between(start, term_end)) \
                 .order_by(LoadProfileEntry.date).all()
