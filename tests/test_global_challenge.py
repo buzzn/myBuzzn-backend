@@ -4,6 +4,8 @@ import json
 from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
+from models.savings import UserSaving, CommunitySaving
+from models.baseline import BaseLine
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
@@ -39,7 +41,30 @@ class GlobalChallengeTestCase(BuzznTestCase):
         test_user.inhabitants = 2
         test_user.set_password('some_password')
         test_user.state = StateType.ACTIVE
+        test_first_timestamp = datetime(2020, 2, 13, 9, 57, 3)
+        test_first_user_saving = UserSaving(test_first_timestamp,
+                                            '52d7c87f8c26433dbd095048ad30c8cf',
+                                            3148577026610.7812)
+        test_second_timestamp = datetime(2020, 1, 13, 9, 57, 3)
+        test_second_user_saving = UserSaving(test_second_timestamp,
+                                             '52d7c87f8c26433dbd095048ad30c8cf',
+                                             3148577026610.7812)
+        test_third_timestamp = datetime(2020, 2, 21, 9, 40, 4)
+        test_first_user_baseline = BaseLine(test_third_timestamp,
+                                            '52d7c87f8c26433dbd095048ad30c8cf',
+                                            53011346257574)
+        test_second_user_baseline = BaseLine(test_second_timestamp,
+                                             '52d7c87f8c26433dbd095048ad30c8cf',
+                                             53011346257574)
+        test_first_community_saving = CommunitySaving(test_first_timestamp, 85184267259376.5)
+        test_second_community_saving = CommunitySaving(test_second_timestamp, 85184267259376.5)
         db.session.add(test_user)
+        db.session.add(test_first_user_saving)
+        db.session.add(test_second_user_saving)
+        db.session.add(test_first_user_baseline)
+        db.session.add(test_second_user_baseline)
+        db.session.add(test_first_community_saving)
+        db.session.add(test_second_community_saving)
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
