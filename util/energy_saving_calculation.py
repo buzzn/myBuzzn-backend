@@ -5,11 +5,9 @@ import logging.config
 from dateutil import parser
 import redis
 import pytz
-from sqlalchemy.sql import func
 from models.user import User
-from models.loadprofile import LoadProfileEntry
 from util.error import exception_message
-from util.database import db
+from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
 
 
@@ -36,20 +34,21 @@ def calc_ratio_values(start):
 
     end = datetime(start.year + 1, start.month, start.day).date()
     term_end = datetime.utcnow().date()
+    engine = get_engine()
     energy_total = 0.0
     ratio_values = 0.0
     try:
-        # Query total energy which should be ~ 1.000.000 kWh
-        query_total_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
-              .filter(LoadProfileEntry.date.between(start, end)) \
-                .order_by(LoadProfileEntry.date).all()
-        energy_total = query_total_result[0][0]
+        with engine.connect() as con:
+            # Query total energy which should be ~ 1.000.000 kWh
+            energy_total = con.execute("SELECT SUM(energy) FROM loadprofile WHERE date BETWEEN \'"
+                                       + str(start) + "\' AND \'" + str(end) +
+                                       '\' ORDER BY date').first()[0]
 
-        # Query sum of energy promilles
-        query_promille_result = db.session.query(func.sum(LoadProfileEntry.energy)) \
-                .filter(LoadProfileEntry.date.between(start, term_end)) \
-                .order_by(LoadProfileEntry.date).all()
-        energy_promille = query_promille_result[0][0]
+            # Query sum of energy promilles
+            energy_promille = con.execute("SELECT SUM(energy) FROM loadprofile"
+                                          + " WHERE date BETWEEN \'" +
+                                          str(start) + "\' AND \'"
+                                          + str(term_end) + '\' ORDER BY date').first()[0]
 
         if (energy_promille is not None) and (energy_total is not None):
             ratio_values = energy_promille/energy_total
