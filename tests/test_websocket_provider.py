@@ -53,7 +53,6 @@ GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                   'inhabitants': 2, 'flat_size': 60.0},
                  {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
                   'inhabitants': 2, 'flat_size': 60.0}]
-GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
 GROUP_PRODUCTION_METER_IDS = (
     '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
 SELF_SUFFICIENCY = 2.1909736445530789e-13
