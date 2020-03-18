@@ -10,7 +10,6 @@ from models.user import User
 from models.loadprofile import LoadProfileEntry
 from util.error import exception_message
 from util.database import db
-from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
 
 
@@ -53,7 +52,7 @@ def calc_ratio_values(start):
         energy_promille = query_promille_result[0][0]
 
         if (energy_promille is not None) and (energy_total is not None):
-           ratio_values = energy_promille/energy_total
+            ratio_values = energy_promille/energy_total
 
     except Exception as e:
         message = exception_message(e)
