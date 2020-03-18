@@ -293,16 +293,18 @@ def request_group_update():
     if target_group is None:
         return group_list("Unknown group.")
 
-    return Response(render_template('admin/group/create-update.html',
-                                    csrf_token=(
-                                        get_raw_jwt() or {}).get("csrf"),
-                                    target="/admin/group/update",
-                                    id=target_group.id,
-                                    name=target_group.name,
-                                    meter=target_group.group_meter_id,
-                                    group_production_meter_id_first=target_group.group_production_meter_id_first,
-                                    group_production_meter_id_second=target_group.group_production_meter_id_second),
-                    mimetype='text/html')
+    return Response(
+        render_template(
+            'admin/group/create-update.html',
+            csrf_token=(
+                get_raw_jwt() or {}).get("csrf"),
+            target="/admin/group/update",
+            id=target_group.id,
+            name=target_group.name,
+            meter=target_group.group_meter_id,
+            group_production_meter_id_first=target_group.group_production_meter_id_first,
+            group_production_meter_id_second=target_group.group_production_meter_id_second),
+        mimetype='text/html')
 
 
 @Admin.route('/admin/group/delete')
