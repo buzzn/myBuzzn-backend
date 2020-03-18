@@ -1,5 +1,3 @@
-
-
 from flask import render_template, Blueprint, Response, request
 from flask import current_app as app
 from flask_api import status
@@ -42,7 +40,7 @@ def request_password_reset_token():
         target_user.mail,
         render_template("password/reset_password_mail.txt",
                         greeting=get_opening_greeting(target_user),
-                        Wlink="{}/password/reset/{}".format(
+                        wlink="{}/password/reset/{}".format(
                             app.config['BUZZN_BASE_URL'],
                             target_user.password_reset_token
                         )))
