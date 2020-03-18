@@ -15,17 +15,17 @@ redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 
 
-def get_group_meter_id(user_id):
-    """ Get the group meter id from the SQLite database for the given user.
+def get_group_meter_ids(user_id):
+    """ Get the group production meter ids from the SQLite database for the given user.
     :param int user_id: the user's id
-    :returns: the group meter id of the group the user belongs to
-    :rtype: int
+    :returns: the group production meter ids of the group the user belongs to
+    :rtype: tuple
     """
 
     user = db.session.query(User).filter_by(id=user_id).first()
     group = db.session.query(Group).filter_by(id=user.group_id).first()
 
-    return group.group_meter_id
+    return group.group_production_meter_id_first, group.group_production_meter_id_second
 
 
 def get_group_members(user_id):
@@ -167,27 +167,52 @@ class WebsocketProvider:
         """
 
         try:
-            group_meter_id = get_group_meter_id(user_id)
-            group_last_reading = self.get_last_reading(group_meter_id)
-            group_users = []
+            group_production_meter_ids = get_group_meter_ids(user_id)
+            group_first_production_meter = group_production_meter_ids[0]
+            group_second_production_meter = group_production_meter_ids[1]
 
+            if group_first_production_meter is not None:
+                group_last_reading_first_production_meter = self.get_last_reading(
+                    group_first_production_meter)
+                if len(group_last_reading_first_production_meter) == 0:
+                    logger.error(
+                        'No readings for group first production meter with id \
+                                %s in the database.',
+                        group_first_production_meter)
+                    group_production_first_meter = 0.0
+                else:
+                    group_production_first_meter = group_last_reading_first_production_meter.get(
+                        'values').get('power')
+            else:
+                logger.error('No first production meter id for user id %s.',
+                             user_id)
+                group_production_first_meter = 0.0
+
+            if group_second_production_meter is not None:
+                group_last_reading_second_production_meter = self.get_last_reading(
+                    group_second_production_meter)
+                if len(group_last_reading_second_production_meter) == 0:
+                    logger.error(
+                        'No readings for group second production meter with id \
+                                %s in the database.',
+                        group_second_production_meter)
+                    group_production_second_meter = 0.0
+                else:
+                    group_production_second_meter = group_last_reading_second_production_meter.get(
+                        'values').get('power')
+            else:
+                logger.info('No second production meter id for user id %s.',
+                            user_id)
+                group_production_second_meter = 0.0
+
+            group_users = []
             for member in get_group_members(user_id):
                 member_data = self.create_member_data(member)
                 group_users.append(member_data)
 
-            if len(group_last_reading) == 0:
-                logger.error(
-                    'No readings for meter id %s in the database.', group_meter_id)
-                group_consumption = None
-                group_production = None
-            else:
-                group_consumption = group_last_reading.get(
-                    'values').get('energy')
-                group_production = group_last_reading.get(
-                    'values').get('energyOut')
+            group_production = group_production_first_meter + group_production_second_meter
 
             return dict(date=round(datetime.utcnow().timestamp() * 1e3),
-                        group_consumption=group_consumption,
                         group_production=group_production,
                         group_users=group_users)
 
