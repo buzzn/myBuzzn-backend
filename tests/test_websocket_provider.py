@@ -97,7 +97,9 @@ class WebsocketProviderTestCase(BuzznTestCase):
         test_user3.inhabitants = 2
         db.session.add(test_user3)
         db.session.add(Group('TestGroup',
-                             '269e682dbfd74a569ff4561b6416c999'))
+                             '269e682dbfd74a569ff4561b6416c999',
+                             '5e769d5b83934bccae11a8fa95e0dc5f',
+                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))

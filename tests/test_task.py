@@ -36,7 +36,9 @@ class TaskTestCase(BuzznTestCase):
         db.session.add(User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
                             'TestToken3', 'bf60438327b1498c9df4e43fc9327849', 1))
         db.session.add(Group('TestGroup',
-                             '0a0f65e992c042e4b86956f3f080114d'))
+                             '0a0f65e992c042e4b86956f3f080114d',
+                             '5e769d5b83934bccae11a8fa95e0dc5f',
+                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
