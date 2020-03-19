@@ -12,7 +12,8 @@ from util.task import get_all_meter_ids, calc_term_boundaries, calc_end,\
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
-                 'bf60438327b1498c9df4e43fc9327849', '0a0f65e992c042e4b86956f3f080114d']
+                 'bf60438327b1498c9df4e43fc9327849', '0a0f65e992c042e4b86956f3f080114d',
+                 '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d']
 
 
 class TaskTestCase(BuzznTestCase):
