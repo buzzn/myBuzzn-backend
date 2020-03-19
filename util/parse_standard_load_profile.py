@@ -7,7 +7,7 @@ from models.loadprofile import LoadProfileEntry
 from util.database import create_session
 
 
-logger = logging.getLogger('util/parse_standard_load_profile')
+logger = logging.getLogger(__name__)
 logging.getLogger().setLevel(logging.INFO)
 exception_template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 

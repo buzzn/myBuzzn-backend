@@ -1,5 +1,6 @@
 import json
 import os
+from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
 import logging.config
@@ -17,7 +18,9 @@ from util.database import create_session
 from util.pkv_calculation import define_base_values, calc_pkv
 
 
-logger = logging.getLogger('util/task')
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logger_configuration.conf')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 client_name = 'BuzznClient'
 email = os.environ['DISCOVERGY_EMAIL']
 password = os.environ['DISCOVERGY_PASSWORD']
@@ -197,13 +200,14 @@ def write_base_values_or_pkv(session):
     """
 
     yesterday_date = (datetime.today() - timedelta(days=1)).date()
-    yesterday_time = time(0, 0, 0)
-    yesterday = datetime.combine(yesterday_date, yesterday_time)
+    today_date = datetime.today().date()
+    _time = time(0, 0, 0)
+    yesterday = datetime.combine(yesterday_date, _time)
+    today = datetime.combine(today_date, _time)
     support_year_start = calc_support_year_start_datetime()
-    day_zero = support_year_start - timedelta(days=1)
 
-    if yesterday == support_year_start:
-        write_base_values(day_zero, session)
+    if today == support_year_start:
+        write_base_values(yesterday, session)
     else:
         write_pkv(yesterday, session)
 
