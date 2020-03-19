@@ -25,6 +25,6 @@ def send_mail(receiver, message):
                               context=context) as server:
             server.login(app.config['BUZZN_EMAIL'],
                          app.config['BUZZN_EMAIL_PASSWORD'])
-        server.sendmail(app.config['BUZZN_EMAIL'], receiver, message)
+            server.sendmail(app.config['BUZZN_EMAIL'], receiver, message)
     else:
         raise AssertionError("BUZZN_MAILER not set, no mailer configured. Cannot send mail.")
