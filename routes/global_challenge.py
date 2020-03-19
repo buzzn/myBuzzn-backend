@@ -25,13 +25,12 @@ def get_individual_saving(meter_id):
     :rtype: dict or type(None) if there are no values
     """
 
-    # pylint: disable=line-too-long
-
     try:
         # Query last individual saving prognosis for the given meter id
         query_result = []
         for row in db.session.query(UserSaving) \
-                .filter(UserSaving.meter_id == meter_id).order_by(UserSaving.timestamp.desc()).all():
+                .filter(UserSaving.meter_id == meter_id).\
+                order_by(UserSaving.timestamp.desc()).all():
             query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
 
         individual_saving = query_result[0]
@@ -54,8 +53,6 @@ def get_individual_baseline(meter_id):
     there are no values
     :rtype: dict or type(None) if there are no values
     """
-
-    # pylint: disable=line-too-long
 
     try:
         # Query last baseline value for the given meter id
