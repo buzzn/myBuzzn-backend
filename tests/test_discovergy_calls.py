@@ -21,9 +21,12 @@ INDIVIDUAL_CONSUMPTION = {"2020-01-15 10:00:04": 0, "2020-01-15 10:01:10": 0}
 EMPTY_RESPONSE_BYTES = {}
 GROUP_CONSUMPTION = {'consumed': {"2020-01-15 10:00:04": 0,
                                   "2020-01-15 10:01:10": 0},
-                     'produced': {"2020-01-15 10:00:04": 0,
-                                  "2020-01-15 10:01:10": 0}}
-EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
+                     'produced_first_meter': {"2020-01-15 10:00:04": 0,
+                                              "2020-01-15 10:01:10": 0},
+                     'produced_second_meter': {"2020-01-15 10:00:04": 0,
+                                               "2020-01-15 10:01:10": 0}}
+EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced_first_meter': {},
+                           'produced_second_meter': {}}
 DISAGGREGATION = {"2020-01-15 10:01:04": {"Durchlauferhitzer-1": 0,
                                           "Grundlast-1": 50000000},
                   "2020-01-15 10:01:10": {"Durchlauferhitzer-1": 0,
