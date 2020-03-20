@@ -14,7 +14,9 @@ def send_mail(receiver, message):
     :raises AssertionError: If no mailer is configured i.e. BUZZN_MAILER is not
     set.
     """
-
+    logger.error(app.config['BUZZN_SMTP_SERVER'])
+    logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
+    
     if app.config['BUZZN_MAILER'] == 'stdout':
         print("mailbegin>>>")
         print("receiver: {}".format(receiver))
