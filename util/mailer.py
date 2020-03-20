@@ -19,7 +19,8 @@ def send_mail(receiver, message):
         print("<<<mailend")
     elif app.config['BUZZN_MAILER'] == 'smtp':
         context = ssl.create_default_context()
-
+        print(app.config['BUZZN_SMTP_SERVER'])
+        print(app.config['BUZZN_SMTP_SERVER_PORT'])
         with smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
                               app.config['BUZZN_SMTP_SERVER_PORT'],
                               context=context) as server:
