@@ -134,18 +134,31 @@ def group_consumption_history():
 
     begin = read_begin_parameter()
     result = {}
-    produced = {}
+    produced_first_meter = {}
+    produced_second_meter = {}
     consumed = {}
 
     try:
-        readings = get_readings(group.group_meter_id, begin)
-        for key in readings:
-            produced[key] = readings[key].get('energyOut')
-            consumed[key] = readings[key].get('power')
+        readings_group_community_consumption_meter = get_readings(
+            group.group_meter_id, begin)
+        readings_group_production_meter_first = get_readings(
+            group.group_production_meter_id_first, begin)
+        readings_group_production_meter_second = get_readings(
+            group.group_production_meter_id_second, begin)
+        for key in readings_group_community_consumption_meter:
+            consumed[key] = readings_group_community_consumption_meter[key].get(
+                'power')
+        for key in readings_group_production_meter_first:
+            produced_first_meter[key] = readings_group_production_meter_first[key].get(
+                'power')
+        for key in readings_group_production_meter_second:
+            produced_second_meter[key] = readings_group_production_meter_second[key].get(
+                'power')
 
         # Return result
         result["consumed"] = consumed
-        result["produced"] = produced
+        result["produced_first_meter"] = produced_first_meter
+        result['produced_second_meter'] = produced_second_meter
         return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:

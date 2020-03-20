@@ -23,9 +23,12 @@ INDIVIDUAL_CONSUMPTION = {'energy': {'2020-01-15 10:00:04': 2180256872214000,
 EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
 GROUP_CONSUMPTION = {'consumed': {"2020-01-15 10:00:04": 0,
                                   "2020-01-15 10:01:10": 0},
-                     'produced': {"2020-01-15 10:00:04": 0,
-                                  "2020-01-15 10:01:10": 0}}
-EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced': {}}
+                     'produced_first_meter': {"2020-01-15 10:00:04": 0,
+                                              "2020-01-15 10:01:10": 0},
+                     'produced_second_meter': {"2020-01-15 10:00:04": 0,
+                                               "2020-01-15 10:01:10": 0}}
+EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced_first_meter': {},
+                           'produced_second_meter': {}}
 DISAGGREGATION = {"2020-01-15 10:01:04": {"Durchlauferhitzer-1": 0,
                                           "Grundlast-1": 50000000},
                   "2020-01-15 10:01:10": {"Durchlauferhitzer-1": 0,
@@ -125,7 +128,10 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         self.target_user.group_id = 1
         db.session.add(self.target_user)
         self.target_group = Group(
-            "SomeGroup", 'b4234cd4bed143a6b9bd09e347e17d34')
+            "SomeGroup",
+            'b4234cd4bed143a6b9bd09e347e17d34',
+            '5e769d5b83934bccae11a8fa95e0dc5f',
+            'e2a7468f0cf64b7ca3f3d1350b893c6d')
         db.session.add(self.target_group)
         db.session.commit()
 
@@ -239,7 +245,10 @@ class GroupDisaggregation(BuzznTestCase):
         self.target_user.group_id = 1
         db.session.add(self.target_user)
         self.target_group = Group(
-            "SomeGroup", '52d7c87f8c26433dbd095048ad30c8cf')
+            "SomeGroup",
+            '52d7c87f8c26433dbd095048ad30c8cf',
+            '5e769d5b83934bccae11a8fa95e0dc5f',
+            'e2a7468f0cf64b7ca3f3d1350b893c6d')
         db.session.add(self.target_group)
         db.session.commit()
 
@@ -280,7 +289,10 @@ class Disaggregation(BuzznTestCase):
         self.target_user.group_id = 1
         db.session.add(self.target_user)
         self.target_group = Group(
-            "SomeGroup", 'b4234cd4bed143a6b9bd09e347e17d34')
+            "SomeGroup",
+            'b4234cd4bed143a6b9bd09e347e17d34',
+            '5e769d5b83934bccae11a8fa95e0dc5f',
+            'e2a7468f0cf64b7ca3f3d1350b893c6d')
         db.session.add(self.target_group)
         db.session.commit()
 

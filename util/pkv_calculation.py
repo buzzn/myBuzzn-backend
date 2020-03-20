@@ -208,9 +208,9 @@ def calc_pkv(meter_id, inhabitants, date, session):
     data_day_before = get_data_day_before(date, meter_id, session)
 
     if data_day_before is None:
-        logger.info(
-            'There is no data for the day before %s in the database for meter_id\
-                    %s.', date, meter_id)
+        message = 'There is no data the day before {} in the database for meter_id {}'.format(
+            date, meter_id)
+        logger.info(message)
         return None
 
     return build_data_package(data_day_before, consumption, inhabitants, date)

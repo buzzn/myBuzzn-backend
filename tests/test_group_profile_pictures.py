@@ -21,7 +21,10 @@ class GroupProfilePictures(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        db.session.add(Group('TestGroup', '269e682dbfd74a569ff4561b6416c999'))
+        db.session.add(Group('TestGroup',
+                             '269e682dbfd74a569ff4561b6416c999',
+                             '5e769d5b83934bccae11a8fa95e0dc5f',
+                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net', 'TestToken',
                          'b4234cd4bed143a6b9bd09e347e17d34', 1)
         test_user.set_password('some_password')
