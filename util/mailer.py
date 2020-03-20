@@ -16,7 +16,6 @@ def send_mail(receiver, message):
     """
     logger.error(app.config['BUZZN_SMTP_SERVER'])
     logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
-    
     if app.config['BUZZN_MAILER'] == 'stdout':
         print("mailbegin>>>")
         print("receiver: {}".format(receiver))
