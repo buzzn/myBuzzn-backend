@@ -4,7 +4,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.websocket_provider import WebsocketProvider, get_group_meter_id,\
+from util.websocket_provider import WebsocketProvider, get_group_meter_ids,\
     get_group_members
 
 
@@ -27,9 +27,8 @@ GROUPMEMBER3_LAST_READING = {'type': 'reading',
                              'values': {'power': 5877540, 'power3': 1361800,
                                         'energyOut': 0, 'power1': 1410390,
                                         'energy': 1500976759905000, 'power2': 1388390}}
-DATA = {"date": 1582102636258,
-        "group_consumption": 2466839634000,
-        "group_production": 2189063000,
+DATA = {"date": 1584534049261,
+        "group_production": 43040,
         "group_users": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
                          "consumption": 3603609657330000, "power": 20032100,
                          "self_sufficiency": 1.1093780095648228e-13},
@@ -54,7 +53,8 @@ GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                   'inhabitants': 2, 'flat_size': 60.0},
                  {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
                   'inhabitants': 2, 'flat_size': 60.0}]
-GROUP_METER_ID = '269e682dbfd74a569ff4561b6416c999'
+GROUP_PRODUCTION_METER_IDS = (
+    '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
 SELF_SUFFICIENCY = 2.1909736445530789e-13
 MEMBER_DATA = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                 'consumption': 3603609657330000, 'power': 20032100,
@@ -97,7 +97,9 @@ class WebsocketProviderTestCase(BuzznTestCase):
         test_user3.inhabitants = 2
         db.session.add(test_user3)
         db.session.add(Group('TestGroup',
-                             '269e682dbfd74a569ff4561b6416c999'))
+                             '269e682dbfd74a569ff4561b6416c999',
+                             '5e769d5b83934bccae11a8fa95e0dc5f',
+                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
@@ -145,15 +147,14 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.assertTrue(isinstance(data, dict))
 
         # Check return values
-        for param in 'group_consumption', 'group_production':
-            self.assertEqual(data.get(param), DATA.get(param))
+        self.assertEqual(data.get('group_production'),
+                         DATA.get('group_production'))
         for item1, item2 in zip(data.get('group_users'), DATA.get('group_users')):
             self.assertEqual(item1.get('id'), item2.get('id'))
             self.assertEqual(item1.get('meter_id'), item2.get('meter_id'))
             self.assertEqual(item1.get('consumption'),
                              item2.get('consumption'))
-            self.assertEqual(item1.get('power'),
-                             item2.get('power'))
+            self.assertEqual(item1.get('power'), item2.get('power'))
             self.assertEqual(item1.get('self_sufficiency'),
                              item2.get('self_sufficiency'))
 
@@ -181,16 +182,16 @@ class WebsocketProviderTestCase(BuzznTestCase):
         # Check return value
         self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
 
-    def test_get_group_meter_id(self):
-        """ Unit tests for function get_group_meter_id(). """
+    def test_get_group_meter_ids(self):
+        """ Unit tests for function get_group_meter_ids(). """
 
-        result = get_group_meter_id(1)
+        result = get_group_meter_ids(1)
 
         # Check result values
-        self.assertEqual(result, GROUP_METER_ID)
+        self.assertEqual(result, GROUP_PRODUCTION_METER_IDS)
 
         # Check result type
-        self.assertIsInstance(result, str)
+        self.assertIsInstance(result, tuple)
 
     def test_get_group_members(self):
         """ Unit tests for function get_group_members(). """
