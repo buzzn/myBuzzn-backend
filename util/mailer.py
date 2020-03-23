@@ -1,5 +1,4 @@
 import smtplib
-import ssl
 import logging.config
 
 from flask import current_app as app
