@@ -16,7 +16,8 @@ class ProfileTestCase(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        users_group = Group("SomeGroup", "group_meter_id")
+        users_group = Group("SomeGroup", "group_meter_id",
+                            '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
         db.session.add(users_group)
         db.session.commit()
         self.target_user = User(GenderType.MALE, "Some", "User",
