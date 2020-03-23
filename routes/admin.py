@@ -10,6 +10,7 @@ from util.database import db
 
 Admin = Blueprint('Admin', __name__)
 
+
 def admin_required(fn):
     """ Wraps a function and injects an admin check before each call.
     Redirects to the login page, if the current user is not an admin, or no
@@ -36,6 +37,7 @@ def favicon():
     """Prevents the logger from logging 404 when the browser asks for a favicon.
     """
     return ''
+
 
 @Admin.route('/admin/login', methods=['POST'])
 def do_admin_login():
@@ -64,11 +66,13 @@ def do_admin_login():
     set_access_cookies(resp, create_access_token(identity=target_user.id))
     return resp
 
+
 @Admin.route('/admin/login')
 def admin_login():
     """Returns a login form.
     """
     return Response(render_template('admin/login.html'))
+
 
 @Admin.route('/admin/logout')
 def logout():
@@ -113,6 +117,7 @@ def do_user_create():
     db.session.commit()
     return user_list("Created user " + target.name)
 
+
 @Admin.route('/admin/user/create', methods=['GET'])
 @admin_required
 def request_user_create():
@@ -121,7 +126,8 @@ def request_user_create():
     And some preselected values.
     """
     return Response(render_template('admin/user/create-update.html',
-                                    csrf_token=(get_raw_jwt() or {}).get("csrf"),
+                                    csrf_token=(
+                                        get_raw_jwt() or {}).get("csrf"),
                                     target="/admin/user/create",
                                     genders=list(GenderType),
                                     states=list(StateType),
@@ -131,6 +137,7 @@ def request_user_create():
                                     role=RoleType.LOCAL_POWER_TAKER,
                                     state=StateType.ACTIVATION_PENDING),
                     mimetype='text/html')
+
 
 @Admin.route('/admin/user/update', methods=['POST'])
 @admin_required
@@ -164,6 +171,7 @@ def do_user_update():
     db.session.commit()
     return user_list("Updated user " + targetUser.name)
 
+
 @Admin.route('/admin/user/update', methods=['GET'])
 @admin_required
 def request_user_update():
@@ -175,7 +183,8 @@ def request_user_update():
         return user_list("Unknown user.")
 
     return Response(render_template('admin/user/create-update.html',
-                                    csrf_token=(get_raw_jwt() or {}).get("csrf"),
+                                    csrf_token=(
+                                        get_raw_jwt() or {}).get("csrf"),
                                     target="/admin/user/update",
                                     genders=list(GenderType),
                                     states=list(StateType),
@@ -193,6 +202,7 @@ def request_user_update():
                                     state=target_user.state),
                     mimetype='text/html')
 
+
 @Admin.route('/admin/user/delete', methods=['GET'])
 @admin_required
 def user_delete():
@@ -208,6 +218,7 @@ def user_delete():
 
     return user_list("Deleted user " + target_user.name)
 
+
 @Admin.route('/admin/user/', methods=['GET'])
 @admin_required
 def user_list(message=''):
@@ -218,17 +229,25 @@ def user_list(message=''):
                                     message=message),
                     mimetype='text/html')
 
+
 @Admin.route('/admin/group/create', methods=['POST'])
 @admin_required
 def do_group_create():
-    """Creates a group.
-    :param str name: The new group's name.
-    :param str meter: The new group's meter id.
+    """ Creates a group.
+    :param str name: the new group's name
+    :param str meter: the new group's community consumption meter id
+    :param str group_production_meter_id_first: the new group's first
+    production meter id
+    :param str group_production_meter_id_second: the new group's second
+    production meter id
     """
-    target_group = Group(request.form['name'], request.form['meter'])
+    target_group = Group(request.form['name'], request.form['meter'],
+                         request.form['group_production_meter_id_first'],
+                         request.form['group_production_meter_id_second'])
     db.session.add(target_group)
     db.session.commit()
     return group_list("Created group " + target_group.name)
+
 
 @Admin.route('/admin/group/create', methods=['GET'])
 @admin_required
@@ -236,17 +255,19 @@ def request_group_create():
     """Returns a form to create a new group.
     """
     return Response(render_template('admin/group/create-update.html',
-                                    csrf_token=(get_raw_jwt() or {}).get("csrf"),
+                                    csrf_token=(
+                                        get_raw_jwt() or {}).get("csrf"),
                                     target="/admin/group/create"),
                     mimetype='text/html')
+
 
 @Admin.route('/admin/group/update', methods=['POST'])
 @admin_required
 def do_group_update():
-    """Updates an existing group.
-    :param str id: The id of the group to update.
-    :param str name: The groups name.
-    :param str meter: The groups meter.
+    """ Updates an existing group.
+    :param str id: the id of the group to update
+    :param str name: the group's name
+    :param str meter: the group's community consumption meter id
     """
     target_group = Group.query.filter_by(id=request.form['id']).first()
     if target_group is None:
@@ -254,9 +275,13 @@ def do_group_update():
 
     target_group.name = request.form['name']
     target_group.group_meter_id = request.form['meter']
+    target_group.group_production_meter_id_first = request.form['group_production_meter_id_first']
+    target_group.group_production_meter_id_second = request.form[
+        'group_production_meter_id_second']
 
     db.session.commit()
     return group_list("Updated group " + target_group.name)
+
 
 @Admin.route('/admin/group/update', methods=['GET'])
 @admin_required
@@ -268,13 +293,19 @@ def request_group_update():
     if target_group is None:
         return group_list("Unknown group.")
 
-    return Response(render_template('admin/group/create-update.html',
-                                    csrf_token=(get_raw_jwt() or {}).get("csrf"),
-                                    target="/admin/group/update",
-                                    id=target_group.id,
-                                    name=target_group.name,
-                                    meter=target_group.group_meter_id),
-                    mimetype='text/html')
+    return Response(
+        render_template(
+            'admin/group/create-update.html',
+            csrf_token=(
+                get_raw_jwt() or {}).get("csrf"),
+            target="/admin/group/update",
+            id=target_group.id,
+            name=target_group.name,
+            meter=target_group.group_meter_id,
+            group_production_meter_id_first=target_group.group_production_meter_id_first,
+            group_production_meter_id_second=target_group.group_production_meter_id_second),
+        mimetype='text/html')
+
 
 @Admin.route('/admin/group/delete')
 @admin_required
@@ -290,6 +321,7 @@ def group_delete():
     db.session.commit()
 
     return group_list("Deleted group " + target_group.name)
+
 
 @Admin.route('/admin/group/')
 @admin_required
