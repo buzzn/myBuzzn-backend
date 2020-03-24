@@ -200,7 +200,7 @@ def write_baselines(session):
 
 
 def write_base_values_or_pkv(session):
-    """ If yesterday was the start of the support year, write the base values 
+    """ If yesterday was the start of the support year, write the base values
     for all users to the SQLite database.
     Otherwise, write yesterday's pkv for all users to the SQLite database.
     """
