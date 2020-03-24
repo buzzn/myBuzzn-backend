@@ -15,3 +15,4 @@ redis
 pillow
 pytz
 Werkzeug==0.16.1
+pyopenssl==19.1.0
