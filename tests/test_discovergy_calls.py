@@ -17,8 +17,10 @@ CONSUMPTION = {"2020-01-15 10:00:04": {'power': 0, 'power3': -27279,
                                        'energy': 2180256872214000,
                                        'power2': -2437}}
 EMPTY_RESPONSE = {}
-INDIVIDUAL_CONSUMPTION = {"2020-01-15 10:00:04": 0, "2020-01-15 10:01:10": 0}
-EMPTY_RESPONSE_BYTES = {}
+INDIVIDUAL_CONSUMPTION = {'energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                     '2020-01-15 10:01:10': 2180256872214000},
+                          'power': {'2020-01-15 10:00:04': 0, '2020-01-15 10:01:10': 0}}
+EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
 GROUP_CONSUMPTION = {'consumed': {"2020-01-15 10:00:04": 0,
                                   "2020-01-15 10:01:10": 0},
                      'produced_first_meter': {"2020-01-15 10:00:04": 0,
@@ -270,7 +272,7 @@ class GroupDisaggregation(BuzznTestCase):
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
         self.assertEqual(ast.literal_eval(
-            response.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+            response.data.decode('utf-8')), EMPTY_RESPONSE)
 
 
 class Disaggregation(BuzznTestCase):
@@ -321,6 +323,6 @@ class Disaggregation(BuzznTestCase):
 
             # Check response content
             self.assertEqual(ast.literal_eval(
-                response_timestamp_format.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+                response_timestamp_format.data.decode('utf-8')), EMPTY_RESPONSE)
             self.assertEqual(ast.literal_eval(
-                response_parameter.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+                response_parameter.data.decode('utf-8')), EMPTY_RESPONSE)
