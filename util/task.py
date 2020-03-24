@@ -203,6 +203,7 @@ def write_base_values_or_pkv(session):
     """ If yesterday was the start of the support year, write the base values
     for all users to the SQLite database.
     Otherwise, write yesterday's pkv for all users to the SQLite database.
+    :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
     yesterday_date = (datetime.today() - timedelta(days=1)).date()
