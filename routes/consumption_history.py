@@ -74,7 +74,8 @@ def read_begin_parameter():
                                     methods=['GET'])
 @login_required
 def individual_consumption_history():
-    """ Shows the history of consumption of the given time interval in mW.
+    """ Shows the history of consumption of the given time interval in mW and
+    the meter readings in μWh.
     :param int begin: start time of consumption, default is today at 0:00
     :return: (a JSON object where each meter reading is mapped to its point
     in time, 200) or ({}, 206) if there is no history
@@ -88,13 +89,18 @@ def individual_consumption_history():
     begin = read_begin_parameter()
 
     result = {}
+    power = {}
+    energy = {}
 
     try:
         readings = get_readings(user.meter_id, begin)
         for key in readings:
-            result[key] = readings[key].get('power')
+            power[key] = readings[key].get('power')
+            energy[key] = readings[key].get('energy')
 
         # Return result
+        result['energy'] = energy
+        result['power'] = power
         return jsonify(result), status.HTTP_200_OK
 
     except ValueError as e:
