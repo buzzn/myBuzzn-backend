@@ -1,4 +1,5 @@
 import smtplib
+import ssl
 import logging.config
 
 from flask import current_app as app
@@ -21,12 +22,14 @@ def send_mail(receiver, message):
         print(message)
         print("<<<mailend")
     elif app.config['BUZZN_MAILER'] == 'smtp':
-        #context = ssl.create_default_context()
+        context = ssl.create_default_context()
+        logger.error(context)
+        logger.error(type(context))
         logger.error(app.config['BUZZN_SMTP_SERVER'])
-        logger.error(int(app.config['BUZZN_SMTP_SERVER_PORT']))
-        logger.error(type(int(app.config['BUZZN_SMTP_SERVER_PORT'])))
+        logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
         with smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
-                              int(app.config['BUZZN_SMTP_SERVER_PORT'])) as server:
+                              int(app.config['BUZZN_SMTP_SERVER_PORT']),
+                              context=context) as server:
             server.login(app.config['BUZZN_EMAIL'],
                          app.config['BUZZN_EMAIL_PASSWORD'])
             server.sendmail(app.config['BUZZN_EMAIL'], receiver, message)
