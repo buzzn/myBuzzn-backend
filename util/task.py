@@ -200,9 +200,9 @@ def write_baselines(session):
 
 
 def write_base_values_or_pkv(session):
-    """ If yesterday was the start of the support year, write yesterday's
-    base the base values for all users to the SQLite database.
-    Otherwise, write yesterday's pkv for all users to the QLite database.
+    """ If yesterday was the start of the support year, write the base values 
+    for all users to the SQLite database.
+    Otherwise, write yesterday's pkv for all users to the SQLite database.
     """
 
     yesterday_date = (datetime.today() - timedelta(days=1)).date()
@@ -244,21 +244,26 @@ def write_base_values(dt, session):
 
 def write_pkv(dt, session):
     """ Write the pkv for each user to the SQLite database.
+    If for one user there are no yesterday's values in the database, write the
+    base values for that user.
     :param datetime dt: the date to write the values for
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
     try:
         for user in get_all_users(session):
-            pkv = calc_pkv(user.meter_id, user.inhabitants, dt, session)
+            dataset = calc_pkv(user.meter_id, user.inhabitants, dt, session)
+
+            if dataset is None:
+                dataset = define_base_values(user.inhabitants, dt)
 
             # Create PKV instance
-            session.add(PKV(dt, user.meter_id, pkv['consumption'],
-                            pkv['consumption_cumulated'],
-                            pkv['inhabitants'], pkv['pkv'],
-                            pkv['pkv_cumulated'], pkv['days'],
-                            pkv['moving_average'],
-                            pkv['moving_average_annualized']))
+            session.add(PKV(dt, user.meter_id, dataset['consumption'],
+                            dataset['consumption_cumulated'],
+                            dataset['inhabitants'], dataset['pkv'],
+                            dataset['pkv_cumulated'], dataset['days'],
+                            dataset['moving_average'],
+                            dataset['moving_average_annualized']))
 
         session.commit()
     except Exception as e:
