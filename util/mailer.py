@@ -1,5 +1,4 @@
 import smtplib
-import ssl
 import logging.config
 
 from flask import current_app as app
@@ -22,16 +21,14 @@ def send_mail(receiver, message):
         print(message)
         print("<<<mailend")
     elif app.config['BUZZN_MAILER'] == 'smtp':
-        context = ssl.create_default_context()
-        logger.error(context)
-        logger.error(type(context))
+        #context = ssl.create_default_context()
         logger.error(app.config['BUZZN_SMTP_SERVER'])
         logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
-        with smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
-                              int(app.config['BUZZN_SMTP_SERVER_PORT']),
-                              context=context) as server:
-            server.login(app.config['BUZZN_EMAIL'],
-                         app.config['BUZZN_EMAIL_PASSWORD'])
-            server.sendmail(app.config['BUZZN_EMAIL'], receiver, message)
+        server = smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
+                                  int(app.config['BUZZN_SMTP_SERVER_PORT']))
+        server.login(app.config['BUZZN_EMAIL'],
+                     app.config['BUZZN_EMAIL_PASSWORD'])
+        server.sendmail(app.config['BUZZN_EMAIL'], receiver, message)
+        server.close()
     else:
         raise AssertionError("BUZZN_MAILER not set, no mailer configured. Cannot send mail.")
