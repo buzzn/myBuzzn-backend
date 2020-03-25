@@ -134,9 +134,12 @@ def group_consumption_history():
 
     begin = read_begin_parameter()
     result = {}
-    produced_first_meter = {}
-    produced_second_meter = {}
-    consumed = {}
+    consumed_power = {}
+    produced_first_meter_power = {}
+    produced_second_meter_power = {}
+    consumed_energy = {}
+    produced_first_meter_energy = {}
+    produced_second_meter_energy = {}
 
     try:
         readings_group_community_consumption_meter = get_readings(
@@ -146,19 +149,28 @@ def group_consumption_history():
         readings_group_production_meter_second = get_readings(
             group.group_production_meter_id_second, begin)
         for key in readings_group_community_consumption_meter:
-            consumed[key] = readings_group_community_consumption_meter[key].get(
+            consumed_power[key] = readings_group_community_consumption_meter[key].get(
                 'power')
+            consumed_energy[key] = readings_group_community_consumption_meter[key].get(
+                'energy')
         for key in readings_group_production_meter_first:
-            produced_first_meter[key] = readings_group_production_meter_first[key].get(
+            produced_first_meter_power[key] = readings_group_production_meter_first[key].get(
                 'power')
+            produced_first_meter_energy[key] = readings_group_production_meter_first[key].get(
+                'energy')
         for key in readings_group_production_meter_second:
-            produced_second_meter[key] = readings_group_production_meter_second[key].get(
+            produced_second_meter_power[key] = readings_group_production_meter_second[key].get(
                 'power')
+            produced_second_meter_energy[key] = readings_group_production_meter_second[key].get(
+                'energy')
 
         # Return result
-        result["consumed"] = consumed
-        result["produced_first_meter"] = produced_first_meter
-        result['produced_second_meter'] = produced_second_meter
+        result['consumed_power'] = consumed_power
+        result['produced_first_meter_power'] = produced_first_meter_power
+        result['produced_second_meter_power'] = produced_second_meter_power
+        result['consumed_energy'] = consumed_energy
+        result['produced_first_meter_energy'] = produced_first_meter_energy
+        result['produced_second_meter_energy'] = produced_second_meter_energy
         return jsonify(result), status.HTTP_200_OK
 
     except TypeError as e:
