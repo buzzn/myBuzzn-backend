@@ -7,12 +7,16 @@
         <th>id</th>
         <th>name</th>
         <th>meter</th>
+        <th>first production meter</th>
+        <th>second production meter</th>
     </thead>
     {% for group in groups %}
     <tr>
         <td>{{group.id}}</td>
         <td>{{group.name}}</td>
         <td>{{group.group_meter_id}}</td>
+        <td>{{group.group_production_meter_id_first}}</td>
+        <td>{{group.group_production_meter_id_second}}</td>
         <td>
             <a href='/admin/group/update?id={{group.id}}'>Edit</a>
             <a onClick='return confirm("Really delete group?")'
