@@ -13,25 +13,19 @@ def send_mail(receiver, message):
     :raises AssertionError: If no mailer is configured i.e. BUZZN_MAILER is not
     set.
     """
-    logger.error(app.config['BUZZN_SMTP_SERVER'])
-    logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
+
     if app.config['BUZZN_MAILER'] == 'stdout':
         print("mailbegin>>>")
         print("receiver: {}".format(receiver))
         print(message)
         print("<<<mailend")
     elif app.config['BUZZN_MAILER'] == 'smtp':
-        #context = ssl.create_default_context()
-        logger.error(app.config['BUZZN_SMTP_SERVER'])
-        logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
-        logger.error(message)
-        logger.error(type(message))
         message_as_byte = message.encode()
-        server = smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
-                                  int(app.config['BUZZN_SMTP_SERVER_PORT']))
-        server.login(app.config['BUZZN_EMAIL'],
-                     app.config['BUZZN_EMAIL_PASSWORD'])
-        server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_byte)
-        server.close()
+        with smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
+                              app.config['BUZZN_SMTP_SERVER_PORT']) as server:
+            server.login(app.config['BUZZN_EMAIL'],
+                         app.config['BUZZN_EMAIL_PASSWORD'])
+            server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_byte)
+            server.close()
     else:
         raise AssertionError("BUZZN_MAILER not set, no mailer configured. Cannot send mail.")
