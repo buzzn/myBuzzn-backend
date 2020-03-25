@@ -26,11 +26,12 @@ def send_mail(receiver, message):
         logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
         logger.error(message)
         logger.error(type(message))
+        message_as_byte = message.encode()
         server = smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
                                   int(app.config['BUZZN_SMTP_SERVER_PORT']))
         server.login(app.config['BUZZN_EMAIL'],
                      app.config['BUZZN_EMAIL_PASSWORD'])
-        server.sendmail(app.config['BUZZN_EMAIL'], receiver, message)
+        server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_byte)
         server.close()
     else:
         raise AssertionError("BUZZN_MAILER not set, no mailer configured. Cannot send mail.")
