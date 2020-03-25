@@ -4,10 +4,8 @@ from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta, date, time
 import logging.config
-from sqlite3 import IntegrityError
 from discovergy.discovergy import Discovergy
 import redis
-from sqlalchemy.exc import InvalidRequestError
 from models.baseline import BaseLine
 from models.user import User
 from models.group import Group
