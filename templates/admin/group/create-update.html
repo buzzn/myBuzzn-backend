@@ -17,6 +17,21 @@
       <input type="text" name="meter" value="{{meter}}" />
     </div>
   </div><input type="hidden" name="id" value="{{id}}" />
+
+  <div class="field">
+    <label>first group production meter id</label>
+    <div class="control">
+      <input type="text" name="group_production_meter_id_first" value="{{group_production_meter_id_first}}" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label>second group production meter id (if existing)</label>
+    <div class="control">
+      <input type="text" name="group_production_meter_id_second" value="{{group_production_meter_id_second}}" />
+    </div>
+  </div>
+
   <button type="submit" class="button is-success">
       <span class="icon is-small">
         <i class="fas fa-check"></i>
@@ -25,3 +40,4 @@
     </button>
 </form>
 {% endblock %}
+
