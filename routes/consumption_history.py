@@ -119,8 +119,7 @@ def group_consumption_history():
     :param str tics: time distance between returned readings with possible
     values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour', 'one_day',
     'one_week', 'one_month', 'one_year', default is 'one_hour'
-    :return: ({"consumed": str => int, "produced": str => int}, 200) or ({},
-    206) if there is no history
+    :return: (dict with values, 200) or ({}, 206) if there is no history
     :rtype: tuple
     """
 
@@ -142,26 +141,25 @@ def group_consumption_history():
     produced_second_meter_energy = {}
 
     try:
-        readings_group_community_consumption_meter = get_readings(
-            group.group_meter_id, begin)
-        readings_group_production_meter_first = get_readings(
-            group.group_production_meter_id_first, begin)
-        readings_group_production_meter_second = get_readings(
-            group.group_production_meter_id_second, begin)
-        for key in readings_group_community_consumption_meter:
-            consumed_power[key] = readings_group_community_consumption_meter[key].get(
+
+        # Group community consumption meter
+        readings = get_readings(group.group_meter_id, begin)
+        for key in readings:
+            consumed_power[key] = readings[key].get('power')
+            consumed_energy[key] = readings[key].get('energy')
+
+        # First group production meter
+        readings = get_readings(group.group_production_meter_id_first, begin)
+        for key in readings:
+            produced_first_meter_power[key] = readings[key].get('power')
+            produced_first_meter_energy[key] = readings[key].get('energy')
+
+        # Second group production meter
+        readings = get_readings(group.group_production_meter_id_second, begin)
+        for key in readings:
+            produced_second_meter_power[key] = readings[key].get(
                 'power')
-            consumed_energy[key] = readings_group_community_consumption_meter[key].get(
-                'energy')
-        for key in readings_group_production_meter_first:
-            produced_first_meter_power[key] = readings_group_production_meter_first[key].get(
-                'power')
-            produced_first_meter_energy[key] = readings_group_production_meter_first[key].get(
-                'energy')
-        for key in readings_group_production_meter_second:
-            produced_second_meter_power[key] = readings_group_production_meter_second[key].get(
-                'power')
-            produced_second_meter_energy[key] = readings_group_production_meter_second[key].get(
+            produced_second_meter_energy[key] = readings[key].get(
                 'energy')
 
         # Return result
