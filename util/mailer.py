@@ -24,6 +24,8 @@ def send_mail(receiver, message):
         #context = ssl.create_default_context()
         logger.error(app.config['BUZZN_SMTP_SERVER'])
         logger.error(app.config['BUZZN_SMTP_SERVER_PORT'])
+        logger.error(message)
+        logger.error(type(message))
         server = smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
                                   int(app.config['BUZZN_SMTP_SERVER_PORT']))
         server.login(app.config['BUZZN_EMAIL'],
