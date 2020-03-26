@@ -215,7 +215,7 @@ class IndividualDisaggregation(BuzznTestCase):
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = '269e682dbfd74a569ff4561b6416c999'  # 8 words hex value
+        self.target_user.meter_id = 'EASYMETER_1124001747'
         db.session.add(self.target_user)
         db.session.commit()
 
@@ -255,7 +255,7 @@ class GroupDisaggregation(BuzznTestCase):
         db.session.add(self.target_user)
         self.target_group = Group(
             "SomeGroup",
-            '52d7c87f8c26433dbd095048ad30c8cf',
+            'EASYMETER_1124001747',
             '5e769d5b83934bccae11a8fa95e0dc5f',
             'e2a7468f0cf64b7ca3f3d1350b893c6d')
         db.session.add(self.target_group)
@@ -263,8 +263,7 @@ class GroupDisaggregation(BuzznTestCase):
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.disaggregation.get_disaggregation',
-                return_value=EMPTY_RESPONSE)
+    @mock.patch('routes.disaggregation.get_disaggregation', return_value=EMPTY_RESPONSE)
     def test_group_disaggregation(self, get_disaggregation):
         """ Unit tests for group_disaggregation(). """
 
