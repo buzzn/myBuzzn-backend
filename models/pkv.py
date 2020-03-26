@@ -3,7 +3,7 @@ from util.database import db
 
 
 class PKV(db.Model):
-    """ Represents a user's Pro-Kopf-Verbrauch (PKV) in the backend. """
+    """ Represents a user's per capita consumption ("Pro-Kopf-Verbrauch") in the backend. """
 
     date = db.Column(db.DateTime, primary_key=True)
     meter_id = db.Column(db.String(32), ForeignKey('user.meter_id'),
