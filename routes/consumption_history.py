@@ -76,7 +76,7 @@ def individual_consumption_history():
     the meter readings in μWh.
     :param int begin: start time of consumption (default is today at 00:00:00
     am unixtime)
-    :return: (a JSON object with each meter reading mapped to its timestamp, 200)
+    :return: (a JSON object with each power consumption/meter reading mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
     """
@@ -119,7 +119,8 @@ def group_consumption_history():
     :param str tics: time distance between returned readings with possible
     values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour', 'one_day',
     'one_week', 'one_month', 'one_year' (default is 'one_hour')
-    :return: (a JSON object with each reading mapped to its timestamp, 200)
+    :return: (a JSON object with each meter reading/power consumption/power
+    production mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
     """
