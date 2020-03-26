@@ -23,8 +23,6 @@ def send_mail(receiver, message):
     elif app.config['BUZZN_MAILER'] == 'smtp':
         context = ssl.create_default_context()
         message_as_byte = message.encode()
-        logger.error(type(message_as_byte))
-        logger.error(isinstance(message_as_byte, str))
         with smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
                               app.config['BUZZN_SMTP_SERVER_PORT'],
                               context=context) as server:
@@ -32,5 +30,6 @@ def send_mail(receiver, message):
                          app.config['BUZZN_EMAIL_PASSWORD'])
             server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_byte)
             server.close()
+        logger.info("Password reset message sent.")
     else:
         raise AssertionError("BUZZN_MAILER not set, no mailer configured. Cannot send mail.")
