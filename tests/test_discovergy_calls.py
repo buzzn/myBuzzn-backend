@@ -57,11 +57,11 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = '52d7c87f8c26433dbd095048ad30c8cf'  # 8 words hex value
+        self.target_user.meter_id = '117154df05874f41bfdaebcae6abfe98'  # 8 words hex value
         db.session.add(self.target_user)
         db.session.commit()
 
-    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
     def test_individual_consumption_history(self, get_readings):
@@ -144,7 +144,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         db.session.add(self.target_group)
         db.session.commit()
 
-    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
     def test_group_consumption_history(self, get_readings):
@@ -219,7 +219,7 @@ class IndividualDisaggregation(BuzznTestCase):
         db.session.add(self.target_user)
         db.session.commit()
 
-    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('routes.disaggregation.get_disaggregation', return_value=DISAGGREGATION)
     def test_individual_disaggregation(self, get_disaggregation):
@@ -261,7 +261,7 @@ class GroupDisaggregation(BuzznTestCase):
         db.session.add(self.target_group)
         db.session.commit()
 
-    # pylint does not get the required argument from the @mock.patch decorator
+    # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('routes.disaggregation.get_disaggregation',
                 return_value=EMPTY_RESPONSE)
