@@ -22,13 +22,13 @@ def send_mail(receiver, message):
         print("<<<mailend")
     elif app.config['BUZZN_MAILER'] == 'smtp':
         context = ssl.create_default_context()
-        message_as_byte = message.encode()
+
         with smtplib.SMTP_SSL(app.config['BUZZN_SMTP_SERVER'],
                               app.config['BUZZN_SMTP_SERVER_PORT'],
                               context=context) as server:
             server.login(app.config['BUZZN_EMAIL'],
                          app.config['BUZZN_EMAIL_PASSWORD'])
-            server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_byte)
+            server.sendmail(app.config['BUZZN_EMAIL'], receiver, message.encode())
             server.close()
         logger.info("Password reset message sent.")
     else:
