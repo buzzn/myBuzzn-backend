@@ -28,7 +28,7 @@ def send_mail(receiver, message):
                                   app.config['BUZZN_SMTP_SERVER_PORT'],
                                   context=context) as server:
                 server.login(app.config['BUZZN_EMAIL'],
-                         app.config['BUZZN_EMAIL_PASSWORD'])
+                             app.config['BUZZN_EMAIL_PASSWORD'])
                 server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_bytes)
                 server.close()
             logger.info("Password reset message sent.")
