@@ -72,7 +72,7 @@ def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back as
     unixtime
-    :return: (a JSON object with each disaggregation value mapped to its timestamp, 200) 
+    :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
     """
@@ -104,7 +104,7 @@ def group_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
     :param int begin: start time of disaggregation, default is 48h back as
     unixtime
-    :return: (a JSON object with each disaggregation value mapped to its timestamp, 200) 
+    :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
     """
