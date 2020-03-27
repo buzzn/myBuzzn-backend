@@ -203,7 +203,7 @@ def write_baselines(session):
             baseline = calc_energy_consumption_last_term(meter_id, start)
             if baseline is None:
 
-                message = """Cannot write baseline for meter id {} on {} because last term\'s energy 
+                message = """Cannot write baseline for meter id {} on {} because last term\'s energy
                 consumption is missing""".format(meter_id, message_timestamp)
                 logger.info(message)
             else:
