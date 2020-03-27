@@ -29,7 +29,6 @@ def send_mail(receiver, message):
             server.login(app.config['BUZZN_EMAIL'],
                          app.config['BUZZN_EMAIL_PASSWORD'])
             server.sendmail(app.config['BUZZN_EMAIL'], receiver, message_as_bytes)
-            server.close()
         logger.info("Password reset message sent.")
     else:
         raise AssertionError("BUZZN_MAILER not set, no mailer configured. Cannot send mail.")
