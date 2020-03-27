@@ -201,11 +201,12 @@ def write_baselines(session):
     try:
         for meter_id in get_all_user_meter_ids(session):
             baseline = calc_energy_consumption_last_term(meter_id, start)
-            if baseline is None:
 
+            if baseline is None:
                 message = """Cannot write baseline for meter id {} on {} because last term\'s energy
                 consumption is missing""".format(meter_id, message_timestamp)
                 logger.info(message)
+
             else:
                 # Create BaseLine instance
                 session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
