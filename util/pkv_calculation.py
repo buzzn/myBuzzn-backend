@@ -56,7 +56,7 @@ def get_data_day_before(dt, meter_id, session):
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     :returns: date, meter_id, consumption, consumption_cumulated, inhabitants,
     pkv, pkv_cumulated, days, moving_average and moving_average_annualized
-    :rtype: list
+    :rtype: list or type(None) if there was an error
     """
 
     day_before = dt - timedelta(days=1)
@@ -74,7 +74,7 @@ def get_data_day_before(dt, meter_id, session):
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
-        return []
+        return None
 
 
 def get_first_meter_reading_date(meter_id, date):
