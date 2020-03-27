@@ -343,8 +343,9 @@ class Task:
                                                'one_week')
 
                 if readings == []:
-                    logger.info("No readings available for metering id %s",
-                                meter_id)
+                    message = 'No readings available for metering id {}'.format(
+                        meter_id)
+                    logger.info(message)
                     continue
 
                 for reading in readings:
@@ -374,8 +375,9 @@ class Task:
                                                    end_of_day, 'one_hour')
 
                     if readings == []:
-                        logger.info('No readings available for metering id %s',
-                                    meter_id)
+                        message = 'No readings available for metering id {}'.format(
+                            meter_id)
+                        logger.info(message)
                         continue
 
                     for reading in readings:
@@ -401,8 +403,9 @@ class Task:
                     meter_id, calc_support_week_start(), end)
 
                 if disaggregation == {}:
-                    logger.info("No disaggregation available for metering id %s",
-                                meter_id)
+                    message = 'No disaggregation available for metering id {}'.format(
+                        meter_id)
+                    logger.info(message)
                     continue
 
                 for timestamp in disaggregation:
@@ -427,13 +430,15 @@ class Task:
         """ Update the redis database every 60s with the latest discovergy
         data. """
 
-        logger.info("Started redis task at %s",
-                    datetime.now().strftime("%H:%M:%S"))
+        message = 'Started redis task at {}'.format(
+            datetime.now().strftime("%H:%M:%S"))
+        logger.info(message)
 
         while True:
             stdlib_time.sleep(60)
-            logger.info("Fill redis at %s",
-                        datetime.now().strftime("%H:%M:%S"))
+            message = 'Fill redis at {}'.format(
+                datetime.now().strftime("%H:%M:%S"))
+            logger.info(message)
 
             # Populate redis if last data flush was more than 24h ago
             # pylint: disable=global-statement
@@ -460,8 +465,9 @@ class Task:
                     reading = self.d.get_last_reading(meter_id)
 
                     if reading == {}:
-                        logger.info("No last reading available for metering id %s",
-                                    meter_id)
+                        message = 'No last reading available for metering id {}'.format(
+                            meter_id)
+                        logger.info(message)
                         continue
 
                     timestamp = reading['time']
@@ -481,8 +487,9 @@ class Task:
                         meter_id, two_days_back, end)
 
                     if disaggregation == []:
-                        logger.info(
-                            "No disaggregation available for metering id % s", meter_id)
+                        message = 'No disaggregation available for metering id {}'.format(
+                            meter_id)
+                        logger.info(message)
                         continue
 
                     timestamps = sorted(disaggregation.keys())
