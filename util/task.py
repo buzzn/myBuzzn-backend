@@ -29,6 +29,7 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 last_data_flush = None
+message_timestamp = datetime.strftime(datetime.utcnow(), '%Y-%m-%d %H:%M:%S')
 
 
 def get_all_meter_ids(session):
@@ -168,9 +169,20 @@ def write_savings(session):
         for key, value in estimate_energy_saving_each_user(start,
                                                            session).items():
 
-            # Create UserSaving instance
-            session.add(UserSaving(
-                datetime.utcnow(), key, value))
+            if value is None:
+                message = """Cannot calculate saving for meter id {} on {}
+                because last term\'s energy consumption or estimated energy
+                consumption is missing. Writing 0.0 instead""".format(key,
+                                                                      message_timestamp)
+                logger.info(message)
+
+                # Create UserSaving instance and set saving to 0.0
+                user_saving = UserSaving(datetime.utcnow(), key, 0.0)
+
+            else:
+                user_saving = UserSaving(datetime.utcnow(), key, value)
+
+            session.add(user_saving)
 
         # Create CommunitySaving instance
         community_saving = estimate_energy_saving_all_users(start, session)
@@ -189,9 +201,14 @@ def write_baselines(session):
     try:
         for meter_id in get_all_user_meter_ids(session):
             baseline = calc_energy_consumption_last_term(meter_id, start)
+            if baseline is None:
 
-            # Create BaseLine instance
-            session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
+                message = """Cannot write baseline for meter id {} on {} because last term\'s energy 
+                consumption is missing""".format(meter_id, message_timestamp)
+                logger.info(message)
+            else:
+                # Create BaseLine instance
+                session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
 
         session.commit()
     except Exception as e:
@@ -388,6 +405,7 @@ class Task:
                     continue
 
                 for timestamp in disaggregation:
+
                     # Convert unix epoch time in milliseconds to UTC format
                     new_timestamp = datetime.utcfromtimestamp(
                         int(timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
@@ -415,6 +433,7 @@ class Task:
             stdlib_time.sleep(60)
             logger.info("Fill redis at %s",
                         datetime.now().strftime("%H:%M:%S"))
+
             # Populate redis if last data flush was more than 24h ago
             # pylint: disable=global-statement
             global last_data_flush
@@ -488,7 +507,7 @@ class Task:
 
 
 def run():
-    """ Runs the task which fills the redis database with the latest readings."""
+    """ Runs the task which fills the redis database with the latest readings. """
 
     task = Task()
     task.update_redis()
