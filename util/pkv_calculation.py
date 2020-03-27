@@ -56,7 +56,7 @@ def get_data_day_before(dt, meter_id, session):
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     :returns: date, meter_id, consumption, consumption_cumulated, inhabitants,
     pkv, pkv_cumulated, days, moving_average and moving_average_annualized
-    :rtype: list
+    :rtype: list or type(None) if there was an error
     """
 
     day_before = dt - timedelta(days=1)
@@ -74,7 +74,7 @@ def get_data_day_before(dt, meter_id, session):
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
-        return []
+        return None
 
 
 def get_first_meter_reading_date(meter_id, date):
@@ -202,13 +202,13 @@ def calc_pkv(meter_id, inhabitants, date, session):
     if consumption_mywh_last is None or consumption_mywh_first is None:
         return None
 
-    consumption = (consumption_mywh_last - consumption_mywh_first)/1e7
+    consumption = (consumption_mywh_last - consumption_mywh_first)/1e10
 
     # Retrieve data for the day before from the SQLite database
     data_day_before = get_data_day_before(date, meter_id, session)
 
     if data_day_before is None:
-        message = 'There is no data the day before {} in the database for meter_id {}'.format(
+        message = 'There is no data for the day before {} in the database for meter_id {}'.format(
             date, meter_id)
         logger.info(message)
         return None

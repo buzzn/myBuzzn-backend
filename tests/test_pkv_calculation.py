@@ -49,10 +49,10 @@ DAY_ZERO = datetime.today() - timedelta(days=2)
 TEST_USER_METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
 BASE_VALUES = PKV(DAY_ZERO, TEST_USER_METER_ID,
                   0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-PKV_DAY_ONE = PKV(DAY_ONE, TEST_USER_METER_ID, 2174.9714, 2174.9714, 2,
-                  1087.4857, 1087.4857, 1, 1087.4857, 396932)
-PKV_DAY_TWO = PKV(DAY_TWO, TEST_USER_METER_ID, 1500.0, 3674.9714, 2, 750.0,
-                  1837.4857, 2, 918.74285, 335341)
+PKV_DAY_ONE = PKV(DAY_ONE, TEST_USER_METER_ID, 2.1749714, 2.1749714, 2,
+                  1.0874857, 1.0874857, 1, 1.0874857, 397)
+PKV_DAY_TWO = PKV(DAY_TWO, TEST_USER_METER_ID, 1.5, 3.6749714, 2, 0.75,
+                  1.8374857, 2, 0.91874285, 335)
 
 
 class PKVCalculationTestCase(BuzznTestCase):
@@ -72,8 +72,8 @@ class PKVCalculationTestCase(BuzznTestCase):
 
         self.base_values = PKV(
             DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PKV(DAY_ONE, self.test_user.meter_id, 2174.9714, 2174.9714, 2,
-                               1087.4857, 1087.4857, 1, 1087.4857, 396932)
+        self.pkv_day_one = PKV(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
+                               1.0874857, 1.0874857, 1, 1.0874857, 397)
         db.session.add(self.base_values)
         db.session.add(self.pkv_day_one)
 

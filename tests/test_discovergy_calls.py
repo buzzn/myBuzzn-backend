@@ -8,25 +8,36 @@ from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 
 
-CONSUMPTION = {"2020-01-15 10:00:04": {'power': 0, 'power3': -27279,
+CONSUMPTION = {"2020-01-15 10:00:04": {'power': 27279, 'power3': -27279,
                                        'energyOut': 0, 'power1': 0,
                                        'energy': 2180256872214000,
                                        'power2': -2437},
-               "2020-01-15 10:01:10": {'power': 0, 'power3': -27279,
+               "2020-01-15 10:01:10": {'power': 27200, 'power3': -27279,
                                        'energyOut': 0, 'power1': 0,
                                        'energy': 2180256872214000,
                                        'power2': -2437}}
 EMPTY_RESPONSE = {}
-INDIVIDUAL_CONSUMPTION = {"2020-01-15 10:00:04": 0, "2020-01-15 10:01:10": 0}
-EMPTY_RESPONSE_BYTES = {}
-GROUP_CONSUMPTION = {'consumed': {"2020-01-15 10:00:04": 0,
-                                  "2020-01-15 10:01:10": 0},
-                     'produced_first_meter': {"2020-01-15 10:00:04": 0,
-                                              "2020-01-15 10:01:10": 0},
-                     'produced_second_meter': {"2020-01-15 10:00:04": 0,
-                                               "2020-01-15 10:01:10": 0}}
-EMPTY_GROUP_CONSUMPTION = {'consumed': {}, 'produced_first_meter': {},
-                           'produced_second_meter': {}}
+INDIVIDUAL_CONSUMPTION = {'energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                     '2020-01-15 10:01:10': 2180256872214000},
+                          'power': {'2020-01-15 10:00:04': 27279, '2020-01-15 10:01:10': 27200}}
+EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
+GROUP_CONSUMPTION = {'consumed_energy': {"2020-01-15 10:00:04": 2180256872214000,
+                                         "2020-01-15 10:01:10": 2180256872214000},
+                     'consumed_power': {"2020-01-15 10:00:04": 27279,
+                                        "2020-01-15 10:01:10": 27200},
+                     'produced_first_meter_energy': {"2020-01-15 10:00:04": 2180256872214000,
+                                                     "2020-01-15 10:01:10": 2180256872214000},
+                     'produced_first_meter_power': {"2020-01-15 10:00:04": 27279,
+                                                    "2020-01-15 10:01:10": 27200},
+                     'produced_second_meter_energy': {"2020-01-15 10:00:04": 2180256872214000,
+                                                      "2020-01-15 10:01:10": 2180256872214000},
+                     'produced_second_meter_power': {"2020-01-15 10:00:04": 27279,
+                                                     "2020-01-15 10:01:10": 27200}}
+EMPTY_GROUP_CONSUMPTION = {'consumed_energy': {}, 'consumed_power': {},
+                           'produced_first_meter_energy': {},
+                           'produced_first_meter_power': {},
+                           'produced_second_meter_energy': {},
+                           'produced_second_meter_power': {}}
 DISAGGREGATION = {"2020-01-15 10:01:04": {"Durchlauferhitzer-1": 0,
                                           "Grundlast-1": 50000000},
                   "2020-01-15 10:01:10": {"Durchlauferhitzer-1": 0,
@@ -270,7 +281,7 @@ class GroupDisaggregation(BuzznTestCase):
         # Check response content
         self.assertTrue(isinstance(response.data, bytes))
         self.assertEqual(ast.literal_eval(
-            response.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+            response.data.decode('utf-8')), EMPTY_RESPONSE)
 
 
 class Disaggregation(BuzznTestCase):
@@ -321,6 +332,6 @@ class Disaggregation(BuzznTestCase):
 
             # Check response content
             self.assertEqual(ast.literal_eval(
-                response_timestamp_format.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+                response_timestamp_format.data.decode('utf-8')), EMPTY_RESPONSE)
             self.assertEqual(ast.literal_eval(
-                response_parameter.data.decode('utf-8')), EMPTY_RESPONSE_BYTES)
+                response_parameter.data.decode('utf-8')), EMPTY_RESPONSE)

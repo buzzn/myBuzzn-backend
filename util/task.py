@@ -200,9 +200,10 @@ def write_baselines(session):
 
 
 def write_base_values_or_pkv(session):
-    """ If yesterday was the start of the support year, write yesterday's
-    base the base values for all users to the SQLite database.
-    Otherwise, write yesterday's pkv for all users to the QLite database.
+    """ If yesterday was the start of the support year, write the base values
+    for all users to the SQLite database.
+    Otherwise, write yesterday's pkv for all users to the SQLite database.
+    :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
     yesterday_date = (datetime.today() - timedelta(days=1)).date()
@@ -224,46 +225,58 @@ def write_base_values(dt, session):
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
-    try:
-        for user in get_all_users(session):
-            base_values = define_base_values(user.inhabitants, dt)
+    for user in get_all_users(session):
+        base_values = define_base_values(user.inhabitants, dt)
 
-            # Create PKV instance
-            session.add(PKV(dt, user.meter_id, base_values['consumption'],
-                            base_values['consumption_cumulated'],
-                            base_values['inhabitants'], base_values['pkv'],
-                            base_values['pkv_cumulated'], base_values['days'],
-                            base_values['moving_average'],
-                            base_values['moving_average_annualized']))
+        # Create PKV instance
+        session.add(PKV(dt, user.meter_id, base_values['consumption'],
+                        base_values['consumption_cumulated'],
+                        base_values['inhabitants'], base_values['pkv'],
+                        base_values['pkv_cumulated'], base_values['days'],
+                        base_values['moving_average'],
+                        base_values['moving_average_annualized']))
 
-        session.commit()
-    except Exception as e:
-        message = exception_message(e)
-        logger.error(message)
+    session.commit()
 
 
 def write_pkv(dt, session):
     """ Write the pkv for each user to the SQLite database.
+    If for one user there are no yesterday's values in the database, write the
+    base values for that user.
+    If today's entry already exists for a user, skip writing that entry.
     :param datetime dt: the date to write the values for
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
-    try:
-        for user in get_all_users(session):
-            pkv = calc_pkv(user.meter_id, user.inhabitants, dt, session)
+    for user in get_all_users(session):
+
+        try:
+            # Check if entry exists
+            pkv_today = session.query(PKV).filter_by(
+                date=dt, meter_id=user.meter_id).first()
+
+            # Create today's entry if it does not exist
+            if not pkv_today:
+                dataset = calc_pkv(
+                    user.meter_id, user.inhabitants, dt, session)
+
+                # If there are no yesterday's values in the database for this user,
+                # define the base values
+                if dataset is None:
+                    dataset = define_base_values(user.inhabitants, dt)
 
             # Create PKV instance
-            session.add(PKV(dt, user.meter_id, pkv['consumption'],
-                            pkv['consumption_cumulated'],
-                            pkv['inhabitants'], pkv['pkv'],
-                            pkv['pkv_cumulated'], pkv['days'],
-                            pkv['moving_average'],
-                            pkv['moving_average_annualized']))
+                session.add(PKV(dt, user.meter_id, dataset['consumption'],
+                                dataset['consumption_cumulated'],
+                                dataset['inhabitants'], dataset['pkv'],
+                                dataset['pkv_cumulated'], dataset['days'],
+                                dataset['moving_average'],
+                                dataset['moving_average_annualized']))
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
 
-        session.commit()
-    except Exception as e:
-        message = exception_message(e)
-        logger.error(message)
+    session.commit()
 
 
 class Task:
@@ -402,22 +415,22 @@ class Task:
             stdlib_time.sleep(60)
             logger.info("Fill redis at %s",
                         datetime.now().strftime("%H:%M:%S"))
+            # Populate redis if last data flush was more than 24h ago
+            # pylint: disable=global-statement
+            global last_data_flush
+
+            # Connect to SQLite database
+            session = create_session()
+
+            if (last_data_flush is None) or (datetime.utcnow() -
+                                             last_data_flush >
+                                             timedelta(hours=24)):
+                self.populate_redis()
+                write_baselines(session)
+                write_savings(session)
+                write_base_values_or_pkv(session)
+
             try:
-                # Populate redis if last data flush was more than 24h ago
-                # pylint: disable=global-statement
-                global last_data_flush
-
-                # Connect to SQLite database
-                session = create_session()
-
-                if (last_data_flush is None) or (datetime.utcnow() -
-                                                 last_data_flush >
-                                                 timedelta(hours=24)):
-                    self.populate_redis()
-                    write_baselines(session)
-                    write_savings(session)
-                    write_base_values_or_pkv(session)
-
                 all_meter_ids = get_all_meter_ids(session)
                 end = calc_end()
                 two_days_back = calc_two_days_back()
