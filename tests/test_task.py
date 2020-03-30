@@ -6,9 +6,10 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.task import get_all_meter_ids, calc_term_boundaries, calc_end,\
+from util.task import get_all_meter_ids, get_all_users, calc_term_boundaries, calc_end,\
     calc_support_year_start, calc_support_year_start_datetime,\
-    calc_support_week_start, calc_two_days_back, client_name, Task
+    calc_support_week_start, calc_two_days_back,\
+    check_and_nullify_power_value, client_name, Task
 
 
 ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
@@ -24,18 +25,19 @@ class TaskTestCase(BuzznTestCase):
 
         db.drop_all()
         db.create_all()
-        test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
-                         'TestToken', 'dca0ec32454e4bdd9ed719fbc9fb75d6', 1)
-        test_user.flat_size = 60.0
-        test_user.inhabitants = 2
-        test_user.set_password('some_password')
-        test_user.state = StateType.ACTIVE
-        db.session.add(test_user)
-        db.session.add(User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
-                            'TestToken2', '6fdbd41a93d8421cac4ea033203844d1',
-                            1))
-        db.session.add(User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
-                            'TestToken3', 'bf60438327b1498c9df4e43fc9327849', 1))
+        self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
+                              'TestToken', 'dca0ec32454e4bdd9ed719fbc9fb75d6', 1)
+        self.test_user.flat_size = 60.0
+        self.test_user.inhabitants = 2
+        self.test_user.set_password('some_password')
+        self.test_user.state = StateType.ACTIVE
+        db.session.add(self.test_user)
+        self.test_user2 = User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
+                               'TestToken2', '6fdbd41a93d8421cac4ea033203844d1', 1)
+        db.session.add(self.test_user2)
+        self.test_user3 = User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
+                               'TestToken3', 'bf60438327b1498c9df4e43fc9327849', 1)
+        db.session.add(self.test_user3)
         db.session.add(Group('TestGroup',
                              '0a0f65e992c042e4b86956f3f080114d',
                              '5e769d5b83934bccae11a8fa95e0dc5f',
@@ -60,6 +62,22 @@ class TaskTestCase(BuzznTestCase):
         self.assertEqual(result, ALL_METER_IDS)
         for meter_id in result:
             self.assertEqual(len(meter_id), 32)
+
+    def test_get_all_users(self):
+        """ Unit tests for function get_all_users(). """
+
+        result = get_all_users(db.session)
+
+        # Check result types
+        self.assertIsInstance(result, list)
+        for user in result:
+            self.assertIsInstance(user, User)
+
+        # Check result values
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0], self.test_user)
+        self.assertEqual(result[1], self.test_user2)
+        self.assertEqual(result[2], self.test_user3)
 
     def test_calc_term_boundaries(self):
         """ Unit tests for function calc_term_boundaries().
