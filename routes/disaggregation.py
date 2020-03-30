@@ -26,10 +26,12 @@ redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
 def get_disaggregation(meter_id, begin):
     """ Return all disaggregation values for the given meter id, starting with
     the given timestamp. As we were using unix timestamps as basis for our
-    dates all along, there is no need to convert the given,
-    timezone-unaware dates to UTC.
+    dates all along, there is no need to convert the given, timezone-unaware dates to UTC.
     :param str meter_id: the meter id for which to get the values
     :param int begin: the unix timestamp to begin with
+    :return: the disaggregation values for the period mapped to their
+    timestamps
+    :rtype: dict
     """
 
     result = {}
@@ -37,20 +39,30 @@ def get_disaggregation(meter_id, begin):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'disaggregation':
             disaggregation_date = parser.parse(key[len(meter_id)+1:])
-            disaggregation_timestamp = disaggregation_date.timestamp()
+
+            # Parse timestamp as int to use consistent timestamps
+            disaggregation_timestamp = int(disaggregation_date.timestamp())
+
             if disaggregation_timestamp >= begin:
                 result[disaggregation_date.strftime(
                     '%Y-%m-%d %H:%M:%S')] = data.get('values')
+
     return result
 
 
 def read_begin_parameter():
-    """ Use the given begin parameter. """
+    """ Use the given begin parameter.
+    :return: the given begin parameter or 48 hours back in time as integer unic
+    timestamp if no parameter was given
+    :rtype: int
+    """
 
-    # Calculate the minimal time of "today", i.e. 00:00 am as unix timestamp
+    # Calculate 48 hours back in time as integer unix timestamp
+    start = int((datetime.utcnow() - timedelta(hours=48)).timestamp())
 
-    start = (datetime.utcnow() - timedelta(hours=48)).timestamp()
+    # Read the given begin parameter
     begin = request.args.get('begin', default=start, type=int)
+
     return begin
 
 
@@ -58,8 +70,10 @@ def read_begin_parameter():
 @login_required
 def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
-    :param int begin: start time of disaggregation, default is 48h back in time
-    :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
+    :param int begin: start time of disaggregation, default is 48h back as
+    unixtime
+    :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
+    or ({}, 206) if there is no history
     :rtype: tuple
     """
 
@@ -88,8 +102,10 @@ def individual_disaggregation():
 @login_required
 def group_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
-    :param int begin: start time of disaggregation, default is 48h back in time
-    :return: ({str => {str => int}}, 200) or ({}, 206) if there is no history
+    :param int begin: start time of disaggregation, default is 48h back as
+    unixtime
+    :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
+    or ({}, 206) if there is no history
     :rtype: tuple
     """
 
