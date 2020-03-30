@@ -220,8 +220,10 @@ class TaskTestCase(BuzznTestCase):
     def test_check_and_nullify_power_value(self):
         """ Unit tests for function check_and_nullify_power_value(). """
 
-        result = check_and_nullify_power_value(READING)
-        result_adjusted = check_and_nullify_power_value(READING_NEGATIVE_POWER)
+        result = check_and_nullify_power_value(
+            READING, self.test_user.meter_id)
+        result_adjusted = check_and_nullify_power_value(READING_NEGATIVE_POWER,
+                                                        self.test_user.meter_id)
 
         # Check result types
         self.assertIsInstance(result, dict)
