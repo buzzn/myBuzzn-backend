@@ -297,6 +297,31 @@ def write_pkv(dt, session):
     session.commit()
 
 
+def check_and_nullify_power_values(readings):
+    """ Sometimes discovergy delivers negative values; set them to 0.
+    :param list readings: a list of readings obtained from discovergy
+    :return: the adjusted readings
+    :rtype: list
+    """
+
+    for reading in readings:
+        if 'power' in reading['values'].keys() and reading['values']['power'] < 0:
+            reading['values']['power'] = 0
+    return readings
+
+
+def check_and_nullify_power_value(reading):
+    """ Check and nullify one single power value.
+    :param dict reading: a single reading obtained from discovergy
+    :return: the adjusted reading
+    :rtype: dict
+    """
+
+    if 'power' in reading['values'].keys() and reading['values']['power'] < 0:
+        reading['values']['power'] = 0
+    return reading
+
+
 class Task:
     """ Handle discovergy login, data retrieval, populating and updating the
     redis database. """
@@ -347,7 +372,9 @@ class Task:
                                 meter_id)
                     continue
 
-                for reading in readings:
+                adjusted_readings = check_and_nullify_power_values(readings)
+
+                for reading in adjusted_readings:
                     timestamp = reading['time']
 
                     # Convert unix epoch time in milliseconds to UTC format
@@ -378,7 +405,10 @@ class Task:
                                     meter_id)
                         continue
 
-                    for reading in readings:
+                    adjusted_readings = check_and_nullify_power_values(
+                        readings)
+
+                    for reading in adjusted_readings:
                         timestamp = reading['time']
 
                         # Convert unix epoch time in milliseconds to UTC format
@@ -452,7 +482,6 @@ class Task:
 
             try:
                 all_meter_ids = get_all_meter_ids(session)
-                end = calc_end()
                 two_days_back = calc_two_days_back()
 
                 # Get last reading for all meters
@@ -464,21 +493,22 @@ class Task:
                                     meter_id)
                         continue
 
-                    timestamp = reading['time']
-                    new_timestamp = datetime.utcfromtimestamp(timestamp/1000).\
-                        strftime('%Y-%m-%d %H:%M:%S')
-                    key = meter_id + '_' + str(new_timestamp)
+                    adjusted_reading = check_and_nullify_power_value(reading)
+                    key = meter_id + '_' + \
+                        str(datetime.utcfromtimestamp(
+                            adjusted_reading['time']/1000).strftime('%F %T'))
 
                     # Write reading to redis database as key-value-pair
                     # The unique key consists of the meter id (16 chars), the
                     # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='reading', values=reading['values'])
+                    data = dict(type='reading',
+                                values=adjusted_reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
                 # Get latest disaggregation for all meters
                 for meter_id in all_meter_ids:
                     disaggregation = self.d.get_disaggregation(
-                        meter_id, two_days_back, end)
+                        meter_id, two_days_back, calc_end())
 
                     if disaggregation == []:
                         logger.info(
