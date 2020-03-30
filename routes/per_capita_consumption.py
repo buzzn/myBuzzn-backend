@@ -16,7 +16,7 @@ PerCapitaConsumption = Blueprint('PerCapitaConsumption', __name__)
 def get_moving_average_annualized(meter_id):
     """ Retrieve the last annualized moving average for the given meter id from the SQLite database.
     :param str meter_id: the user's meter id
-    :returns: the last PKV mapped to its timestamp or None if there are no
+    :returns: the last per capita consumption mapped to its timestamp or None if there are no
     values
     :rtype: dict or type(None) if there are no values
     """
@@ -38,7 +38,7 @@ def get_moving_average_annualized(meter_id):
 @PerCapitaConsumption.route('/per-capita-consumption', methods=['GET'])
 @login_required
 def per_capita_consumption():
-    """ Shows the annualized moving average for today in kWh.
+    """ Shows the the last annualized moving average in kWh.
     :returns: (a JSON object where the moving average is mapped to the
     timestamp, 200) or ({}, 206) if there is no value
     :rtype: tuple

@@ -80,7 +80,7 @@ def get_data_day_before(dt, meter_id, session):
 def get_first_meter_reading_date(meter_id, date):
     """ Return the first reading for the given meter id on the given day which
     is stored in the redis database. As we were using unix timestamps as
-    basis for our dates all along, there is no need to convert the given,
+    basis for our dates all along, there is no need to convert the stored,
     timezone-unaware date to UTC.
     : param str meter_id: the meter id for which to get the value
     : param datetime.date date: the date for which to get the value
@@ -140,6 +140,10 @@ def define_base_values(inhabitants, date):
             'The start date of the calculation cannot lie in the future.')
         return None
 
+    # Set the timezone to UTC to be consistent with all other database values
+    timezone = pytz.timezone('UTC')
+    date = timezone.localize(date)
+
     # Define day_zero := Berechnungsstart - 1 Tag
     day_zero = date - timedelta(days=1)
 
@@ -193,15 +197,16 @@ def calc_pkv(meter_id, inhabitants, date, session):
             'The input parameter \'date\' cannot lie in the future.')
         return None
 
+    # Set the timezone to UTC to be consistent with all other database values
+    timezone = pytz.timezone('UTC')
+    date = timezone.localize(date)
+
     # Calculate consumption := last meter reading of date - first meter reading
     # of date in kWh
-
     consumption_mywh_last = get_last_meter_reading_date(meter_id, date)
     consumption_mywh_first = get_first_meter_reading_date(meter_id, date)
-
     if consumption_mywh_last is None or consumption_mywh_first is None:
         return None
-
     consumption = (consumption_mywh_last - consumption_mywh_first)/1e10
 
     # Retrieve data for the day before from the SQLite database

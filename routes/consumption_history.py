@@ -25,26 +25,14 @@ redis_db = os.environ['REDIS_DB']
 redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
 
 
-def get_all_readings(meter_id):
-    """ Return all readings for the given meter id.
-    :param str meter_id: the meter id for which to get the values
-    """
-
-    result = {}
-    for key in get_sorted_keys(redis_client, meter_id):
-        data = json.loads(redis_client.get(key))
-        if data.get('type') == 'reading':
-            timestamp = key[len(meter_id)+1:]
-            result[timestamp] = data.get('values')
-    return result
-
-
 def get_readings(meter_id, begin):
     """ Return all readings for the given meter id, starting with the given
     timestamp. As we were using unix timestamps as basis for our dates all
     along, there is no need to convert the given, timezone-unaware dates to UTC.
     :param str meter_id: the meter id for which to get the values
     :param int begin: the unix timestamp to begin with
+    :return: the readings for the period mapped to their timestamps
+    :rtype: dict
     """
 
     result = {}
@@ -52,21 +40,31 @@ def get_readings(meter_id, begin):
         data = json.loads(redis_client.get(key))
         if data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
-            reading_timestamp = reading_date.timestamp()
+
+            # Parse timestamp as int to use consistent timestamps
+            reading_timestamp = int(reading_date.timestamp())
+
             if reading_timestamp >= begin:
                 result[reading_date.strftime(
-                    '%Y-%m-%d %H:%S:%M')] = data.get('values')
+                    '%Y-%m-%d %H:%M:%S')] = data.get('values')
+
     return result
 
 
 def read_begin_parameter():
-    """ Use the given begin parameter. """
+    """ Use the given begin parameter.
+    :return: the given begin parameter or today at 00:00:00 am as integer
+    unix timestamp if no parameter was given
+    :rtype: int
+    """
 
-    # Calculate the minimal time of "today", i.e. 00:00 am as unix timestamp
+    # Calculate the minimal time of "today", i.e. 00:00:00 am as integer unix timestamp
+    start = int(datetime.combine(
+        datetime.utcnow(), datetime.min.time()).timestamp())
 
-    start = datetime.combine(
-        datetime.utcnow(), datetime.min.time()).timestamp()
-    begin = request.args.get('begin', default=start, type=float)
+    # Read the given begin parameter
+    begin = request.args.get('begin', default=start, type=int)
+
     return begin
 
 
@@ -76,9 +74,10 @@ def read_begin_parameter():
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval in mW and
     the meter readings in μWh.
-    :param int begin: start time of consumption, default is today at 0:00
-    :return: (a JSON object where each meter reading is mapped to its point
-    in time, 200) or ({}, 206) if there is no history
+    :param int begin: start time of consumption (default is today at 00:00:00
+    am unixtime)
+    :return: (a JSON object with each power consumption/meter reading mapped to its timestamp, 200)
+    or ({}, 206) if there is no history
     :rtype: tuple
     """
 
@@ -114,12 +113,15 @@ def individual_consumption_history():
 @login_required
 def group_consumption_history():
     """ Shows the history of consumption of the given time interval in mW.
-    :param int begin: start time of consumption, default is today at 0:00
+    :param int begin: start time of consumption (default is today at 00:00:00
+    am unixtime)
     :param int end: end time of consumption, default is $now
     :param str tics: time distance between returned readings with possible
     values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour', 'one_day',
-    'one_week', 'one_month', 'one_year', default is 'one_hour'
-    :return: (dict with values, 200) or ({}, 206) if there is no history
+    'one_week', 'one_month', 'one_year' (default is 'one_hour')
+    :return: (a JSON object with each meter reading/power consumption/power
+    production mapped to its timestamp, 200)
+    or ({}, 206) if there is no history
     :rtype: tuple
     """
 
