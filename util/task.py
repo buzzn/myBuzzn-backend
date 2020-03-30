@@ -297,16 +297,17 @@ def write_pkv(dt, session):
     session.commit()
 
 
-def check_and_nullify_power_value(reading):
+def check_and_nullify_power_value(reading, meter_id):
     """ Sometimes discovergy delivers a negative power value; set it to 0.
     :param dict reading: a single reading obtained from discovergy
+    :param str meter_id: the meter id the reading belongs to
     :return: the adjusted reading
     :rtype: dict
     """
 
     if 'power' in reading['values'].keys() and reading['values']['power'] < 0:
-        message = 'Received negative power value {} from Discovergy'.format(
-            reading['values']['power'])
+        message = 'Received negative power value {} from Discovergy for meter id {}'.format(
+            reading['values']['power'], meter_id)
         logger.warning(message)
         reading['values']['power'] = 0
     return reading
@@ -364,7 +365,8 @@ class Task:
                     continue
 
                 for reading in readings:
-                    adjusted_reading = check_and_nullify_power_value(reading)
+                    adjusted_reading = check_and_nullify_power_value(reading,
+                                                                     meter_id)
                     timestamp = adjusted_reading['time']
 
                     # Convert unix epoch time in milliseconds to UTC format
@@ -399,7 +401,7 @@ class Task:
 
                     for reading in readings:
                         adjusted_reading = check_and_nullify_power_value(
-                            reading)
+                            reading, meter_id)
                         timestamp = adjusted_reading['time']
 
                         # Convert unix epoch time in milliseconds to UTC format
@@ -489,7 +491,8 @@ class Task:
                         logger.info(message)
                         continue
 
-                    adjusted_reading = check_and_nullify_power_value(reading)
+                    adjusted_reading = check_and_nullify_power_value(reading,
+                                                                     meter_id)
                     key = meter_id + '_' + \
                         str(datetime.utcfromtimestamp(
                             adjusted_reading['time']/1000).strftime('%F %T'))
