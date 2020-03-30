@@ -6,7 +6,7 @@ from dateutil import parser
 import redis
 import pytz
 from sqlalchemy import extract
-from models.pkv import PKV
+from models.pcc import PerCapitaConsumption
 from util.energy_saving_calculation import get_last_meter_reading_date
 from util.error import exception_message
 from util.redis_helpers import get_sorted_keys
@@ -62,11 +62,11 @@ def get_data_day_before(dt, meter_id, session):
     day_before = dt - timedelta(days=1)
 
     try:
-        result = session.query(PKV).filter_by(
-            meter_id=meter_id).filter(extract('year', PKV.date) == day_before.year,
+        result = session.query(PerCapitaConsumption).filter_by(
+            meter_id=meter_id).filter(extract('year', PerCapitaConsumption.date) == day_before.year,
                                       extract(
-                                          'month', PKV.date) == day_before.month,
-                                      extract('day', PKV.date) ==
+                                          'month', PerCapitaConsumption.date) == day_before.month,
+                                      extract('day', PerCapitaConsumption.date) ==
                                       day_before.day).first()
 
         return result

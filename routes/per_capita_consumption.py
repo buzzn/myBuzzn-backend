@@ -2,7 +2,7 @@ import logging.config
 from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
-from models.pkv import PKV
+from models.pcc import PerCapitaConsumption
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, NO_PER_CAPITA_CONSUMPTION, exception_message
@@ -22,8 +22,8 @@ def get_moving_average_annualized(meter_id):
     """
 
     try:
-        result = db.session.query(PKV.date, PKV.moving_average_annualized).filter_by(
-            meter_id=meter_id).order_by(PKV.date.desc()).first()
+        result = db.session.query(PerCapitaConsumption.date, PerCapitaConsumption.moving_average_annualized).filter_by(
+            meter_id=meter_id).order_by(PerCapitaConsumption.date.desc()).first()
 
         timestamp = result[0].strftime('%Y-%m-%d %H:%M:%S')
         moving_average_annualized = result[1]

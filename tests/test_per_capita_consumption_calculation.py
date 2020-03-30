@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 import json
 from unittest import mock
-from models.pkv import PKV
+from models.pcc import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.pkv_calculation import define_base_values, calc_pkv,\
+from util.per_capita_consumption_calculation import define_base_values, calc_pkv,\
     get_first_meter_reading_date, check_input_parameter_date,\
     get_data_day_before, build_data_package
 
@@ -47,15 +47,15 @@ USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
 
 DAY_ZERO = datetime.today() - timedelta(days=2)
 TEST_USER_METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
-BASE_VALUES = PKV(DAY_ZERO, TEST_USER_METER_ID,
-                  0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-PKV_DAY_ONE = PKV(DAY_ONE, TEST_USER_METER_ID, 2.1749714, 2.1749714, 2,
-                  1.0874857, 1.0874857, 1, 1.0874857, 397)
-PKV_DAY_TWO = PKV(DAY_TWO, TEST_USER_METER_ID, 1.5, 3.6749714, 2, 0.75,
-                  1.8374857, 2, 0.91874285, 335)
+BASE_VALUES = PerCapitaConsumption(DAY_ZERO, TEST_USER_METER_ID,
+                                   0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+PCC_DAY_ONE = PerCapitaConsumption(DAY_ONE, TEST_USER_METER_ID, 2.1749714, 2.1749714, 2,
+                                   1.0874857, 1.0874857, 1, 1.0874857, 397)
+PCC_DAY_TWO = PerCapitaConsumption(DAY_TWO, TEST_USER_METER_ID, 1.5, 3.6749714, 2, 0.75,
+                                   1.8374857, 2, 0.91874285, 335)
 
 
-class PKVCalculationTestCase(BuzznTestCase):
+class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
     """ Unit tests for PKV calculation methods. """
 
     def setUp(self):
@@ -70,10 +70,10 @@ class PKVCalculationTestCase(BuzznTestCase):
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
 
-        self.base_values = PKV(
+        self.base_values = PerCapitaConsumption(
             DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PKV(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
-                               1.0874857, 1.0874857, 1, 1.0874857, 397)
+        self.pkv_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
+                                                1.0874857, 1.0874857, 1, 1.0874857, 397)
         db.session.add(self.base_values)
         db.session.add(self.pkv_day_one)
 
@@ -160,7 +160,7 @@ class PKVCalculationTestCase(BuzznTestCase):
                          'consumption_cumulated', 'inhabitants', 'pkv',\
                          'pkv_cumulated', 'days', 'moving_average', 'moving_average_annualized':
                 self.assertEqual(result_day_one.get(
-                    param), PKV_DAY_ONE.__dict__.get(param))
+                    param), PCC_DAY_ONE.__dict__.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_TWO)
@@ -180,7 +180,7 @@ class PKVCalculationTestCase(BuzznTestCase):
                          'consumption_cumulated', 'inhabitants', 'pkv',\
                          'pkv_cumulated', 'days', 'moving_average', 'moving_average_annualized':
                 self.assertEqual(result_day_two.get(
-                    param), PKV_DAY_TWO.__dict__.get(param))
+                    param), PCC_DAY_TWO.__dict__.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
@@ -198,9 +198,9 @@ class PKVCalculationTestCase(BuzznTestCase):
         """ Unit tests for function build_data_package(). """
 
         data_package_day_one = build_data_package(BASE_VALUES,
-                                                  PKV_DAY_ONE.consumption,
-                                                  PKV_DAY_ONE.inhabitants,
-                                                  PKV_DAY_ONE.date)
+                                                  PCC_DAY_ONE.consumption,
+                                                  PCC_DAY_ONE.inhabitants,
+                                                  PCC_DAY_ONE.date)
 
         # Check return types
         self.assertIsInstance(data_package_day_one, dict)
@@ -220,11 +220,11 @@ class PKVCalculationTestCase(BuzznTestCase):
         # Check return values
         self.assertEqual(data_package_day_one['consumption_cumulated'],
                          BASE_VALUES.consumption_cumulated +
-                         PKV_DAY_ONE.consumption)
+                         PCC_DAY_ONE.consumption)
         self.assertEqual(data_package_day_one['pkv'],
-                         PKV_DAY_ONE.consumption/PKV_DAY_ONE.inhabitants)
+                         PCC_DAY_ONE.consumption / PCC_DAY_ONE.inhabitants)
         self.assertEqual(data_package_day_one['pkv_cumulated'],
-                         BASE_VALUES.pkv_cumulated + data_package_day_one['pkv'])
+                         BASE_VALUES.per_capita_consumption_cumulated + data_package_day_one['pkv'])
         self.assertEqual(data_package_day_one['days'], BASE_VALUES.days + 1)
         self.assertEqual(data_package_day_one['moving_average'],
                          data_package_day_one['pkv_cumulated']/data_package_day_one['days'])

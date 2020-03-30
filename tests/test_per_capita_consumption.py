@@ -1,15 +1,15 @@
 import ast
 import json
 from flask_api import status
-from models.pkv import PKV
+from models.pcc import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from routes.per_capita_consumption import get_moving_average_annualized
-from tests.test_pkv_calculation import DAY_ZERO, DAY_ONE, PKV_DAY_ONE
+from tests.test_per_capita_consumption_calculation import DAY_ZERO, DAY_ONE, PCC_DAY_ONE
 
 
-class PKVTestCase(BuzznTestCase):
+class PCCTestCase(BuzznTestCase):
     """ Unit tests for PKV route and functions(). """
 
     def setUp(self):
@@ -23,12 +23,12 @@ class PKVTestCase(BuzznTestCase):
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
 
-        self.base_values = PKV(
+        self.base_values = PerCapitaConsumption(
             DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PKV(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
-                               1.0874857, 1.0874857, 1, 1.0874857, 397)
+        self.per_capita_consumption_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
+                                                                   1.0874857, 1.0874857, 1, 1.0874857, 397)
         db.session.add(self.base_values)
-        db.session.add(self.pkv_day_one)
+        db.session.add(self.per_capita_consumption_day_one)
         db.session.commit()
 
     def test_get_moving_average_annualized(self):
@@ -41,7 +41,7 @@ class PKVTestCase(BuzznTestCase):
 
         # Check result values
         self.assertEqual(result[DAY_ONE.strftime('%Y-%m-%d %H:%M:%S')],
-                         PKV_DAY_ONE.moving_average_annualized)
+                         PCC_DAY_ONE.moving_average_annualized)
 
     def test_per_capita_consumption(self):
         """ Unit tests for function per_capita_consumption(). """
@@ -64,5 +64,5 @@ class PKVTestCase(BuzznTestCase):
 
         for key, value in ast.literal_eval(response.data.decode('utf-8')).items():
             self.assertEqual(
-                key, PKV_DAY_ONE.date.strftime('%Y-%m-%d %H:%M:%S'))
-            self.assertEqual(value, PKV_DAY_ONE.moving_average_annualized)
+                key, PCC_DAY_ONE.date.strftime('%Y-%m-%d %H:%M:%S'))
+            self.assertEqual(value, PCC_DAY_ONE.moving_average_annualized)

@@ -9,13 +9,13 @@ import redis
 from models.baseline import BaseLine
 from models.user import User
 from models.group import Group
-from models.pkv import PKV
+from models.pcc import PerCapitaConsumption
 from models.savings import UserSaving, CommunitySaving
 from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
-from util.pkv_calculation import define_base_values, calc_pkv
+from util.per_capita_consumption_calculation import define_base_values, calc_pkv
 
 
 log_file_path = path.join(path.dirname(
@@ -247,12 +247,12 @@ def write_base_values(dt, session):
         base_values = define_base_values(user.inhabitants, dt)
 
         # Create PKV instance
-        session.add(PKV(dt, user.meter_id, base_values['consumption'],
-                        base_values['consumption_cumulated'],
-                        base_values['inhabitants'], base_values['pkv'],
-                        base_values['pkv_cumulated'], base_values['days'],
-                        base_values['moving_average'],
-                        base_values['moving_average_annualized']))
+        session.add(PerCapitaConsumption(dt, user.meter_id, base_values['consumption'],
+                                         base_values['consumption_cumulated'],
+                                         base_values['inhabitants'], base_values['pkv'],
+                                         base_values['pkv_cumulated'], base_values['days'],
+                                         base_values['moving_average'],
+                                         base_values['moving_average_annualized']))
 
     session.commit()
 
@@ -270,7 +270,7 @@ def write_pkv(dt, session):
 
         try:
             # Check if entry exists
-            pkv_today = session.query(PKV).filter_by(
+            pkv_today = session.query(PerCapitaConsumption).filter_by(
                 date=dt, meter_id=user.meter_id).first()
 
             # Create today's entry if it does not exist
@@ -284,12 +284,12 @@ def write_pkv(dt, session):
                     dataset = define_base_values(user.inhabitants, dt)
 
             # Create PKV instance
-                session.add(PKV(dt, user.meter_id, dataset['consumption'],
-                                dataset['consumption_cumulated'],
-                                dataset['inhabitants'], dataset['pkv'],
-                                dataset['pkv_cumulated'], dataset['days'],
-                                dataset['moving_average'],
-                                dataset['moving_average_annualized']))
+                session.add(PerCapitaConsumption(dt, user.meter_id, dataset['consumption'],
+                                                 dataset['consumption_cumulated'],
+                                                 dataset['inhabitants'], dataset['pkv'],
+                                                 dataset['pkv_cumulated'], dataset['days'],
+                                                 dataset['moving_average'],
+                                                 dataset['moving_average_annualized']))
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
