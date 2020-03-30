@@ -16,6 +16,15 @@ ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea03320
                  'bf60438327b1498c9df4e43fc9327849', '0a0f65e992c042e4b86956f3f080114d',
                  '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d']
 
+READING = {'time': 1585177200000, 'values': {'power': 5727055, 'power3': 1898229,
+                                             'energyOut': 0, 'power1': 1917350,
+                                             'energy': 1551192369639000, 'power2': 1900643}}
+
+READING_NEGATIVE_POWER = {'time': 1584572400000, 'values': {'power': -4784541, 'power3': 1583777,
+                                                            'energyOut': 0, 'power1': 1599778,
+                                                            'energy': 1541570917834000,
+                                                            'power2': 1589981}}
+
 
 class TaskTestCase(BuzznTestCase):
     """ Unit tests for class Task and helper methods. """
@@ -207,6 +216,20 @@ class TaskTestCase(BuzznTestCase):
 
         # Check return type
         self.assertIsInstance(result, int)
+
+    def test_check_and_nullify_power_value(self):
+        """ Unit tests for function check_and_nullify_power_value(). """
+
+        result = check_and_nullify_power_value(READING)
+        result_adjusted = check_and_nullify_power_value(READING_NEGATIVE_POWER)
+
+        # Check result types
+        self.assertIsInstance(result, dict)
+        self.assertIsInstance(result_adjusted, dict)
+
+        # Check result values
+        self.assertEqual(result['values']['power'], READING['values']['power'])
+        self.assertEqual(result_adjusted['values']['power'], 0)
 
     def check_init(self):
         """ Unit tests for function Task.__init__(). """
