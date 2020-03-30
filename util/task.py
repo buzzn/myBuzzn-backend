@@ -297,27 +297,17 @@ def write_pkv(dt, session):
     session.commit()
 
 
-def check_and_nullify_power_values(readings):
-    """ Sometimes discovergy delivers negative values; set them to 0.
-    :param list readings: a list of readings obtained from discovergy
-    :return: the adjusted readings
-    :rtype: list
-    """
-
-    for reading in readings:
-        if 'power' in reading['values'].keys() and reading['values']['power'] < 0:
-            reading['values']['power'] = 0
-    return readings
-
-
 def check_and_nullify_power_value(reading):
-    """ Check and nullify one single power value.
+    """ Sometimes discovergy delivers a negative power value; set it to 0.
     :param dict reading: a single reading obtained from discovergy
     :return: the adjusted reading
     :rtype: dict
     """
 
     if 'power' in reading['values'].keys() and reading['values']['power'] < 0:
+        message = 'Received negative power value {} from Discovergy'.format(
+            reading['values']['power'])
+        logger.warning(message)
         reading['values']['power'] = 0
     return reading
 
@@ -373,10 +363,9 @@ class Task:
                     logger.info(message)
                     continue
 
-                adjusted_readings = check_and_nullify_power_values(readings)
-
-                for reading in adjusted_readings:
-                    timestamp = reading['time']
+                for reading in readings:
+                    adjusted_reading = check_and_nullify_power_value(reading)
+                    timestamp = adjusted_reading['time']
 
                     # Convert unix epoch time in milliseconds to UTC format
                     new_timestamp = datetime.utcfromtimestamp(timestamp/1000).\
@@ -384,10 +373,11 @@ class Task:
 
                     key = meter_id + '_' + str(new_timestamp)
 
-                    # Write reading to redis database as key-value-pair
+                    # Write adjusted reading to redis database as key-value-pair
                     # The unique key consists of the meter id (16 chars), the
                     # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='reading', values=reading['values'])
+                    data = dict(type='reading',
+                                values=adjusted_reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
                 # Get the energy consumption for all meters in the ongoing term
@@ -407,11 +397,10 @@ class Task:
                         logger.info(message)
                         continue
 
-                    adjusted_readings = check_and_nullify_power_values(
-                        readings)
-
-                    for reading in adjusted_readings:
-                        timestamp = reading['time']
+                    for reading in readings:
+                        adjusted_reading = check_and_nullify_power_value(
+                            reading)
+                        timestamp = adjusted_reading['time']
 
                         # Convert unix epoch time in milliseconds to UTC format
                         new_timestamp = datetime.utcfromtimestamp(
@@ -419,8 +408,9 @@ class Task:
 
                         key = meter_id + '_' + str(new_timestamp)
 
-                        # Write reading to redis database as key-value-pair
-                        data = dict(type='reading', values=reading['values'])
+                        # Write adjusted reading to redis database as key-value-pair
+                        data = dict(type='reading',
+                                    values=adjusted_reading['values'])
                         self.redis_client.set(key, json.dumps(data))
 
                 # Get all disaggregation values for all meters from one week back
