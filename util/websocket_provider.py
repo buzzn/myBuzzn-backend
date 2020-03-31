@@ -91,42 +91,6 @@ class WebsocketProvider:
                 break
         return result
 
-    def self_sufficiency(self, meter_id, inhabitants, flat_size):
-        """ Calculate a user's self-suffiency value between 0 and 1 where 1
-        is optimal and 0 is worst. Self-sufficiency is defined as (inhabitants
-        * flat size)/(last energy reading - first energy reading)
-        :param str meter_id: the user's meter id
-        :param int inhabitants: number of people in the user's flat
-        :param float flat_size: the user's flat size
-        :return: the user's self-sufficiency value or 0.0 if there are no
-        readings for the user
-        :rtype: float
-        """
-
-        try:
-            # Get last reading for user
-            last_reading = self.get_last_reading(meter_id)
-
-            # Get first reading for user
-            first_reading = self.get_first_reading(meter_id)
-
-            if len(first_reading) == 0 or len(last_reading) == 0:
-                logger.error(
-                    'No readings for meter id %s in the database.', meter_id)
-                return 0.0
-
-            # Return result
-            return (float(inhabitants) *
-                    flat_size)/(float(last_reading.get('values').get('energy'))
-                                - float(first_reading.get('values').get('energy')))
-
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-            logger.error("Cannot calculate self-sufficiency for meter_id %s",
-                         meter_id)
-            return 0.0
-
     def create_member_data(self, member):
         """ Create a data package for a group member to include in a websocket
         data package.
@@ -143,26 +107,21 @@ class WebsocketProvider:
                 'No readings for meter id %s in the database.', member_meter_id)
             member_consumption = None
             member_power = None
-            member_self_sufficiency = None
         else:
             member_consumption = member_reading.get('values').get('energy')
             member_power = member_reading.get('values').get('power')
-            member_self_sufficiency = self.self_sufficiency(
-                member_meter_id, member.get('inhabitants'), member.get('flat_size'))
 
         member_data = dict(id=member_id,
                            meter_id=member_meter_id,
                            consumption=member_consumption,
-                           power=member_power,
-                           self_sufficiency=member_self_sufficiency)
+                           power=member_power)
         return member_data
 
     def create_data(self, user_id):
         """ Create a data package with the latest available data.
         :param int user_id: the user's id
         :return: the group's overall consumption, the group's overall
-        production and each group user's id, meter id, consumption, power and
-        self-sufficiency
+        production and each group user's id, meter id, consumption, power
         :rtype: dict
         """
 

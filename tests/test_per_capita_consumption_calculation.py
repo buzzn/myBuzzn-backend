@@ -5,7 +5,7 @@ from models.pcc import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.per_capita_consumption_calculation import define_base_values, calc_pkv,\
+from util.per_capita_consumption_calculation import define_base_values, calc_per_capita_consumption,\
     get_first_meter_reading_date, check_input_parameter_date,\
     get_data_day_before, build_data_package
 
@@ -56,7 +56,7 @@ PCC_DAY_TWO = PerCapitaConsumption(DAY_TWO, TEST_USER_METER_ID, 1.5, 3.6749714, 
 
 
 class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
-    """ Unit tests for PKV calculation methods. """
+    """ Unit tests for PCC calculation methods. """
 
     def setUp(self):
         """ Create test user and test group in the database. """
@@ -72,10 +72,10 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
 
         self.base_values = PerCapitaConsumption(
             DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pkv_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
+        self.pcc_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
                                                 1.0874857, 1.0874857, 1, 1.0874857, 397)
         db.session.add(self.base_values)
-        db.session.add(self.pkv_day_one)
+        db.session.add(self.pcc_day_one)
 
         db.session.commit()
 
@@ -113,8 +113,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         self.assertIsInstance(data_day_one.consumption, float)
         self.assertIsInstance(data_day_one.consumption_cumulated, float)
         self.assertIsInstance(data_day_one.inhabitants, int)
-        self.assertIsInstance(data_day_one.pkv, float)
-        self.assertIsInstance(data_day_one.pkv_cumulated, float)
+        self.assertIsInstance(data_day_one.per_capita_consumption, float)
+        self.assertIsInstance(data_day_one.per_capita_consumption_cumulated, float)
         self.assertIsInstance(data_day_one.days, int)
         self.assertIsInstance(data_day_one.moving_average, float)
         self.assertIsInstance(data_day_one.moving_average_annualized, int)
@@ -144,11 +144,11 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
     @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_TWICE)
-    def test_calc_pkv(self, _scan_iter, _get):
-        """ Unit tests for function calc_pkv(). """
+    def test_calc_per_capita_consumption(self, _scan_iter, _get):
+        """ Unit tests for function calc_per_capita_consumption(). """
 
         start = DAY_ONE
-        result_day_one = calc_pkv(
+        result_day_one = calc_per_capita_consumption(
             self.test_user.meter_id, self.test_user.inhabitants, start, db.session)
 
         # Check result type
@@ -157,19 +157,19 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         # Check result values
         if isinstance(result_day_one, dict):
             for param in 'date.year', 'date.month', 'date.day', 'consumption',\
-                         'consumption_cumulated', 'inhabitants', 'pkv',\
-                         'pkv_cumulated', 'days', 'moving_average', 'moving_average_annualized':
+                         'consumption_cumulated', 'inhabitants', 'per_capita_consumption',\
+                         'per_capita_consumption_cumulated', 'days', 'moving_average', 'moving_average_annualized':
                 self.assertEqual(result_day_one.get(
                     param), PCC_DAY_ONE.__dict__.get(param))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_TWO)
     @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_TWO_TWICE)
-    def test_calc_pkv_day_two(self, _scan_iter, _get):
-        """ Unit tests for function calc_pkv() on day 2. """
-        result_day_two = calc_pkv(self.test_user.meter_id,
-                                  self.test_user.inhabitants, DAY_TWO,
-                                  db.session)
+    def test_calc_per_capita_consumption_day_two(self, _scan_iter, _get):
+        """ Unit tests for function calc_per_capita_consumption() on day 2. """
+        result_day_two = calc_per_capita_consumption(self.test_user.meter_id,
+                                                     self.test_user.inhabitants, DAY_TWO,
+                                                     db.session)
 
         # Check result type
         self.assertIsInstance(result_day_two, (dict, type(None)))
@@ -177,8 +177,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         # Check result values
         if isinstance(result_day_two, dict):
             for param in 'date.year', 'date.month', 'date.day', 'consumption',\
-                         'consumption_cumulated', 'inhabitants', 'pkv',\
-                         'pkv_cumulated', 'days', 'moving_average', 'moving_average_annualized':
+                         'consumption_cumulated', 'inhabitants', 'per_capita_consumption',\
+                         'per_capita_consumption_cumulated', 'days', 'moving_average', 'moving_average_annualized':
                 self.assertEqual(result_day_two.get(
                     param), PCC_DAY_TWO.__dict__.get(param))
 
@@ -209,8 +209,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         self.assertIsInstance(data_package_day_one.get(
             'consumption_cumulated'), float)
         self.assertIsInstance(data_package_day_one.get('inhabitants'), int)
-        self.assertIsInstance(data_package_day_one.get('pkv'), float)
-        self.assertIsInstance(data_package_day_one.get('pkv_cumulated'), float)
+        self.assertIsInstance(data_package_day_one.get('per_capita_consumption'), float)
+        self.assertIsInstance(data_package_day_one.get('per_capita_consumption_cumulated'), float)
         self.assertIsInstance(data_package_day_one.get('days'), int)
         self.assertIsInstance(
             data_package_day_one.get('moving_average'), float)
@@ -221,12 +221,12 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         self.assertEqual(data_package_day_one['consumption_cumulated'],
                          BASE_VALUES.consumption_cumulated +
                          PCC_DAY_ONE.consumption)
-        self.assertEqual(data_package_day_one['pkv'],
+        self.assertEqual(data_package_day_one['per_capita_consumption'],
                          PCC_DAY_ONE.consumption / PCC_DAY_ONE.inhabitants)
-        self.assertEqual(data_package_day_one['pkv_cumulated'],
-                         BASE_VALUES.per_capita_consumption_cumulated + data_package_day_one['pkv'])
+        self.assertEqual(data_package_day_one['per_capita_consumption_cumulated'],
+                         BASE_VALUES.per_capita_consumption_cumulated + data_package_day_one['per_capita_consumption'])
         self.assertEqual(data_package_day_one['days'], BASE_VALUES.days + 1)
         self.assertEqual(data_package_day_one['moving_average'],
-                         data_package_day_one['pkv_cumulated']/data_package_day_one['days'])
+                         data_package_day_one['per_capita_consumption_cumulated']/data_package_day_one['days'])
         self.assertEqual(data_package_day_one['moving_average_annualized'],
                          round(data_package_day_one['moving_average'] * 365))

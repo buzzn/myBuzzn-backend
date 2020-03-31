@@ -21,7 +21,7 @@ class PerCapitaConsumption(db.Model):
     def __init__(self, date, meter_id, consumption, consumption_cumulated,
                  inhabitants, per_capita_consumtion, per_capita_consumption_cumulated, days, moving_average,
                  moving_average_annualized):
-        """ Creates a new user PKV entry.
+        """ Creates a new user PCC entry.
         :param datetime.date date: the calculation day
         :param str meter_id: the user's meter id
         :param float consumption: the last meter reading of the calculation day
@@ -33,7 +33,7 @@ class PerCapitaConsumption(db.Model):
         per_capita_consumtion(kWh)
         :param float per_capita_consumtion: per capita consumption (kWh)
         :param int days: days of the day before + 1
-        :param float moving_average: pkv_cumulated/days (kWh)
+        :param float moving_average: per_capita_consumption_cumulated/days (kWh)
         :param int moving_average_annualized: moving_average * 365 (rounded)
         """
 

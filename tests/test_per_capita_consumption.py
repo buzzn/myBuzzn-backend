@@ -9,11 +9,11 @@ from routes.per_capita_consumption import get_moving_average_annualized
 from tests.test_per_capita_consumption_calculation import DAY_ZERO, DAY_ONE, PCC_DAY_ONE
 
 
-class PCCTestCase(BuzznTestCase):
-    """ Unit tests for PKV route and functions(). """
+class PerCapitaConsumptionTestCase(BuzznTestCase):
+    """ Unit tests for PCC route and functions(). """
 
     def setUp(self):
-        """ Create test user and test PKV values in the database. """
+        """ Create test user and test PCC values in the database. """
 
         super().setUp()
         self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',

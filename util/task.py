@@ -15,7 +15,7 @@ from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
-from util.per_capita_consumption_calculation import define_base_values, calc_pkv
+from util.per_capita_consumption_calculation import define_base_values, calc_per_capita_consumption
 
 
 log_file_path = path.join(path.dirname(
@@ -217,10 +217,10 @@ def write_baselines(session):
         logger.error(message)
 
 
-def write_base_values_or_pkv(session):
+def write_base_values_or_per_capita_consumption(session):
     """ If yesterday was the start of the support year, write the base values
     for all users to the SQLite database.
-    Otherwise, write yesterday's pkv for all users to the SQLite database.
+    Otherwise, write yesterday's per_capita_consumption for all users to the SQLite database.
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
@@ -234,7 +234,7 @@ def write_base_values_or_pkv(session):
     if today == support_year_start:
         write_base_values(yesterday, session)
     else:
-        write_pkv(yesterday, session)
+        write_per_capita_consumption(yesterday, session)
 
 
 def write_base_values(dt, session):
@@ -246,19 +246,19 @@ def write_base_values(dt, session):
     for user in get_all_users(session):
         base_values = define_base_values(user.inhabitants, dt)
 
-        # Create PKV instance
+        # Create PCC instance
         session.add(PerCapitaConsumption(dt, user.meter_id, base_values['consumption'],
                                          base_values['consumption_cumulated'],
-                                         base_values['inhabitants'], base_values['pkv'],
-                                         base_values['pkv_cumulated'], base_values['days'],
+                                         base_values['inhabitants'], base_values['per_capita_consumption'],
+                                         base_values['per_capita_consumption_cumulated'], base_values['days'],
                                          base_values['moving_average'],
                                          base_values['moving_average_annualized']))
 
     session.commit()
 
 
-def write_pkv(dt, session):
-    """ Write the pkv for each user to the SQLite database.
+def write_per_capita_consumption(dt, session):
+    """ Write the per_capita_consumption for each user to the SQLite database.
     If for one user there are no yesterday's values in the database, write the
     base values for that user.
     If today's entry already exists for a user, skip writing that entry.
@@ -270,12 +270,12 @@ def write_pkv(dt, session):
 
         try:
             # Check if entry exists
-            pkv_today = session.query(PerCapitaConsumption).filter_by(
+            pcc_today = session.query(PerCapitaConsumption).filter_by(
                 date=dt, meter_id=user.meter_id).first()
 
             # Create today's entry if it does not exist
-            if not pkv_today:
-                dataset = calc_pkv(
+            if not pcc_today:
+                dataset = calc_per_capita_consumption(
                     user.meter_id, user.inhabitants, dt, session)
 
                 # If there are no yesterday's values in the database for this user,
@@ -283,11 +283,11 @@ def write_pkv(dt, session):
                 if dataset is None:
                     dataset = define_base_values(user.inhabitants, dt)
 
-            # Create PKV instance
+            # Create PCC instance
                 session.add(PerCapitaConsumption(dt, user.meter_id, dataset['consumption'],
                                                  dataset['consumption_cumulated'],
-                                                 dataset['inhabitants'], dataset['pkv'],
-                                                 dataset['pkv_cumulated'], dataset['days'],
+                                                 dataset['inhabitants'], dataset['per_capita_consumption'],
+                                                 dataset['per_capita_consumption_cumulated'], dataset['days'],
                                                  dataset['moving_average'],
                                                  dataset['moving_average_annualized']))
         except Exception as e:
@@ -448,7 +448,7 @@ class Task:
                 self.populate_redis()
                 write_baselines(session)
                 write_savings(session)
-                write_base_values_or_pkv(session)
+                write_base_values_or_per_capita_consumption(session)
 
             try:
                 all_meter_ids = get_all_meter_ids(session)
