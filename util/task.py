@@ -297,6 +297,22 @@ def write_pkv(dt, session):
     session.commit()
 
 
+def check_and_nullify_power_value(reading, meter_id):
+    """ Sometimes discovergy delivers a negative power value; set it to 0.
+    :param dict reading: a single reading obtained from discovergy
+    :param str meter_id: the meter id the reading belongs to
+    :return: the adjusted reading
+    :rtype: dict
+    """
+
+    if 'power' in reading['values'].keys() and reading['values']['power'] < 0:
+        message = 'Received negative power value {} from Discovergy for meter id {}'.format(
+            reading['values']['power'], meter_id)
+        logger.warning(message)
+        reading['values']['power'] = 0
+    return reading
+
+
 class Task:
     """ Handle discovergy login, data retrieval, populating and updating the
     redis database. """
@@ -343,12 +359,15 @@ class Task:
                                                'one_week')
 
                 if readings == []:
-                    logger.info("No readings available for metering id %s",
-                                meter_id)
+                    message = 'No readings available for metering id {}'.format(
+                        meter_id)
+                    logger.info(message)
                     continue
 
                 for reading in readings:
-                    timestamp = reading['time']
+                    adjusted_reading = check_and_nullify_power_value(reading,
+                                                                     meter_id)
+                    timestamp = adjusted_reading['time']
 
                     # Convert unix epoch time in milliseconds to UTC format
                     new_timestamp = datetime.utcfromtimestamp(timestamp/1000).\
@@ -356,10 +375,11 @@ class Task:
 
                     key = meter_id + '_' + str(new_timestamp)
 
-                    # Write reading to redis database as key-value-pair
+                    # Write adjusted reading to redis database as key-value-pair
                     # The unique key consists of the meter id (16 chars), the
                     # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='reading', values=reading['values'])
+                    data = dict(type='reading',
+                                values=adjusted_reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
                 # Get the energy consumption for all meters in the ongoing term
@@ -374,12 +394,15 @@ class Task:
                                                    end_of_day, 'one_hour')
 
                     if readings == []:
-                        logger.info('No readings available for metering id %s',
-                                    meter_id)
+                        message = 'No readings available for metering id {}'.format(
+                            meter_id)
+                        logger.info(message)
                         continue
 
                     for reading in readings:
-                        timestamp = reading['time']
+                        adjusted_reading = check_and_nullify_power_value(
+                            reading, meter_id)
+                        timestamp = adjusted_reading['time']
 
                         # Convert unix epoch time in milliseconds to UTC format
                         new_timestamp = datetime.utcfromtimestamp(
@@ -387,8 +410,9 @@ class Task:
 
                         key = meter_id + '_' + str(new_timestamp)
 
-                        # Write reading to redis database as key-value-pair
-                        data = dict(type='reading', values=reading['values'])
+                        # Write adjusted reading to redis database as key-value-pair
+                        data = dict(type='reading',
+                                    values=adjusted_reading['values'])
                         self.redis_client.set(key, json.dumps(data))
 
                 # Get all disaggregation values for all meters from one week back
@@ -401,8 +425,9 @@ class Task:
                     meter_id, calc_support_week_start(), end)
 
                 if disaggregation == {}:
-                    logger.info("No disaggregation available for metering id %s",
-                                meter_id)
+                    message = 'No disaggregation available for metering id {}'.format(
+                        meter_id)
+                    logger.info(message)
                     continue
 
                 for timestamp in disaggregation:
@@ -427,13 +452,15 @@ class Task:
         """ Update the redis database every 60s with the latest discovergy
         data. """
 
-        logger.info("Started redis task at %s",
-                    datetime.now().strftime("%H:%M:%S"))
+        message = 'Started redis task at {}'.format(
+            datetime.now().strftime("%H:%M:%S"))
+        logger.info(message)
 
         while True:
             stdlib_time.sleep(60)
-            logger.info("Fill redis at %s",
-                        datetime.now().strftime("%H:%M:%S"))
+            message = 'Fill redis at {}'.format(
+                datetime.now().strftime("%H:%M:%S"))
+            logger.info(message)
 
             # Populate redis if last data flush was more than 24h ago
             # pylint: disable=global-statement
@@ -452,7 +479,6 @@ class Task:
 
             try:
                 all_meter_ids = get_all_meter_ids(session)
-                end = calc_end()
                 two_days_back = calc_two_days_back()
 
                 # Get last reading for all meters
@@ -460,29 +486,33 @@ class Task:
                     reading = self.d.get_last_reading(meter_id)
 
                     if reading == {}:
-                        logger.info("No last reading available for metering id %s",
-                                    meter_id)
+                        message = 'No last reading available for metering id {}'.format(
+                            meter_id)
+                        logger.info(message)
                         continue
 
-                    timestamp = reading['time']
-                    new_timestamp = datetime.utcfromtimestamp(timestamp/1000).\
-                        strftime('%Y-%m-%d %H:%M:%S')
-                    key = meter_id + '_' + str(new_timestamp)
+                    adjusted_reading = check_and_nullify_power_value(reading,
+                                                                     meter_id)
+                    key = meter_id + '_' + \
+                        str(datetime.utcfromtimestamp(
+                            adjusted_reading['time']/1000).strftime('%F %T'))
 
                     # Write reading to redis database as key-value-pair
                     # The unique key consists of the meter id (16 chars), the
                     # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='reading', values=reading['values'])
+                    data = dict(type='reading',
+                                values=adjusted_reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
                 # Get latest disaggregation for all meters
                 for meter_id in all_meter_ids:
                     disaggregation = self.d.get_disaggregation(
-                        meter_id, two_days_back, end)
+                        meter_id, two_days_back, calc_end())
 
                     if disaggregation == []:
-                        logger.info(
-                            "No disaggregation available for metering id % s", meter_id)
+                        message = 'No disaggregation available for metering id {}'.format(
+                            meter_id)
+                        logger.info(message)
                         continue
 
                     timestamps = sorted(disaggregation.keys())

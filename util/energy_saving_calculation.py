@@ -83,20 +83,24 @@ def get_last_meter_reading_date(meter_id, date):
     for key in get_sorted_keys(redis_client, meter_id):
         try:
             data = json.loads(redis_client.get(key))
+
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
+
         if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
             reading_timestamp = reading_date.timestamp()
+
             if begin <= reading_timestamp <= end:
                 readings.append(data.get('values')['energy'])
 
     if len(readings) > 0:
         return readings[-1]
 
-    logger.info('No last reading available for meter id %s on %s',
-                meter_id, str(date))
+    message = 'No last reading available for meter id {} on {}'.format(
+        meter_id, str(date))
+    logger.info(message)
     return None
 
 
@@ -116,8 +120,9 @@ def calc_energy_consumption_last_term(meter_id, start):
     first_meter_reading = get_last_meter_reading_date(meter_id, begin)
 
     if last_meter_reading is None or first_meter_reading is None:
-        logger.info('No energy consumption available for %s between %s and %s',
-                    meter_id, str(begin), str(end))
+        message = 'No energy consumption available for {} between {} and {}'.format(
+            meter_id, str(begin), str(end))
+        logger.info(message)
         return None
 
     return last_meter_reading - first_meter_reading
@@ -138,8 +143,9 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     first_meter_reading = get_last_meter_reading_date(meter_id, start)
 
     if last_meter_reading is None or first_meter_reading is None:
-        logger.info('No energy consumption available for %s between %s and %s',
-                    meter_id, str(start), str(end))
+        message = 'No energy consumption available for {} between {} and {}'.format(
+            meter_id, str(start), str(end))
+        logger.info(message)
         return None
 
     return last_meter_reading - first_meter_reading
@@ -164,7 +170,7 @@ def calc_estimated_energy_consumption(meter_id, start):
     if energy_consumption_last_term is None or energy_consumption_ongoing_term is None:
         message = 'No estimated energy consumption available for meter_id {} from {} on'.format(
             meter_id, str(start))
-        logger.error(message)
+        logger.info(message)
         return None
 
     return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
