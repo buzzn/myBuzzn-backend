@@ -1,3 +1,5 @@
 .venv
 __pycache__/
 logfile.log
+mybuzzn.db
+setup_production_environment.sh
