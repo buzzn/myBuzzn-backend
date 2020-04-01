@@ -131,8 +131,8 @@ class TaskTestCase(BuzznTestCase):
             float(result/1000))
         self.assertEqual(d.day, 12)
         self.assertEqual(d.month, 3)
-        if (datetime.utcnow().month < d.month) or (datetime.utcnow().day <
-                                                   d.day):
+        if (datetime.utcnow().month < d.month) or (datetime.utcnow().month == d.month
+                                                   and datetime.utcnow().day < d.day):
             self.assertEqual(d.year, datetime.utcnow().year - 1)
         else:
             self.assertEqual(d.year, datetime.utcnow().year)
@@ -153,8 +153,10 @@ class TaskTestCase(BuzznTestCase):
         # Check result values
         self.assertEqual(result.day, 12)
         self.assertEqual(result.month, 3)
-        if (datetime.utcnow().month < result.month) or (datetime.utcnow().day <
-                                                        result.day):
+
+        if datetime.utcnow().month < result.month:
+            self.assertEqual(result.year, datetime.utcnow().year - 1)
+        elif datetime.utcnow().month == result.month and datetime.utcnow().day < result.day:
             self.assertEqual(result.year, datetime.utcnow().year - 1)
         else:
             self.assertEqual(result.year, datetime.utcnow().year)
