@@ -1,7 +1,9 @@
+from datetime import datetime
 
 from flask import Blueprint, request, jsonify
 from flask_api import status
 from flask_jwt_extended import create_access_token
+from flask import current_app as app
 
 from models.user import User, StateType
 from util.error import Error
@@ -38,4 +40,5 @@ def login():
         return Error('User not active', 'Can not login.').to_json(), status.HTTP_403_FORBIDDEN
 
     access_token = create_access_token(identity=target_user.id)
-    return jsonify(sessionToken=access_token), status.HTTP_200_OK
+    expired_timestamp = (datetime.utcnow() + app.config['JWT_ACCESS_TOKEN_EXPIRES']).timestamp()
+    return jsonify(sessionToken=access_token, expiredTimestamp=expired_timestamp), status.HTTP_200_OK
