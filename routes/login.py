@@ -41,4 +41,5 @@ def login():
 
     access_token = create_access_token(identity=target_user.id)
     expired_timestamp = (datetime.utcnow() + app.config['JWT_ACCESS_TOKEN_EXPIRES']).timestamp()
-    return jsonify(sessionToken=access_token, expiredTimestamp=expired_timestamp), status.HTTP_200_OK
+    return jsonify(sessionToken=access_token,
+                   expiredTimestamp=expired_timestamp), status.HTTP_200_OK
