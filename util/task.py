@@ -249,8 +249,10 @@ def write_base_values(dt, session):
         # Create PCC instance
         session.add(PerCapitaConsumption(dt, user.meter_id, base_values['consumption'],
                                          base_values['consumption_cumulated'],
-                                         base_values['inhabitants'], base_values['per_capita_consumption'],
-                                         base_values['per_capita_consumption_cumulated'], base_values['days'],
+                                         base_values['inhabitants'],
+                                         base_values['per_capita_consumption'],
+                                         base_values['per_capita_consumption_cumulated'],
+                                         base_values['days'],
                                          base_values['moving_average'],
                                          base_values['moving_average_annualized']))
 
@@ -286,8 +288,10 @@ def write_per_capita_consumption(dt, session):
             # Create PCC instance
                 session.add(PerCapitaConsumption(dt, user.meter_id, dataset['consumption'],
                                                  dataset['consumption_cumulated'],
-                                                 dataset['inhabitants'], dataset['per_capita_consumption'],
-                                                 dataset['per_capita_consumption_cumulated'], dataset['days'],
+                                                 dataset['inhabitants'],
+                                                 dataset['per_capita_consumption'],
+                                                 dataset['per_capita_consumption_cumulated'],
+                                                 dataset['days'],
                                                  dataset['moving_average'],
                                                  dataset['moving_average_annualized']))
         except Exception as e:

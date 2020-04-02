@@ -19,8 +19,8 @@ class PerCapitaConsumption(db.Model):
 
     # pylint: disable=too-many-arguments
     def __init__(self, date, meter_id, consumption, consumption_cumulated,
-                 inhabitants, per_capita_consumtion, per_capita_consumption_cumulated, days, moving_average,
-                 moving_average_annualized):
+                 inhabitants, per_capita_consumtion, per_capita_consumption_cumulated,
+                 days, moving_average, moving_average_annualized):
         """ Creates a new user PCC entry.
         :param datetime.date date: the calculation day
         :param str meter_id: the user's meter id
@@ -29,8 +29,8 @@ class PerCapitaConsumption(db.Model):
         :param float consumption_cumulated: consumption_cumulated of the
         day before + the consumption (kWh)
         :param int inhabitants: the number of people living in the user's flat
-        :param float per_capita_consumption_cumulated: per_capita_consumption_cumulated of the day before +
-        per_capita_consumtion(kWh)
+        :param float per_capita_consumption_cumulated: per_capita_consumption_cumulated
+        of the day before + per_capita_consumtion(kWh)
         :param float per_capita_consumtion: per capita consumption (kWh)
         :param int days: days of the day before + 1
         :param float moving_average: per_capita_consumption_cumulated/days (kWh)

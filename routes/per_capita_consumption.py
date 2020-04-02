@@ -10,7 +10,7 @@ from util.login import login_required
 
 
 logger = logging.getLogger(__name__)
-PerCapitaConsumption = Blueprint('PerCapitaConsumption', __name__)
+ShowPerCapitaConsumption = Blueprint('ShowPerCapitaConsumption', __name__)
 
 
 def get_moving_average_annualized(meter_id):
@@ -22,8 +22,9 @@ def get_moving_average_annualized(meter_id):
     """
 
     try:
-        result = db.session.query(PerCapitaConsumption.date, PerCapitaConsumption.moving_average_annualized).filter_by(
-            meter_id=meter_id).order_by(PerCapitaConsumption.date.desc()).first()
+        result = db.session.query(PerCapitaConsumption.date,
+                                  PerCapitaConsumption.moving_average_annualized).\
+            filter_by(meter_id=meter_id).order_by(PerCapitaConsumption.date.desc()).first()
 
         timestamp = result[0].strftime('%Y-%m-%d %H:%M:%S')
         moving_average_annualized = result[1]
@@ -35,7 +36,7 @@ def get_moving_average_annualized(meter_id):
         return None
 
 
-@PerCapitaConsumption.route('/per-capita-consumption', methods=['GET'])
+@ShowPerCapitaConsumption.route('/per-capita-consumption', methods=['GET'])
 @login_required
 def per_capita_consumption():
     """ Shows the the last annualized moving average in kWh.

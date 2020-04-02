@@ -5,8 +5,8 @@ from models.pcc import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.per_capita_consumption_calculation import define_base_values, calc_per_capita_consumption,\
-    get_first_meter_reading_date, check_input_parameter_date,\
+from util.per_capita_consumption_calculation import define_base_values, \
+    calc_per_capita_consumption, get_first_meter_reading_date, check_input_parameter_date,\
     get_data_day_before, build_data_package
 
 DAY_ONE = datetime.today() - timedelta(days=1)
@@ -72,8 +72,9 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
 
         self.base_values = PerCapitaConsumption(
             DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.pcc_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
-                                                1.0874857, 1.0874857, 1, 1.0874857, 397)
+        self.pcc_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714,
+                                                2.1749714, 2, 1.0874857, 1.0874857, 1,
+                                                1.0874857, 397)
         db.session.add(self.base_values)
         db.session.add(self.pcc_day_one)
 
@@ -158,7 +159,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         if isinstance(result_day_one, dict):
             for param in 'date.year', 'date.month', 'date.day', 'consumption',\
                          'consumption_cumulated', 'inhabitants', 'per_capita_consumption',\
-                         'per_capita_consumption_cumulated', 'days', 'moving_average', 'moving_average_annualized':
+                         'per_capita_consumption_cumulated', 'days', 'moving_average', \
+                         'moving_average_annualized':
                 self.assertEqual(result_day_one.get(
                     param), PCC_DAY_ONE.__dict__.get(param))
 
@@ -178,7 +180,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         if isinstance(result_day_two, dict):
             for param in 'date.year', 'date.month', 'date.day', 'consumption',\
                          'consumption_cumulated', 'inhabitants', 'per_capita_consumption',\
-                         'per_capita_consumption_cumulated', 'days', 'moving_average', 'moving_average_annualized':
+                         'per_capita_consumption_cumulated', 'days', 'moving_average', \
+                         'moving_average_annualized':
                 self.assertEqual(result_day_two.get(
                     param), PCC_DAY_TWO.__dict__.get(param))
 
@@ -224,9 +227,11 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         self.assertEqual(data_package_day_one['per_capita_consumption'],
                          PCC_DAY_ONE.consumption / PCC_DAY_ONE.inhabitants)
         self.assertEqual(data_package_day_one['per_capita_consumption_cumulated'],
-                         BASE_VALUES.per_capita_consumption_cumulated + data_package_day_one['per_capita_consumption'])
+                         BASE_VALUES.per_capita_consumption_cumulated +
+                         data_package_day_one['per_capita_consumption'])
         self.assertEqual(data_package_day_one['days'], BASE_VALUES.days + 1)
         self.assertEqual(data_package_day_one['moving_average'],
-                         data_package_day_one['per_capita_consumption_cumulated']/data_package_day_one['days'])
+                         data_package_day_one['per_capita_consumption_cumulated'] /
+                         data_package_day_one['days'])
         self.assertEqual(data_package_day_one['moving_average_annualized'],
                          round(data_package_day_one['moving_average'] * 365))

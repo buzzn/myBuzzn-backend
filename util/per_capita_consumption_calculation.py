@@ -55,7 +55,8 @@ def get_data_day_before(dt, meter_id, session):
     :param str meter_id: the user's meter id
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     :returns: date, meter_id, consumption, consumption_cumulated, inhabitants,
-    per_capita_consumption, per_capita_consumption_cumulated, days, moving_average and moving_average_annualized
+    per_capita_consumption, per_capita_consumption_cumulated, days, moving_average
+    and moving_average_annualized
     :rtype: list or type(None) if there was an error
     """
 
@@ -242,7 +243,8 @@ def build_data_package(data_day_before, consumption, inhabitants, date):
 
         # Calculate per_capita_consumption_cumulated := per_capita_consumption_cumulated of the day
         # before + per_capita_consumption (kWh)
-        per_capita_consumption_cumulated = data_day_before.per_capita_consumption_cumulated + per_capita_consumption
+        per_capita_consumption_cumulated = data_day_before.per_capita_consumption_cumulated + \
+                                           per_capita_consumption
 
         # Calculate days (since calculation start) := days of the day before + 1
         # (number)

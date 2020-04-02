@@ -25,8 +25,11 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
 
         self.base_values = PerCapitaConsumption(
             DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-        self.per_capita_consumption_day_one = PerCapitaConsumption(DAY_ONE, self.test_user.meter_id, 2.1749714, 2.1749714, 2,
-                                                                   1.0874857, 1.0874857, 1, 1.0874857, 397)
+        self.per_capita_consumption_day_one = PerCapitaConsumption(DAY_ONE,
+                                                                   self.test_user.meter_id,
+                                                                   2.1749714, 2.1749714, 2,
+                                                                   1.0874857, 1.0874857, 1,
+                                                                   1.0874857, 397)
         db.session.add(self.base_values)
         db.session.add(self.per_capita_consumption_day_one)
         db.session.commit()
