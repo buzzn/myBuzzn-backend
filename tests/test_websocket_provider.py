@@ -4,7 +4,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.websocket_provider import WebsocketProvider, get_group_meter_ids,\
+from util.websocket_provider import WebsocketProvider, get_group_production_meter_ids,\
     get_group_members
 
 
@@ -42,11 +42,11 @@ GROUPMEMBER1_FIRST_READING = {'type': 'reading',
                                          'energyOut': 0, 'power1': 3565876,
                                          'energy': 3055907952664000, 'power2': 4029106}}
 GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                  'inhabitants': 2, 'flat_size': 60.0},
+                  'inhabitants': 2},
                  {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
-                  'inhabitants': 2, 'flat_size': 60.0},
+                  'inhabitants': 2},
                  {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
-                  'inhabitants': 2, 'flat_size': 60.0}]
+                  'inhabitants': 2}]
 GROUP_PRODUCTION_METER_IDS = (
     '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
 MEMBER_DATA = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
@@ -142,10 +142,10 @@ class WebsocketProviderTestCase(BuzznTestCase):
                              item2.get('consumption'))
             self.assertEqual(item1.get('power'), item2.get('power'))
 
-    def test_get_group_meter_ids(self):
-        """ Unit tests for function get_group_meter_ids(). """
+    def test_get_group_production_meter_ids(self):
+        """ Unit tests for function get_group_production_meter_ids(). """
 
-        result = get_group_meter_ids(1)
+        result = get_group_production_meter_ids(1)
 
         # Check result values
         self.assertEqual(result, GROUP_PRODUCTION_METER_IDS)
@@ -165,7 +165,6 @@ class WebsocketProviderTestCase(BuzznTestCase):
             self.assertIsInstance(group_user.get('id'), int)
             self.assertIsInstance(group_user.get('meter_id'), str)
             self.assertIsInstance(group_user.get('inhabitants'), int)
-            self.assertIsInstance(group_user.get('flat_size'), float)
 
             # Check result values
             self.assertEqual(

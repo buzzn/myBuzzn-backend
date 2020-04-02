@@ -15,7 +15,7 @@ redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 
 
-def get_group_meter_ids(user_id):
+def get_group_production_meter_ids(user_id):
     """ Get the group production meter ids from the SQLite database for the given user.
     :param int user_id: the user's id
     :returns: the group production meter ids of the group the user belongs to
@@ -32,7 +32,7 @@ def get_group_members(user_id):
     """ Get the parameters from the database to create a group data packet for
     the given user.
     :param int user_id: the user's id
-    :return: the group members' ids, inhabitants and flat sizes
+    :return: the group members' ids and inhabitants
     :rtype: [dict]
     """
 
@@ -42,8 +42,7 @@ def get_group_members(user_id):
     group_members = []
     for group_user in group_users:
         group_members.append(dict(id=group_user.id, meter_id=group_user.meter_id,
-                                  inhabitants=group_user.inhabitants,
-                                  flat_size=group_user.flat_size))
+                                  inhabitants=group_user.inhabitants))
 
     return group_members
 
@@ -121,12 +120,13 @@ class WebsocketProvider:
         """ Create a data package with the latest available data.
         :param int user_id: the user's id
         :return: the group's overall consumption, the group's overall
-        production and each group user's id, meter id, consumption, power
+        production and each group user's id, meter id, energy and power
         :rtype: dict
         """
 
         try:
-            group_production_meter_ids = get_group_meter_ids(user_id)
+            group_production_meter_ids = get_group_production_meter_ids(
+                user_id)
             group_first_production_meter = group_production_meter_ids[0]
             group_second_production_meter = group_production_meter_ids[1]
 
