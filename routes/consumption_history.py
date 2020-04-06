@@ -1,18 +1,19 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging.config
 from dateutil import parser
 import redis
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from models.group import Group
 from models.user import User
+from routes.disaggregation import read_begin_parameter
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required
-from util.redis_helpers import get_sorted_keys
+from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix
 
 
 logger = logging.getLogger(__name__)
@@ -51,21 +52,35 @@ def get_readings(meter_id, begin):
     return result
 
 
-def read_begin_parameter():
-    """ Use the given begin parameter.
-    :return: the given begin parameter or today at 00:00:00 am as integer
-    unix timestamp if no parameter was given
-    :rtype: int
+def get_default_readings(meter_id):
+    """ Return all readings for the given meter id, starting yesterday.
+    :param str meter_id: the meter id for which to get the values
+    :return: the readings for the period mapped to their timestamps
+    :rtype: dict
     """
 
-    # Calculate the minimal time of "today", i.e. 00:00:00 am as integer unix timestamp
-    start = int(datetime.combine(
-        datetime.utcnow(), datetime.min.time()).timestamp())
+    result = {}
 
-    # Read the given begin parameter
-    begin = request.args.get('begin', default=start, type=int)
+    # Get yesterday's date
+    yesterday = datetime.strftime(datetime.utcnow() - timedelta(hours=24),
+                                  '%Y-%m-%d')
 
-    return begin
+    # Get today's date
+    today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
+
+    # Get data from yesterday until now
+    redis_keys = get_sorted_keys_date_prefix(redis_client, meter_id, yesterday) +\
+        get_sorted_keys_date_prefix(redis_client, meter_id, today)
+
+    for key in redis_keys:
+        data = json.loads(redis_client.get(key))
+        if data.get('type') == 'reading':
+            reading_date = parser.parse(key[len(meter_id)+1:])
+            result[reading_date.strftime(
+                '%Y-%m-%d %H:%M:%S')] = data.get('values')
+
+    print(result)
+    return result
 
 
 @IndividualConsumptionHistory.route('/individual-consumption-history',
@@ -74,8 +89,7 @@ def read_begin_parameter():
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval in mW and
     the meter readings in μWh.
-    :param int begin: start time of consumption (default is today at 00:00:00
-    am unixtime)
+    :param int begin: start value as unixtime, default is yesterday at 00:00:00
     :return: (a JSON object with each power consumption/meter reading mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
@@ -92,7 +106,10 @@ def individual_consumption_history():
     energy = {}
 
     try:
-        readings = get_readings(user.meter_id, begin)
+        if begin is None:
+            readings = get_default_readings(user.meter_id)
+        else:
+            readings = get_readings(user.meter_id, begin)
         for key in readings:
             power[key] = readings[key].get('power')
             energy[key] = readings[key].get('energy')
@@ -113,9 +130,7 @@ def individual_consumption_history():
 @login_required
 def group_consumption_history():
     """ Shows the history of consumption of the given time interval in mW.
-    :param int begin: start time of consumption (default is today at 00:00:00
-    am unixtime)
-    :param int end: end time of consumption, default is $now
+    :param int begin: start value as unixtime, default is yesterday at 00:00:00
     :param str tics: time distance between returned readings with possible
     values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour', 'one_day',
     'one_week', 'one_month', 'one_year' (default is 'one_hour')
@@ -145,19 +160,32 @@ def group_consumption_history():
     try:
 
         # Group community consumption meter
-        readings = get_readings(group.group_meter_id, begin)
+        if begin is None:
+            readings = get_default_readings(group.group_meter_id)
+        else:
+            readings = get_readings(group.group_meter_id, begin)
         for key in readings:
             consumed_power[key] = readings[key].get('power')
             consumed_energy[key] = readings[key].get('energy')
 
         # First group production meter
-        readings = get_readings(group.group_production_meter_id_first, begin)
+        if begin is None:
+            readings = get_default_readings(
+                group.group_production_meter_id_first)
+        else:
+            readings = get_readings(
+                group.group_production_meter_id_first, begin)
         for key in readings:
             produced_first_meter_power[key] = readings[key].get('power')
             produced_first_meter_energy[key] = readings[key].get('energy')
 
         # Second group production meter
-        readings = get_readings(group.group_production_meter_id_second, begin)
+        if begin is None:
+            readings = get_default_readings(
+                group.group_production_meter_id_second)
+        else:
+            readings = get_readings(group.group_production_meter_id_second,
+                                    begin)
         for key in readings:
             produced_second_meter_power[key] = readings[key].get(
                 'power')
