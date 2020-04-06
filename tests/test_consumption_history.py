@@ -55,8 +55,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
-    def test_individual_consumption_history(self, get_readings):
+    @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
+    def test_individual_consumption_history(self, get_default_readings):
         """ Unit tests for individual_consumption_history(). """
 
         # Check if route exists
@@ -77,8 +77,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), INDIVIDUAL_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_readings):
+    @mock.patch('routes.consumption_history.get_default_readings', return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_default_readings):
         """ Check handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
@@ -136,10 +136,9 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         db.session.add(self.target_group)
         db.session.commit()
 
-    # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
-    def test_group_consumption_history(self, get_readings):
+    @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
+    def test_group_consumption_history(self, get_default_readings):
         """ Unit tests for group_consumption_history()."""
 
         # Check if route exists
@@ -158,9 +157,9 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings',
+    @mock.patch('routes.consumption_history.get_default_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_readings):
+    def test_parameters(self, get_default_readings):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
