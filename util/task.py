@@ -7,8 +7,6 @@ import logging.config
 from discovergy.discovergy import Discovergy
 import redis
 from models.baseline import BaseLine
-from models.user import User
-from models.group import Group
 from models.pkv import PKV
 from models.savings import UserSaving, CommunitySaving
 from util.error import exception_message
@@ -16,6 +14,7 @@ from util.energy_saving_calculation import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users, get_all_user_meter_ids, calc_energy_consumption_last_term
 from util.database import create_session
 from util.pkv_calculation import define_base_values, calc_pkv
+from util.sqlite_helpers import get_all_meter_ids, get_all_users
 
 
 log_file_path = path.join(path.dirname(
@@ -30,25 +29,6 @@ redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 last_data_flush = None
 message_timestamp = datetime.strftime(datetime.utcnow(), '%Y-%m-%d %H:%M:%S')
-
-
-def get_all_meter_ids(session):
-    """ Get all meter ids from the SQLite database. """
-
-    return [meter_id[0] for meter_id in session.query(User.meter_id).all()]\
-        + [group_meter_id[0]
-           for group_meter_id in session.query(Group.group_meter_id).all()]\
-        + [group_production_meter_id_first[0] for
-           group_production_meter_id_first in
-           session.query(Group.group_production_meter_id_first).all()]\
-        + [group_production_meter_id_second[0] for group_production_meter_id_second
-           in session.query(Group.group_production_meter_id_second).all()]
-
-
-def get_all_users(session):
-    """ Get all users from the SQLite database. """
-
-    return session.query(User).all()
 
 
 def calc_term_boundaries():

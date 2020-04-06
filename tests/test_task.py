@@ -6,15 +6,11 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.task import get_all_meter_ids, get_all_users, calc_term_boundaries, calc_end,\
+from util.task import calc_term_boundaries, calc_end,\
     calc_support_year_start, calc_support_year_start_datetime,\
     calc_support_week_start, calc_two_days_back,\
     check_and_nullify_power_value, client_name, Task
 
-
-ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
-                 'bf60438327b1498c9df4e43fc9327849', '0a0f65e992c042e4b86956f3f080114d',
-                 '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d']
 
 READING = {'time': 1585177200000, 'values': {'power': 5727055, 'power3': 1898229,
                                              'energyOut': 0, 'power1': 1917350,
@@ -55,38 +51,6 @@ class TaskTestCase(BuzznTestCase):
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
         self.task = Task()
-
-    def test_get_all_meter_ids(self):
-        """ Unit tests for function get_all_meter_ids(). """
-
-        result = get_all_meter_ids(db.session)
-
-        # Check return types
-        self.assertIsInstance(result, list)
-        for meter_id in result:
-            self.assertIsInstance(meter_id, str)
-            self.assertTrue(meter_id.isalnum())
-
-        # Check return values
-        self.assertEqual(result, ALL_METER_IDS)
-        for meter_id in result:
-            self.assertEqual(len(meter_id), 32)
-
-    def test_get_all_users(self):
-        """ Unit tests for function get_all_users(). """
-
-        result = get_all_users(db.session)
-
-        # Check result types
-        self.assertIsInstance(result, list)
-        for user in result:
-            self.assertIsInstance(user, User)
-
-        # Check result values
-        self.assertEqual(len(result), 3)
-        self.assertEqual(result[0], self.test_user)
-        self.assertEqual(result[1], self.test_user2)
-        self.assertEqual(result[2], self.test_user3)
 
     def test_calc_term_boundaries(self):
         """ Unit tests for function calc_term_boundaries().
