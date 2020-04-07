@@ -8,7 +8,7 @@ from models.savings import UserSaving, CommunitySaving
 from models.baseline import BaseLine
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.energy_saving_calculation import estimate_energy_saving_each_user,\
+from util.sqlite_helpers import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
 from routes.global_challenge import get_individual_saving, get_community_saving,\
     get_individual_baseline
@@ -56,8 +56,10 @@ class GlobalChallengeTestCase(BuzznTestCase):
         test_second_user_baseline = BaseLine(test_second_timestamp,
                                              '52d7c87f8c26433dbd095048ad30c8cf',
                                              54122457368685)
-        test_first_community_saving = CommunitySaving(test_first_timestamp, 85184267259376.5)
-        test_second_community_saving = CommunitySaving(test_second_timestamp, 86295378361487.6)
+        test_first_community_saving = CommunitySaving(
+            test_first_timestamp, 85184267259376.5)
+        test_second_community_saving = CommunitySaving(
+            test_second_timestamp, 86295378361487.6)
         db.session.add(test_user)
         db.session.add(test_first_user_saving)
         db.session.add(test_second_user_saving)
