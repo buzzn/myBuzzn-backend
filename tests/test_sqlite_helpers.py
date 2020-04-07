@@ -50,8 +50,6 @@ class TestSqliteHelpers(BuzznTestCase):
 
         # Check return values
         self.assertEqual(result, ALL_METER_IDS)
-        for meter_id in result:
-            self.assertEqual(len(meter_id), 32)
 
     def test_get_all_users(self):
         """ Unit tests for function get_all_users(). """
