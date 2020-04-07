@@ -79,7 +79,6 @@ def get_default_readings(meter_id):
             result[reading_date.strftime(
                 '%Y-%m-%d %H:%M:%S')] = data.get('values')
 
-    print(result)
     return result
 
 
