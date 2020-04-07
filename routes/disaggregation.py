@@ -1,6 +1,6 @@
+from datetime import datetime, timedelta
 import json
 import os
-from datetime import datetime, timedelta
 import logging.config
 from dateutil import parser
 import redis
@@ -11,7 +11,7 @@ from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required, get_parameters
-from util.redis_helpers import get_sorted_keys
+from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix
 
 
 logger = logging.getLogger(__name__)
@@ -50,18 +50,50 @@ def get_disaggregation(meter_id, begin):
     return result
 
 
-def read_begin_parameter():
-    """ Use the given begin parameter.
-    :return: the given begin parameter or 48 hours back in time as integer unic
-    timestamp if no parameter was given
-    :rtype: int
+def get_default_disaggregation(meter_id):
+    """ Return all disaggregation values for the given meter id, starting two
+    days ago.
+    :param str meter_id: the meter id for which to get the values
+    :return: the disaggregation values for the period mapped to their timestamps
+    :rtype: dict
     """
 
-    # Calculate 48 hours back in time as integer unix timestamp
-    start = int((datetime.utcnow() - timedelta(hours=48)).timestamp())
+    result = {}
+
+    # Get two days ago's date
+    two_days_back = datetime.strftime(datetime.utcnow() - timedelta(hours=48),
+                                      '%Y-%m-%d')
+
+    # Get yesterday's date
+    yesterday = datetime.strftime(datetime.utcnow() - timedelta(hours=24),
+                                  '%Y-%m-%d')
+
+    # Get todays's date
+    today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
+
+    # Get data from two days back until now
+    redis_keys = get_sorted_keys_date_prefix(redis_client, meter_id, two_days_back) +\
+        get_sorted_keys_date_prefix(redis_client, meter_id, yesterday) +\
+        get_sorted_keys_date_prefix(redis_client, meter_id, today)
+
+    for key in redis_keys:
+        data = json.loads(redis_client.get(key))
+        if data.get('type') == 'disaggregation':
+            disaggregation_date = parser.parse(key[len(meter_id)+1:])
+            result[disaggregation_date.strftime(
+                '%Y-%m-%d %H:%M:%S')] = data.get('values')
+
+    return result
+
+
+def read_begin_parameter():
+    """ Use the given begin parameter.
+    :return: the given begin parameter or None if no parameter was given
+    :rtype: int or type(None)
+    """
 
     # Read the given begin parameter
-    begin = request.args.get('begin', default=start, type=int)
+    begin = request.args.get('begin', default=None, type=int)
 
     return begin
 
@@ -70,8 +102,8 @@ def read_begin_parameter():
 @login_required
 def individual_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
-    :param int begin: start time of disaggregation, default is 48h back as
-    unixtime
+    :param int begin: start value as unixtime, default is two days back at
+    00:00:00
     :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
@@ -86,7 +118,10 @@ def individual_disaggregation():
     result = {}
 
     try:
-        result = get_disaggregation(user.meter_id, begin)
+        if begin is None:
+            result = get_default_disaggregation(user.meter_id)
+        else:
+            result = get_disaggregation(user.meter_id, begin)
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
@@ -102,8 +137,8 @@ def individual_disaggregation():
 @login_required
 def group_disaggregation():
     """ Shows the power curve disaggregation of the given time interval.
-    :param int begin: start time of disaggregation, default is 48h back as
-    unixtime
+    :param int begin: start value as unixtime, default is two days back at
+    00:00:00
     :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
@@ -118,7 +153,10 @@ def group_disaggregation():
     result = {}
 
     try:
-        result = get_disaggregation(group.group_meter_id, begin)
+        if begin is None:
+            result = get_default_disaggregation(group.group_meter_id)
+        else:
+            result = get_disaggregation(group.group_meter_id, begin)
 
         # Return result
         return jsonify(result), status.HTTP_200_OK
