@@ -4,7 +4,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.websocket_provider import WebsocketProvider, get_group_meter_ids,\
+from util.websocket_provider import WebsocketProvider, get_group_production_meter_ids,\
     get_group_members
 
 
@@ -30,44 +30,33 @@ GROUPMEMBER3_LAST_READING = {'type': 'reading',
 DATA = {"date": 1584534049261,
         "group_production": 43040,
         "group_users": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
-                         "consumption": 3603609657330000, "power": 20032100,
-                         "self_sufficiency": 1.1093780095648228e-13},
+                         "consumption": 3603609657330000, "power": 20032100},
                         {"id": 2, "meter_id": "52d7c87f8c26433dbd095048ad30c8cf",
-                         "consumption": 190585532038000, "power": 734100,
-                         "self_sufficiency": 1.2037243127210752e-12},
+                         "consumption": 190585532038000, "power": 734100},
                         {"id": 3, "meter_id": "117154df05874f41bfdaebcae6abfe98",
-                         "consumption": 1500976759905000, "power": 5877540,
-                         "self_sufficiency": 1.5915618042558239e-13}]}
+                         "consumption": 1500976759905000, "power": 5877540}]}
 RETURN_VALUES = [GROUPMEMBER1_LAST_READING,
                  GROUPMEMBER2_LAST_READING, GROUPMEMBER3_LAST_READING]
-SELF_SUFFICIENCIES = [1.1093780095648228e-13,
-                      1.2037243127210752e-12,
-                      1.5915618042558239e-13]
 GROUPMEMBER1_FIRST_READING = {'type': 'reading',
                               'values': {'power': 13374273, 'power3': 3902020,
                                          'energyOut': 0, 'power1': 3565876,
                                          'energy': 3055907952664000, 'power2': 4029106}}
 GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                  'inhabitants': 2, 'flat_size': 60.0},
+                  'inhabitants': 2},
                  {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
-                  'inhabitants': 2, 'flat_size': 60.0},
+                  'inhabitants': 2},
                  {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
-                  'inhabitants': 2, 'flat_size': 60.0}]
+                  'inhabitants': 2}]
 GROUP_PRODUCTION_METER_IDS = (
     '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
-SELF_SUFFICIENCY = 2.1909736445530789e-13
 MEMBER_DATA = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                'consumption': 3603609657330000, 'power': 20032100,
-                'self_sufficiency': 1.1093780095648228e-13},
+                'consumption': 3603609657330000, 'power': 20032100},
                {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
-                'consumption': 190585532038000, 'power': 734100,
-                'self_sufficiency': 1.2037243127210752e-12},
+                'consumption': 190585532038000, 'power': 734100},
                {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
-                'consumption': 1500976759905000, 'power': 5877540,
-                'self_sufficiency': 1.5915618042558239e-13}]
+                'consumption': 1500976759905000, 'power': 5877540}]
 GROUPMEMBER1_DATA = {'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                     'consumption': 3603609657330000, 'power': 20032100,
-                     'self_sufficiency': 2.1909736445530789e-13}
+                     'consumption': 3603609657330000, 'power': 20032100}
 
 
 class WebsocketProviderTestCase(BuzznTestCase):
@@ -108,10 +97,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
     @mock.patch('flask_socketio.SocketIO')
     @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
                 return_value=GROUPMEMBER1_LAST_READING)
-    @mock.patch('util.websocket_provider.WebsocketProvider.self_sufficiency',
-                return_value=SELF_SUFFICIENCY)
-    def test_create_member_data(self, socketio, _get_last_reading,
-                                _self_sufficiency):
+    def test_create_member_data(self, socketio, _get_last_reading):
         """ Unit tests for function create_member_data(). """
 
         ws = WebsocketProvider()
@@ -125,7 +111,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
         self.assertTrue(isinstance(data, dict))
 
         # Check return values
-        for param in 'id', 'meter_id', 'consumption', 'power', 'self_sufficiency':
+        for param in 'id', 'meter_id', 'consumption', 'power':
             self.assertEqual(data.get(param), GROUPMEMBER1_DATA.get(param))
 
     # pylint does not understand the required argument from the @mock.patch decorator
@@ -155,37 +141,11 @@ class WebsocketProviderTestCase(BuzznTestCase):
             self.assertEqual(item1.get('consumption'),
                              item2.get('consumption'))
             self.assertEqual(item1.get('power'), item2.get('power'))
-            self.assertEqual(item1.get('self_sufficiency'),
-                             item2.get('self_sufficiency'))
 
-    # pylint does not understand the required argument from the @mock.patch decorator
-    # pylint: disable=unused-argument
-    @mock.patch('flask_socketio.SocketIO')
-    @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
-                return_value=GROUPMEMBER1_LAST_READING)
-    @mock.patch('util.websocket_provider.WebsocketProvider.get_first_reading',
-                return_value=GROUPMEMBER1_FIRST_READING)
-    def test_self_sufficiency(self, socketio, get_last_reading,
-                              get_first_reading):
-        """ Unit tests for function self_sufficiency(). """
+    def test_get_group_production_meter_ids(self):
+        """ Unit tests for function get_group_production_meter_ids(). """
 
-        ws = WebsocketProvider()
-        test_user = db.session.query(
-            User).filter_by(name='User').first()
-        meter_id = test_user.meter_id
-        self_sufficiency = ws.self_sufficiency(
-            meter_id, test_user.inhabitants, test_user.flat_size)
-
-        # Check return type
-        self.assertTrue(isinstance(self_sufficiency, float))
-
-        # Check return value
-        self.assertEqual(self_sufficiency, SELF_SUFFICIENCY)
-
-    def test_get_group_meter_ids(self):
-        """ Unit tests for function get_group_meter_ids(). """
-
-        result = get_group_meter_ids(1)
+        result = get_group_production_meter_ids(1)
 
         # Check result values
         self.assertEqual(result, GROUP_PRODUCTION_METER_IDS)
@@ -205,7 +165,6 @@ class WebsocketProviderTestCase(BuzznTestCase):
             self.assertIsInstance(group_user.get('id'), int)
             self.assertIsInstance(group_user.get('meter_id'), str)
             self.assertIsInstance(group_user.get('inhabitants'), int)
-            self.assertIsInstance(group_user.get('flat_size'), float)
 
             # Check result values
             self.assertEqual(

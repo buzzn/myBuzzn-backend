@@ -38,14 +38,6 @@ EMPTY_GROUP_CONSUMPTION = {'consumed_energy': {}, 'consumed_power': {},
                            'produced_first_meter_power': {},
                            'produced_second_meter_energy': {},
                            'produced_second_meter_power': {}}
-DISAGGREGATION = {"2020-01-15 10:01:04": {"Durchlauferhitzer-1": 0,
-                                          "Grundlast-1": 50000000},
-                  "2020-01-15 10:01:10": {"Durchlauferhitzer-1": 0,
-                                          "Grundlast-1": 50000000}}
-INDIVIDUAL_DISAGGREGATION = {"2020-01-15 10:01:04": {'Durchlauferhitzer-1': 0,
-                                                     'Grundlast-1': 50000000},
-                             "2020-01-15 10:01:10": {'Durchlauferhitzer-1': 0,
-                                                     'Grundlast-1': 50000000}}
 
 
 class IndividualConsumptionHistoryTestCase(BuzznTestCase):
@@ -57,14 +49,14 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = '117154df05874f41bfdaebcae6abfe98'  # 8 words hex value
+        self.target_user.meter_id = 'EASYMETER_60404854'
         db.session.add(self.target_user)
         db.session.commit()
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
-    def test_individual_consumption_history(self, get_readings):
+    @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
+    def test_individual_consumption_history(self, get_default_readings):
         """ Unit tests for individual_consumption_history(). """
 
         # Check if route exists
@@ -85,8 +77,8 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), INDIVIDUAL_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_readings):
+    @mock.patch('routes.consumption_history.get_default_readings', return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_default_readings):
         """ Check handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
@@ -137,17 +129,16 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         self.target_user.group_id = 1
         db.session.add(self.target_user)
         self.target_group = Group(
-            "SomeGroup",
-            'b4234cd4bed143a6b9bd09e347e17d34',
-            '5e769d5b83934bccae11a8fa95e0dc5f',
-            'e2a7468f0cf64b7ca3f3d1350b893c6d')
+            'SomeGroup',
+            'EASYMETER_60327599',
+            '2c52403eef11408dbec88ae5f61e1ee7',
+            'EASYMETER_60404854')
         db.session.add(self.target_group)
         db.session.commit()
 
-    # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings', return_value=CONSUMPTION)
-    def test_group_consumption_history(self, get_readings):
+    @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
+    def test_group_consumption_history(self, get_default_readings):
         """ Unit tests for group_consumption_history()."""
 
         # Check if route exists
@@ -166,9 +157,9 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_readings',
+    @mock.patch('routes.consumption_history.get_default_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_readings):
+    def test_parameters(self, get_default_readings):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
@@ -204,133 +195,3 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             response_parameter.data.decode('utf-8')), EMPTY_GROUP_CONSUMPTION)
         self.assertEqual(ast.literal_eval(
             response_tics_format.data.decode('utf-8')), EMPTY_GROUP_CONSUMPTION)
-
-
-class IndividualDisaggregation(BuzznTestCase):
-    """ Unit tests for IndividualDisaggregation. """
-
-    def setUp(self):
-        super().setUp()
-        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
-                                "SomeToken", "SomeMeterId", "SomeGroup")
-        self.target_user.set_password("some_password")
-        self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'EASYMETER_1124001747'
-        db.session.add(self.target_user)
-        db.session.commit()
-
-    # pylint does not understand the required argument from the @mock.patch decorator
-    # pylint: disable=unused-argument
-    @mock.patch('routes.disaggregation.get_disaggregation', return_value=DISAGGREGATION)
-    def test_individual_disaggregation(self, get_disaggregation):
-        """ Unit tests for individual_disaggregation(). """
-
-        # Check if route exists
-        login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
-                                                          'password': 'some_password'}))
-        response = self.client.get('/individual-disaggregation', headers={
-            'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
-
-        # Check response status
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check response content
-        self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(ast.literal_eval(
-            response.data.decode('utf-8')), INDIVIDUAL_DISAGGREGATION)
-
-
-class GroupDisaggregation(BuzznTestCase):
-    """ Unit tests for GroupDisaggregation. """
-
-    def setUp(self):
-        super().setUp()
-        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
-                                "SomeToken", "SomeMeterId", "SomeGroup")
-        self.target_user.set_password("some_password")
-        self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'b2d1ed119bb527b74adc767db48b69d9'  # 8 words hex value
-        self.target_user.group_id = 1
-        db.session.add(self.target_user)
-        self.target_group = Group(
-            "SomeGroup",
-            'EASYMETER_1124001747',
-            '5e769d5b83934bccae11a8fa95e0dc5f',
-            'e2a7468f0cf64b7ca3f3d1350b893c6d')
-        db.session.add(self.target_group)
-        db.session.commit()
-
-    # pylint does not understand the required argument from the @mock.patch decorator
-    # pylint: disable=unused-argument
-    @mock.patch('routes.disaggregation.get_disaggregation', return_value=EMPTY_RESPONSE)
-    def test_group_disaggregation(self, get_disaggregation):
-        """ Unit tests for group_disaggregation(). """
-
-        # Check if route exists
-        login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
-                                                          'password': 'some_password'}))
-        response = self.client.get('/group-disaggregation', headers={
-            'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
-
-        # Check response status
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check response content
-        self.assertTrue(isinstance(response.data, bytes))
-        self.assertEqual(ast.literal_eval(
-            response.data.decode('utf-8')), EMPTY_RESPONSE)
-
-
-class Disaggregation(BuzznTestCase):
-    """ Unit test for common funcionalities of IndividualDisaggregation and
-    GroupDisaggregation. """
-
-    def setUp(self):
-        super().setUp()
-        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
-                                "SomeToken", "SomeMeterId", "SomeGroup")
-        self.target_user.set_password("some_password")
-        self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'b2d1ed119bb527b74adc767db48b69d9'  # 8 words hex value
-        self.target_user.group_id = 1
-        db.session.add(self.target_user)
-        self.target_group = Group(
-            "SomeGroup",
-            'b4234cd4bed143a6b9bd09e347e17d34',
-            '5e769d5b83934bccae11a8fa95e0dc5f',
-            'e2a7468f0cf64b7ca3f3d1350b893c6d')
-        db.session.add(self.target_group)
-        db.session.commit()
-
-    # pylint: disable=unused-argument
-    @mock.patch('routes.disaggregation.get_disaggregation',
-                return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_disaggregation):
-        """ Test handling of erroneous parameters. """
-
-        login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
-                                                          'password': 'some_password'}))
-
-        for route in '/individual-disaggregation', '/group-disaggregation':
-            response_timestamp_format = self.client.get(
-                route + '?begin=123.123', headers={'Authorization':
-                                                   'Bearer {}'.
-                                                   format(login_request.json["sessionToken"])})
-
-            response_parameter = self.client.get(route + '?and=1575284400000', headers={
-                'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
-
-            # Check response status
-            self.assertEqual(
-                response_timestamp_format.status_code, status.HTTP_200_OK)
-            self.assertEqual(response_parameter.status_code,
-                             status.HTTP_200_OK)
-
-            # Check response content
-            self.assertEqual(ast.literal_eval(
-                response_timestamp_format.data.decode('utf-8')), EMPTY_RESPONSE)
-            self.assertEqual(ast.literal_eval(
-                response_parameter.data.decode('utf-8')), EMPTY_RESPONSE)

@@ -15,7 +15,7 @@ redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 
 
-def get_group_meter_ids(user_id):
+def get_group_production_meter_ids(user_id):
     """ Get the group production meter ids from the SQLite database for the given user.
     :param int user_id: the user's id
     :returns: the group production meter ids of the group the user belongs to
@@ -32,7 +32,7 @@ def get_group_members(user_id):
     """ Get the parameters from the database to create a group data packet for
     the given user.
     :param int user_id: the user's id
-    :return: the group members' ids, inhabitants and flat sizes
+    :return: the group members' ids and inhabitants
     :rtype: [dict]
     """
 
@@ -42,8 +42,7 @@ def get_group_members(user_id):
     group_members = []
     for group_user in group_users:
         group_members.append(dict(id=group_user.id, meter_id=group_user.meter_id,
-                                  inhabitants=group_user.inhabitants,
-                                  flat_size=group_user.flat_size))
+                                  inhabitants=group_user.inhabitants))
 
     return group_members
 
@@ -91,42 +90,6 @@ class WebsocketProvider:
                 break
         return result
 
-    def self_sufficiency(self, meter_id, inhabitants, flat_size):
-        """ Calculate a user's self-suffiency value between 0 and 1 where 1
-        is optimal and 0 is worst. Self-sufficiency is defined as (inhabitants
-        * flat size)/(last energy reading - first energy reading)
-        :param str meter_id: the user's meter id
-        :param int inhabitants: number of people in the user's flat
-        :param float flat_size: the user's flat size
-        :return: the user's self-sufficiency value or 0.0 if there are no
-        readings for the user
-        :rtype: float
-        """
-
-        try:
-            # Get last reading for user
-            last_reading = self.get_last_reading(meter_id)
-
-            # Get first reading for user
-            first_reading = self.get_first_reading(meter_id)
-
-            if len(first_reading) == 0 or len(last_reading) == 0:
-                logger.error(
-                    'No readings for meter id %s in the database.', meter_id)
-                return 0.0
-
-            # Return result
-            return (float(inhabitants) *
-                    flat_size)/(float(last_reading.get('values').get('energy'))
-                                - float(first_reading.get('values').get('energy')))
-
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-            logger.error("Cannot calculate self-sufficiency for meter_id %s",
-                         meter_id)
-            return 0.0
-
     def create_member_data(self, member):
         """ Create a data package for a group member to include in a websocket
         data package.
@@ -143,31 +106,27 @@ class WebsocketProvider:
                 'No readings for meter id %s in the database.', member_meter_id)
             member_consumption = None
             member_power = None
-            member_self_sufficiency = None
         else:
             member_consumption = member_reading.get('values').get('energy')
             member_power = member_reading.get('values').get('power')
-            member_self_sufficiency = self.self_sufficiency(
-                member_meter_id, member.get('inhabitants'), member.get('flat_size'))
 
         member_data = dict(id=member_id,
                            meter_id=member_meter_id,
                            consumption=member_consumption,
-                           power=member_power,
-                           self_sufficiency=member_self_sufficiency)
+                           power=member_power)
         return member_data
 
     def create_data(self, user_id):
         """ Create a data package with the latest available data.
         :param int user_id: the user's id
         :return: the group's overall consumption, the group's overall
-        production and each group user's id, meter id, consumption, power and
-        self-sufficiency
+        production and each group user's id, meter id, energy and power
         :rtype: dict
         """
 
         try:
-            group_production_meter_ids = get_group_meter_ids(user_id)
+            group_production_meter_ids = get_group_production_meter_ids(
+                user_id)
             group_first_production_meter = group_production_meter_ids[0]
             group_second_production_meter = group_production_meter_ids[1]
 
