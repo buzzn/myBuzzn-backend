@@ -5,7 +5,6 @@ from util.database import db
 class PerCapitaConsumption(db.Model):
     """ Represents a user's per capita consumption in the backend. """
 
-    __tablename__ = 'per_capita_consumption'
     date = db.Column(db.DateTime, primary_key=True)
     meter_id = db.Column(db.String(32), ForeignKey('user.meter_id'),
                          primary_key=True)
