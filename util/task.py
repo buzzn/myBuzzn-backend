@@ -57,33 +57,19 @@ class Task:
 
         self.d.login(email, password)
 
-    def populate_redis(self):
-        """ Populate the redis database with all discovergy data from the past. """
-
-        # pylint: disable=global-statement
-        global last_data_flush
-        last_data_flush = datetime.utcnow()
-        end = calc_end()
-
-        # Connect to sqlite database
-        session = create_session()
-
-        try:
-            # Authenticate against the discovergy backend
-            self.login()
-
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-            logger.error('Wrong or missing discovergy credentials.')
-            return
+    def write_readings(self, session, end):
+        """ Get all readings for all meters from one the beginning of the BAFA support
+        year until now with one-week interval (this is the finest granularity we get for one
+        year back in time, cf. https://api.discovergy.com/docs/) and write them
+        to the redis database.
+        :param sqlalchemy.orm.scoping.scoped_session session: the database session
+        :param int end: end of interval in the format required by the
+        discovergy API
+        """
 
         for meter_id in get_all_meter_ids(session):
+
             try:
-                # Get all readings for all meters from one the beginning of the
-                # BAFA support year until now with
-                # one-week interval (this is the finest granularity we get for one
-                # year back in time, cf. https://api.discovergy.com/docs/)
                 readings = self.d.get_readings(meter_id,
                                                calc_support_year_start(), end,
                                                'one_week')
@@ -112,9 +98,51 @@ class Task:
                                 values=adjusted_reading['values'])
                     self.redis_client.set(key, json.dumps(data))
 
-                # Get the energy consumption for all meters in the ongoing term
-                # (start date and end date) and the previous term (start date
-                # and end date)
+            except Exception as e:
+                message = exception_message(e)
+                logger.error(message)
+
+    def write_last_readings(self, session):
+        """ Get the last reading for all meters and write them to the redis
+        database.
+        :param sqlalchemy.orm.scoping.scoped_session session: the database session
+        """
+
+        for meter_id in get_all_meter_ids(session):
+
+            try:
+                reading = self.d.get_last_reading(meter_id)
+                if reading == {}:
+                    message = 'No last reading available for metering id {}'.format(
+                        meter_id)
+                    logger.info(message)
+                    continue
+
+                adjusted_reading = check_and_nullify_power_value(
+                    reading, meter_id)
+                key = meter_id + '_' + \
+                    str(datetime.utcfromtimestamp(
+                        adjusted_reading['time']/1000).strftime('%F %T'))
+
+                # Write reading to redis database as key-value-pair
+                # The unique key consists meter id, separator '_' and UTC
+                # timestamp
+                data = dict(type='reading', values=adjusted_reading['values'])
+                self.redis_client.set(key, json.dumps(data))
+
+            except Exception as e:
+                message = exception_message(e)
+                logger.error(message)
+
+    def write_energy_consumption(self, session):
+        """ Get readings for all meters at start and end dates of
+        previous and ongoing terms and write them to the redis database.
+        :param sqlalchemy.orm.scoping.scoped_session session: the database session
+        """
+
+        for meter_id in get_all_meter_ids(session):
+
+            try:
                 for timestamp in calc_term_boundaries():
                     end_of_day = round((datetime.utcfromtimestamp(
                         timestamp/1000) + timedelta(hours=24, minutes=59,
@@ -145,12 +173,24 @@ class Task:
                                     values=adjusted_reading['values'])
                         self.redis_client.set(key, json.dumps(data))
 
-                # Get all disaggregation values for all meters from one week back
-                # until now. This is the earliest data we get, otherwise you'll
-                # end up with a '400 Bad Request: Duration of the data
-                # cannot be larger than 1 week. Please try for a smaller duration.'
-                # If one week back lies before the current BAFA support year
-                # start, start with that value instead.
+            except Exception as e:
+                message = exception_message(e)
+                logger.error(message)
+
+    def write_disaggregations(self, session, end):
+        """ Get all disaggregation values for all meters from one week back
+        until now. This is the earliest data we get, otherwise you'll end up
+        with a '400 Bad Request: Duration of the data cannot be larger than 1
+        week. Please try for a smaller duration.' If one week back lies before
+        the current BAFA support year start, start with that value instead.
+        :param sqlalchemy.orm.scoping.scoped_session session: the database session
+        :param int end: end of interval in the format required by the
+        discovergy API
+        """
+
+        for meter_id in get_all_meter_ids(session):
+
+            try:
                 disaggregation = self.d.get_disaggregation(
                     meter_id, calc_support_week_start(), end)
 
@@ -168,8 +208,7 @@ class Task:
                     key = meter_id + '_' + str(new_timestamp)
 
                     # Write disaggregation to redis database as key-value-pair
-                    # The unique key consists of the meter id (16 chars), the
-                    # separator '_' and the UTC timestamp (19 chars)
+                    # The unique key consists of meter id, separator '_' and UTC timestamp
                     data = dict(type='disaggregation',
                                 values=disaggregation[timestamp])
                     self.redis_client.set(key, json.dumps(data))
@@ -178,9 +217,73 @@ class Task:
                 message = exception_message(e)
                 logger.error(message)
 
+    def write_last_disaggregations(self, session):
+        """ Get the last disaggregation values for all meters and write them to the redis
+        database.
+        :param sqlalchemy.orm.scoping.scoped_session session: the database session
+        """
+
+        two_days_back = calc_two_days_back()
+        for meter_id in get_all_meter_ids(session):
+
+            try:
+                disaggregation = self.d.get_disaggregation(
+                    meter_id, two_days_back, calc_end())
+
+                if disaggregation in ({}, []):
+                    message = 'No disaggregation available for metering id {}'.format(
+                        meter_id)
+                    logger.info(message)
+                    continue
+
+                timestamps = sorted(disaggregation.keys())
+                if len(timestamps) > 0:
+                    timestamp = timestamps[-1]
+
+                    # Convert unix epoch time in milliseconds to UTC format
+                    new_timestamp = datetime.utcfromtimestamp(int(timestamp)/1000).\
+                        strftime('%Y-%m-%d %H:%M:%S')
+
+                    key = meter_id + '_' + str(new_timestamp)
+
+                    # Write disaggregation to redis database as key-value-pair
+                    # The unique key consists of meter id (16 chars), separator '_' and UTC
+                    # timestamp
+                    data = dict(type='disaggregation',
+                                values=disaggregation[timestamp])
+                    self.redis_client.set(key, json.dumps(data))
+
+            except Exception as e:
+                message = exception_message(e)
+                logger.error(message)
+
+    def populate_redis(self):
+        """ Populate the redis database with all discovergy data from the past. """
+
+        # pylint: disable=global-statement
+        global last_data_flush
+        last_data_flush = datetime.utcnow()
+        end = calc_end()
+
+        # Connect to sqlite database
+        session = create_session()
+
+        try:
+            # Authenticate against the discovergy backend
+            self.login()
+
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
+            logger.error('Wrong or missing discovergy credentials.')
+            return
+
+        self.write_readings(session, end)
+        self.write_energy_consumption(session)
+        self.write_disaggregations(session, end)
+
     def update_redis(self):
-        """ Update the redis database every 60s with the latest discovergy
-        data. """
+        """ Update the redis database every 60s with the latest discovergy data. """
 
         message = 'Started redis task at {}'.format(
             datetime.now().strftime("%H:%M:%S"))
@@ -207,64 +310,8 @@ class Task:
                 write_savings(session)
                 write_base_values_or_pkv(session)
 
-            try:
-                all_meter_ids = get_all_meter_ids(session)
-                two_days_back = calc_two_days_back()
-
-                # Get last reading for all meters
-                for meter_id in all_meter_ids:
-                    reading = self.d.get_last_reading(meter_id)
-
-                    if reading == {}:
-                        message = 'No last reading available for metering id {}'.format(
-                            meter_id)
-                        logger.info(message)
-                        continue
-
-                    adjusted_reading = check_and_nullify_power_value(reading,
-                                                                     meter_id)
-                    key = meter_id + '_' + \
-                        str(datetime.utcfromtimestamp(
-                            adjusted_reading['time']/1000).strftime('%F %T'))
-
-                    # Write reading to redis database as key-value-pair
-                    # The unique key consists of the meter id (16 chars), the
-                    # separator '_' and the UTC timestamp (19 chars)
-                    data = dict(type='reading',
-                                values=adjusted_reading['values'])
-                    self.redis_client.set(key, json.dumps(data))
-
-                # Get latest disaggregation for all meters
-                for meter_id in all_meter_ids:
-                    disaggregation = self.d.get_disaggregation(
-                        meter_id, two_days_back, calc_end())
-
-                    if disaggregation == []:
-                        message = 'No disaggregation available for metering id {}'.format(
-                            meter_id)
-                        logger.info(message)
-                        continue
-
-                    timestamps = sorted(disaggregation.keys())
-                    if len(timestamps) > 0:
-                        timestamp = timestamps[-1]
-
-                        # Convert unix epoch time in milliseconds to UTC format
-                        new_timestamp = datetime.utcfromtimestamp(int(timestamp)/1000).\
-                            strftime('%Y-%m-%d %H:%M:%S')
-
-                        key = meter_id + '_' + str(new_timestamp)
-
-                        # Write disaggregation to redis database as key-value-pair
-                        # The unique key consists of the meter id (16 chars), the
-                        # separator '_' and the UTC timestamp (19 chars)
-                        data = dict(type='disaggregation',
-                                    values=disaggregation[timestamp])
-                        self.redis_client.set(key, json.dumps(data))
-
-            except Exception as e:
-                message = exception_message(e)
-                logger.error(message)
+            self.write_last_readings(session)
+            self.write_last_disaggregations(session)
 
 
 def run():
