@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, time
 from os import path
 import logging.config
-from models.baseline import BaseLine
 from models.group import Group
 from models.pkv import PKV
 from models.savings import UserSaving, CommunitySaving
@@ -93,8 +92,10 @@ def write_baselines(session):
                 logger.info(message)
 
             else:
-                # Create BaseLine instance
-                session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
+                # pylint: disable=fixme
+                # TODO - set baseline in user table
+                # session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
+                continue
 
         session.commit()
     except Exception as e:
