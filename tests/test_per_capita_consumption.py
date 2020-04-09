@@ -1,7 +1,7 @@
 import ast
 import json
 from flask_api import status
-from models.pcc import PerCapitaConsumption
+from models.per_capita_consumption import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
@@ -10,7 +10,7 @@ from tests.test_per_capita_consumption_calculation import DAY_ZERO, DAY_ONE, PCC
 
 
 class PerCapitaConsumptionTestCase(BuzznTestCase):
-    """ Unit tests for per capita consumption route and functions(). """
+    """ Unit tests for per capita consumption route and functions. """
 
     def setUp(self):
         """ Create test user and test PerCapitaConsumprion values in the database. """

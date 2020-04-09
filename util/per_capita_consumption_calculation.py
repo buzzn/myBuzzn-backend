@@ -6,7 +6,7 @@ from dateutil import parser
 import redis
 import pytz
 from sqlalchemy import extract
-from models.pcc import PerCapitaConsumption
+from models.per_capita_consumption import PerCapitaConsumption
 from util.energy_saving_calculation import get_last_meter_reading_date
 from util.error import exception_message
 from util.redis_helpers import get_sorted_keys
@@ -187,7 +187,7 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
     :param str meter_id: the user's meter id
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the calculation day which cannot lie in the future
-    :returns: the per_capita_consumption values for the given meter id and date or None if there is
+    :returns: the per capita consumption values for the given meter id and date or None if there is
     an error
     :rtype: dict or type(None)
     """

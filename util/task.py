@@ -9,7 +9,7 @@ import redis
 from models.baseline import BaseLine
 from models.user import User
 from models.group import Group
-from models.pcc import PerCapitaConsumption
+from models.per_capita_consumption import PerCapitaConsumption
 from models.savings import UserSaving, CommunitySaving
 from util.error import exception_message
 from util.energy_saving_calculation import estimate_energy_saving_each_user,\
@@ -220,7 +220,7 @@ def write_baselines(session):
 def write_base_values_or_per_capita_consumption(session):
     """ If yesterday was the start of the support year, write the base values
     for all users to the SQLite database.
-    Otherwise, write yesterday's per_capita_consumption for all users to the SQLite database.
+    Otherwise, write yesterday's per capita consumption for all users to the SQLite database.
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     """
 
@@ -260,7 +260,7 @@ def write_base_values(dt, session):
 
 
 def write_per_capita_consumption(dt, session):
-    """ Write the per_capita_consumption for each user to the SQLite database.
+    """ Write the per capita consumption for each user to the SQLite database.
     If for one user there are no yesterday's values in the database, write the
     base values for that user.
     If today's entry already exists for a user, skip writing that entry.

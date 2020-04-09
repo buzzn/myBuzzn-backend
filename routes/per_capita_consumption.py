@@ -2,7 +2,7 @@ import logging.config
 from flask import Blueprint, jsonify
 from flask_api import status
 from flask_jwt_extended import get_jwt_identity
-from models.pcc import PerCapitaConsumption
+from models.per_capita_consumption import PerCapitaConsumption
 from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, NO_PER_CAPITA_CONSUMPTION, exception_message
@@ -10,7 +10,7 @@ from util.login import login_required
 
 
 logger = logging.getLogger(__name__)
-ShowPerCapitaConsumption = Blueprint('ShowPerCapitaConsumption', __name__)
+_PerCapitaConsumption = Blueprint('_PerCapitaConsumption', __name__)
 
 
 def get_moving_average_annualized(meter_id):
@@ -36,7 +36,7 @@ def get_moving_average_annualized(meter_id):
         return None
 
 
-@ShowPerCapitaConsumption.route('/per-capita-consumption', methods=['GET'])
+@_PerCapitaConsumption.route('/per-capita-consumption', methods=['GET'])
 @login_required
 def per_capita_consumption():
     """ Shows the the last annualized moving average in kWh.

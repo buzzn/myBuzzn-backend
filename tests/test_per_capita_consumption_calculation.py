@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import json
 from unittest import mock
-from models.pcc import PerCapitaConsumption
+from models.per_capita_consumption import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
