@@ -183,7 +183,7 @@ def define_base_values(inhabitants, date):
 
 
 def calc_per_capita_consumption(meter_id, inhabitants, date, session):
-    """ Calculate the Pro-Kopf-Verbrauch for a given user on a given date.
+    """ Calculate the per capita consumption for a given user on a given date.
     :param str meter_id: the user's meter id
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the calculation day which cannot lie in the future
@@ -223,7 +223,7 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
 
 
 def build_data_package(data_day_before, consumption, inhabitants, date):
-    """ Build a PCC data package from the retrieved database values.
+    """ Build a per capita consumption data package from the retrieved database values.
     :param list data_day_before: the data from the day before the date in
     question from the SQLite database (result of get_data_day_before())
     :param float consumption: the date's calculated consumption

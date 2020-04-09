@@ -221,7 +221,7 @@ Group=mybuzznbackend
 WantedBy=multi-user.target⏎
 ```
 
-## Logging
+### Logging
 To ensure that the logger has the correct configuration, you must create a logger configuration file named ```logger_configuration.conf``` and save it under ```util```. The configuration file should look like this:
 ```
 [loggers]
@@ -268,3 +268,7 @@ Finally restart the the web server and the redis task which fills the redis data
 readings:
 `systemctl restart apache2.service redis-task.service mybuzzn-backend.service`
 
+## Glossary
+|Term|Description|
+| ------------- |:-------------:|
+| per capita consumption / pcc| Defined as consumption divided by inhabitants in kWh|

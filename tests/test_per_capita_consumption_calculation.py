@@ -56,7 +56,7 @@ PCC_DAY_TWO = PerCapitaConsumption(DAY_TWO, TEST_USER_METER_ID, 1.5, 3.6749714, 
 
 
 class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
-    """ Unit tests for PCC calculation methods. """
+    """ Unit tests for per capita consumption calculation methods. """
 
     def setUp(self):
         """ Create test user and test group in the database. """
@@ -136,8 +136,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         # Check return values
         if isinstance(result, dict):
             for param in 'date.year', 'date.month', 'date.day', 'consumption',\
-                         'consumption_cumulated', 'inhabitants', 'pkv',\
-                         'pkv_cumulated', 'days', 'moving_average',\
+                         'consumption_cumulated', 'inhabitants', 'per_capita_consumption',\
+                         'per_capita_consumption_cumulated', 'days', 'moving_average',\
                          'moving_average_annualized':
                 self.assertEqual(result.get(param),
                                  BASE_VALUES.__dict__.get(param))

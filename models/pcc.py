@@ -21,7 +21,7 @@ class PerCapitaConsumption(db.Model):
     def __init__(self, date, meter_id, consumption, consumption_cumulated,
                  inhabitants, per_capita_consumtion, per_capita_consumption_cumulated,
                  days, moving_average, moving_average_annualized):
-        """ Creates a new user PCC entry.
+        """ Creates a new user PerCapitaConsumption entry.
         :param datetime.date date: the calculation day
         :param str meter_id: the user's meter id
         :param float consumption: the last meter reading of the calculation day

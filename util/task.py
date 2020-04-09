@@ -246,7 +246,7 @@ def write_base_values(dt, session):
     for user in get_all_users(session):
         base_values = define_base_values(user.inhabitants, dt)
 
-        # Create PCC instance
+        # Create PerCapitaConsumption instance
         session.add(PerCapitaConsumption(dt, user.meter_id, base_values['consumption'],
                                          base_values['consumption_cumulated'],
                                          base_values['inhabitants'],
@@ -285,7 +285,7 @@ def write_per_capita_consumption(dt, session):
                 if dataset is None:
                     dataset = define_base_values(user.inhabitants, dt)
 
-            # Create PCC instance
+            # Create PerCapitaConsumption instance
                 session.add(PerCapitaConsumption(dt, user.meter_id, dataset['consumption'],
                                                  dataset['consumption_cumulated'],
                                                  dataset['inhabitants'],

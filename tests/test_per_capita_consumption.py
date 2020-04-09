@@ -10,10 +10,10 @@ from tests.test_per_capita_consumption_calculation import DAY_ZERO, DAY_ONE, PCC
 
 
 class PerCapitaConsumptionTestCase(BuzznTestCase):
-    """ Unit tests for PCC route and functions(). """
+    """ Unit tests for per capita consumption route and functions(). """
 
     def setUp(self):
-        """ Create test user and test PCC values in the database. """
+        """ Create test user and test PerCapitaConsumprion values in the database. """
 
         super().setUp()
         self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
