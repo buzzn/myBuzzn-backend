@@ -55,7 +55,6 @@ def setup_app(app_config):
     from models.group import Group
     from models.loadprofile import LoadProfileEntry
     from models.savings import UserSaving, CommunitySaving
-    from models.baseline import BaseLine
     from models.pkv import PKV
     Migrate(app, db)
 
