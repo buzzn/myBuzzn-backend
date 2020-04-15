@@ -5,7 +5,6 @@ import logging.config
 from dateutil import parser
 import redis
 import pytz
-from models.user import User
 from util.error import exception_message
 from util.database import get_engine
 from util.redis_helpers import get_sorted_keys
@@ -16,12 +15,6 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
-
-
-def get_all_user_meter_ids(session):
-    """ Get all user meter ids from sqlite database. """
-
-    return [meter_id[0] for meter_id in session.query(User.meter_id).all()]
 
 
 def calc_ratio_values(start):
@@ -196,38 +189,3 @@ def calc_estimated_energy_saving(meter_id, start):
         return None
 
     return energy_consumption_last_term - estimated_energy_consumption
-
-
-def estimate_energy_saving_each_user(start, session):
-    """ Calculate the estimated energy saving for each user.
-    :param datetime.date start: the start date of the given term
-    :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :returns: the estimated energy saving of each user mapped to their meter id in the given term
-    :rtype: dict
-    """
-
-    savings = dict()
-    for meter_id in get_all_user_meter_ids(session):
-        saving = calc_estimated_energy_saving(meter_id, start)
-        savings[meter_id] = saving
-
-    return savings
-
-
-def estimate_energy_saving_all_users(start, session):
-    """ Calculate the estimated energy saving of all users by summing up all
-    last term energy consumptions and subtracting all estimated energy
-    consumptions.
-    :param datetime.date start: the start date of the given term
-    :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :returns: the estimated energy saving of all users in the given term
-    :rtype: float
-    """
-
-    savings = 0.0
-    for meter_id in get_all_user_meter_ids(session):
-        saving = calc_estimated_energy_saving(meter_id, start)
-        if saving is not None:
-            savings += saving
-
-    return savings
