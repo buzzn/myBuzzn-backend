@@ -1,4 +1,4 @@
-"""empty message
+"""Add column registration_date to User
 
 Revision ID: df2b5af9e9de
 Revises: 67a4de7f7cf1
