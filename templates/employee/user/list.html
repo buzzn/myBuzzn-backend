@@ -1,0 +1,20 @@
+{% block body %}
+<table class="table">
+  <thead>
+    <th>First Name</th>
+    <th>Name</th>
+    <th>Baseline</th>
+  </thead>
+  {% for user in users %}
+  <tr>
+    <td><img src="data:image/jpg;{{user.avatar}}"></td>
+    <td>{{user.firstName}}</td>
+    <td>{{user.name}}</td>
+    <td>{{user.baseline}}</td>
+    <td>
+      <a href='/employee/user/update?id={{user.id}}'>Edit</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

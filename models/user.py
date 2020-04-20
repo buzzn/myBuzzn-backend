@@ -23,6 +23,7 @@ class RoleType(Enum):
     """
     LOCAL_POWER_TAKER = 'Local powertaker in a local pool'
     ADMINISTRATOR = 'Administrator'
+    EMPLOYEE = 'Buzzn Employee'
 
 
 class StateType(Enum):

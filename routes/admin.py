@@ -31,7 +31,6 @@ def admin_required(fn):
         return fn(*args, **kwargs)
     return wrapper
 
-
 @Admin.route('/favicon.ico', methods=['GET'])
 def favicon():
     """Prevents the logger from logging 404 when the browser asks for a favicon.
