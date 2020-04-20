@@ -5,8 +5,7 @@ from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
-from util.energy_saving_calculation import get_all_user_meter_ids,\
-    calc_ratio_values, get_last_meter_reading_date,\
+from util.energy_saving_calculation import calc_ratio_values, get_last_meter_reading_date,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
     calc_estimated_energy_consumption, calc_estimated_energy_saving
 
@@ -83,22 +82,6 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))
-
-    def test_get_all_user_meter_ids(self):
-        """ Unit tests for function get_all_user_meter_ids(). """
-
-        result = get_all_user_meter_ids(db.session)
-
-        # Check return types
-        self.assertIsInstance(result, list)
-        for meter_id in result:
-            self.assertIsInstance(meter_id, str)
-            self.assertTrue(meter_id.isalnum())
-
-        # Check return values
-        self.assertEqual(result, ALL_USER_METER_IDS)
-        for meter_id in result:
-            self.assertEqual(len(meter_id), 32)
 
     # pylint: disable=unused-argument
     @mock.patch('sqlalchemy.engine.result.ResultProxy.first', side_effect=RETURN_VALUES)

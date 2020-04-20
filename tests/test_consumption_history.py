@@ -21,19 +21,32 @@ INDIVIDUAL_CONSUMPTION = {'energy': {'2020-01-15 10:00:04': 2180256872214000,
                                      '2020-01-15 10:01:10': 2180256872214000},
                           'power': {'2020-01-15 10:00:04': 27279, '2020-01-15 10:01:10': 27200}}
 EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
-GROUP_CONSUMPTION = {'consumed_energy': {"2020-01-15 10:00:04": 2180256872214000,
-                                         "2020-01-15 10:01:10": 2180256872214000},
-                     'consumed_power': {"2020-01-15 10:00:04": 27279,
-                                        "2020-01-15 10:01:10": 27200},
-                     'produced_first_meter_energy': {"2020-01-15 10:00:04": 2180256872214000,
-                                                     "2020-01-15 10:01:10": 2180256872214000},
-                     'produced_first_meter_power': {"2020-01-15 10:00:04": 27279,
-                                                    "2020-01-15 10:01:10": 27200},
-                     'produced_second_meter_energy': {"2020-01-15 10:00:04": 2180256872214000,
-                                                      "2020-01-15 10:01:10": 2180256872214000},
-                     'produced_second_meter_power': {"2020-01-15 10:00:04": 27279,
-                                                     "2020-01-15 10:01:10": 27200}}
-EMPTY_GROUP_CONSUMPTION = {'consumed_energy': {}, 'consumed_power': {},
+GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                         '2020-01-15 10:01:10': 2180256872214000},
+                     'consumed_power': {'2020-01-15 10:00:04': 27279,
+                                        '2020-01-15 10:01:10': 27200},
+                     'group_users': [{'1':
+                                      {'energy': [{'2020-01-15 10:00:04': 2180256872214000},
+                                                  {'2020-01-15 10:01:10': 2180256872214000}],
+                                       'power': [{'2020-01-15 10:00:04': 27279},
+                                                 {'2020-01-15 10:01:10': 27200}]}},
+                                     {'2':
+                                      {'energy': [{'2020-01-15 10:00:04': 2180256872214000},
+                                                  {'2020-01-15 10:01:10': 2180256872214000}],
+                                       'power': [{'2020-01-15 10:00:04': 27279},
+                                                 {'2020-01-15 10:01:10': 27200}]}}],
+                     'produced_first_meter_energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                                     '2020-01-15 10:01:10': 2180256872214000},
+                     'produced_first_meter_power': {'2020-01-15 10:00:04': 27279,
+                                                    '2020-01-15 10:01:10': 27200},
+                     'produced_second_meter_energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                                      '2020-01-15 10:01:10': 2180256872214000},
+                     'produced_second_meter_power': {'2020-01-15 10:00:04': 27279,
+                                                     '2020-01-15 10:01:10': 27200}}
+EMPTY_GROUP_CONSUMPTION = {'consumed_energy': {},
+                           'consumed_power': {},
+                           'group_users': [{'1': {'energy': [], 'power': []}},
+                                           {'2': {'energy': [], 'power': []}}],
                            'produced_first_meter_energy': {},
                            'produced_first_meter_power': {},
                            'produced_second_meter_energy': {},
@@ -125,7 +138,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
                                 "SomeToken", "SomeMeterId", "SomeGroup")
         self.target_user.set_password("some_password")
         self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'b2d1ed119bb527b74adc767db48b69d9'  # 8 words hex value
+        self.target_user.meter_id = 'EASYMETER_60404854'
         self.target_user.group_id = 1
         db.session.add(self.target_user)
         self.target_group = Group(
@@ -134,6 +147,12 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             '2c52403eef11408dbec88ae5f61e1ee7',
             'EASYMETER_60404854')
         db.session.add(self.target_group)
+        group_member2 = User(GenderType.FEMALE, 'judith', 'greif',
+                             'judith@buzzn.net', 'TestToken2',
+                             'EASYMETER_60404852', 1)
+        group_member2.set_password('some_password2')
+        group_member2.state = StateType.ACTIVE
+        db.session.add(group_member2)
         db.session.commit()
 
     # pylint: disable=unused-argument

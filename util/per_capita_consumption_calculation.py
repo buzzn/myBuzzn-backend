@@ -6,7 +6,7 @@ from dateutil import parser
 import redis
 import pytz
 from sqlalchemy import extract
-from models.pkv import PKV
+from models.per_capita_consumption import PerCapitaConsumption
 from util.energy_saving_calculation import get_last_meter_reading_date
 from util.error import exception_message
 from util.redis_helpers import get_sorted_keys
@@ -55,18 +55,19 @@ def get_data_day_before(dt, meter_id, session):
     :param str meter_id: the user's meter id
     :param sqlalchemy.orm.scoping.scoped_session session: the database session
     :returns: date, meter_id, consumption, consumption_cumulated, inhabitants,
-    pkv, pkv_cumulated, days, moving_average and moving_average_annualized
+    per_capita_consumption, per_capita_consumption_cumulated, days, moving_average
+    and moving_average_annualized
     :rtype: list or type(None) if there was an error
     """
 
     day_before = dt - timedelta(days=1)
 
     try:
-        result = session.query(PKV).filter_by(
-            meter_id=meter_id).filter(extract('year', PKV.date) == day_before.year,
+        result = session.query(PerCapitaConsumption).filter_by(
+            meter_id=meter_id).filter(extract('year', PerCapitaConsumption.date) == day_before.year,
                                       extract(
-                                          'month', PKV.date) == day_before.month,
-                                      extract('day', PKV.date) ==
+                                          'month', PerCapitaConsumption.date) == day_before.month,
+                                      extract('day', PerCapitaConsumption.date) ==
                                       day_before.day).first()
 
         return result
@@ -153,11 +154,11 @@ def define_base_values(inhabitants, date):
     # On day_zero, consumption_cumulated := consumption (kWh)
     consumption_cumulated = consumption
 
-    # Calculate pkv (Pro-Kopf-Verbrauch) := consumption/inhabitants (kwH)
-    pkv = consumption/inhabitants
+    # Calculate per_capita_consumption := consumption/inhabitants (kwH)
+    per_capita_consumption = consumption/inhabitants
 
-    # On day_zero, pkv_cumulated := pkv (kWh)
-    pkv_cumulated = pkv
+    # On day_zero, per_capita_consumption_cumulated := per_capita_consumption (kWh)
+    per_capita_consumption_cumulated = per_capita_consumption
 
     # Define days (since calculation start) := 0 (number)
     days = 0
@@ -173,20 +174,20 @@ def define_base_values(inhabitants, date):
                        consumption=consumption,
                        consumption_cumulated=consumption_cumulated,
                        inhabitants=inhabitants,
-                       pkv=pkv,
-                       pkv_cumulated=pkv_cumulated,
+                       per_capita_consumption=per_capita_consumption,
+                       per_capita_consumption_cumulated=per_capita_consumption_cumulated,
                        days=days,
                        moving_average=moving_average,
                        moving_average_annualized=moving_average_annualized)
     return base_values
 
 
-def calc_pkv(meter_id, inhabitants, date, session):
-    """ Calculate the Pro-Kopf-Verbrauch for a given user on a given date.
+def calc_per_capita_consumption(meter_id, inhabitants, date, session):
+    """ Calculate the per capita consumption for a given user on a given date.
     :param str meter_id: the user's meter id
     :param int inhabitants: the number of inhabitants in the user's flat
     :param datetime.date date: the calculation day which cannot lie in the future
-    :returns: the pkv values for the given meter id and date or None if there is
+    :returns: the per capita consumption values for the given meter id and date or None if there is
     an error
     :rtype: dict or type(None)
     """
@@ -222,7 +223,7 @@ def calc_pkv(meter_id, inhabitants, date, session):
 
 
 def build_data_package(data_day_before, consumption, inhabitants, date):
-    """ Build a PKV data package from the retrieved database values.
+    """ Build a per capita consumption data package from the retrieved database values.
     :param list data_day_before: the data from the day before the date in
     question from the SQLite database (result of get_data_day_before())
     :param float consumption: the date's calculated consumption
@@ -237,12 +238,13 @@ def build_data_package(data_day_before, consumption, inhabitants, date):
         # before + consumption (kWh)
         consumption_cumulated = data_day_before.consumption_cumulated + consumption
 
-        # Calculate pkv (Pro-Kopf-Verbrauch) := consumption/inhabitants (kWh)
-        pkv = consumption/inhabitants
+        # Calculate per_capita_consumption := consumption/inhabitants (kWh)
+        per_capita_consumption = consumption/inhabitants
 
-        # Calculate pkv_cumulated := pkv_cumulated of the day
-        # before + pkv (kWh)
-        pkv_cumulated = data_day_before.pkv_cumulated + pkv
+        # Calculate per_capita_consumption_cumulated := per_capita_consumption_cumulated of the day
+        # before + per_capita_consumption (kWh)
+        per_capita_consumption_cumulated = data_day_before.per_capita_consumption_cumulated + \
+                                           per_capita_consumption
 
         # Calculate days (since calculation start) := days of the day before + 1
         # (number)
@@ -253,8 +255,8 @@ def build_data_package(data_day_before, consumption, inhabitants, date):
         logger.error(message)
         return None
 
-    # Calculate moving_average := pkv_cumulated/days (kWh)
-    moving_average = pkv_cumulated/days
+    # Calculate moving_average := per_capita_consumption_cumulated/days (kWh)
+    moving_average = per_capita_consumption_cumulated/days
 
     # Calculate moving_average_annualized := moving_average * 365 (kWh, rounded)
     moving_average_annualized = round(moving_average * 365)
@@ -264,8 +266,8 @@ def build_data_package(data_day_before, consumption, inhabitants, date):
                 consumption=consumption,
                 consumption_cumulated=consumption_cumulated,
                 inhabitants=inhabitants,
-                pkv=pkv,
-                pkv_cumulated=pkv_cumulated,
+                per_capita_consumption=per_capita_consumption,
+                per_capita_consumption_cumulated=per_capita_consumption_cumulated,
                 days=days,
                 moving_average=moving_average,
                 moving_average_annualized=moving_average_annualized
