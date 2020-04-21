@@ -74,6 +74,7 @@ class WebsocketProvider:
         data = self.redis_client.get(meter_id + '_last')
 
         if data in ({}, []):
+            logger.info("No key %s_last available. Iteration needed.", meter_id)
             result = dict()
             for key in reversed(self.get_sorted_keys(meter_id)):
                 data = self.redis_client.get(key)
