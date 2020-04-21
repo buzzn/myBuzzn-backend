@@ -1,3 +1,4 @@
+import traceback
 from datetime import datetime
 import json
 import logging.config
@@ -55,32 +56,43 @@ class WebsocketProvider:
 
         self.redis_client = redis.Redis(
             host=redis_host, port=redis_port, db=redis_db)  # connect to server
+        self.cached_first_readings = {}
 
     def get_sorted_keys(self, meter_id):
         """ Return all keys stored in the redis db for a given meter id.
         :param str meter_id: the meter id to prefix the scan with
         """
 
-        return sorted([key.decode('utf-8') for key in
-                       self.redis_client.scan_iter(meter_id + '*')])
+        sorted_keys = sorted([key.decode('utf-8') for key in
+                              self.redis_client.scan_iter(meter_id + '*')])
+        return sorted_keys
 
     def get_last_reading(self, meter_id):
         """ Return the first meter reading stored in the redis db.
         :param str meter_id: the meter id for which to get the values
         """
 
-        result = dict()
-        for key in reversed(self.get_sorted_keys(meter_id)):
-            data = self.redis_client.get(key)
-            if json.loads(data).get('type') == 'reading':
-                result = json.loads(data)
-                break
+        data = self.redis_client.get(meter_id + '_last')
+
+        if data in ({}, []):
+            result = dict()
+            for key in reversed(self.get_sorted_keys(meter_id)):
+                data = self.redis_client.get(key)
+                if json.loads(data).get('type') == 'reading':
+                    result = json.loads(data)
+                    break
+
+        else:
+            result = json.loads(data)
+
         return result
 
     def get_first_reading(self, meter_id):
         """ Return the first meter reading stored in the redis db.
         :param str meter_id: the meter id for which to get the values
         """
+        if meter_id in self.cached_first_readings:
+            return self.cached_first_readings[meter_id]
 
         result = dict()
         for key in self.get_sorted_keys(meter_id):
@@ -88,6 +100,8 @@ class WebsocketProvider:
             if json.loads(data).get('type') == 'reading':
                 result = json.loads(data)
                 break
+
+        self.cached_first_readings[meter_id] = result
         return result
 
     def create_member_data(self, member):
