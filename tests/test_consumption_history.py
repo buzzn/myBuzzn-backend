@@ -30,16 +30,16 @@ CONSUMPTION_2 = {"2020-01-15 10:00:04": {'power': 27279, 'power3': -27279,
                                          'energy': 2180256872214000,
                                          'power2': -2437}}
 
-FIRST_LAST_ENERGY = [b"""{'2020-01-15 10:00:04': 2180256872214000,
-                     '2020-01-15 10:01:10': 2180256872214000}""",
-                     b"""{'2020-01-15 10:00:04': 2180256872214000,
-                     '2020-01-15 10:01:10': 2180256872214000}""",
-                     b"""{'2020-01-15 10:00:04': 2180256872214000,
-                     '2020-01-15 10:01:10': 2180256872214000}""",
-                     b"""{'2020-01-15 10:00:04': 2180256872214000,
-                     '2020-01-15 10:01:10': 2180256872214000}""",
-                     b"""{'2020-01-15 10:00:04': 2180256872214000,
-                     '2020-01-15 10:01:10': 2180256872214000}"""]
+FIRST_LAST_ENERGY = [{'2020-01-15 10:00:04': 2180256872214000,
+                     '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                     '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                     '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                     '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                     '2020-01-15 10:01:10': 2180256872214000}]
 
 FIRST_LAST_ENERGY_2 = {'2020-01-15 10:00:04': 2180256872214000,
                        '2020-01-15 10:01:10': 2180256872214000}
@@ -188,7 +188,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
     @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
-                return_value=FIRST_LAST_ENERGY_2)
+                side_effect=FIRST_LAST_ENERGY)
     def test_group_consumption_history(self, get_default_readings,
                                        get_first_and_last_energy_for_date):
         """ Unit tests for group_consumption_history()."""
@@ -212,7 +212,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
     @mock.patch('routes.consumption_history.get_default_readings',
                 return_value=EMPTY_RESPONSE)
     @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
-                return_value=EMPTY_RESPONSE)
+                side_effect=FIRST_LAST_ENERGY_EMPTY)
     def test_parameters(self, get_default_readings, get_first_and_last_energy_for_date):
         """ Test handling of erroneous parameters. """
 
