@@ -5,18 +5,9 @@ from flask_api import status
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
+from tests.string_constants import EMPTY_RESPONSE, DISAGGREGATION,\
+    INDIVIDUAL_DISAGGREGATION
 from util.database import db
-
-
-EMPTY_RESPONSE = {}
-DISAGGREGATION = {"2020-01-15 10:01:04": {"Durchlauferhitzer-1": 0,
-                                          "Grundlast-1": 50000000},
-                  "2020-01-15 10:01:10": {"Durchlauferhitzer-1": 0,
-                                          "Grundlast-1": 50000000}}
-INDIVIDUAL_DISAGGREGATION = {"2020-01-15 10:01:04": {'Durchlauferhitzer-1': 0,
-                                                     'Grundlast-1': 50000000},
-                             "2020-01-15 10:01:10": {'Durchlauferhitzer-1': 0,
-                                                     'Grundlast-1': 50000000}}
 
 
 class IndividualDisaggregation(BuzznTestCase):
