@@ -39,7 +39,7 @@ def favicon():
 
 
 @Employee.route('/employee/login', methods=['POST'])
-def do_admin_login():
+def do_employee_login():
     """Log-in for the given user..
     :param str email: The mail which is used to identify the user.
     :param str password: The user's password.
@@ -91,7 +91,6 @@ def admin():
     return Response(render_template('employee/employee.html'))
 
 
-
 @Employee.route('/employee/user/update', methods=['POST'])
 @employee_required
 def do_user_baseline_update():
@@ -130,12 +129,24 @@ def request_user_baseline_update():
                     mimetype='text/html'))
 
 
-@Employee.route('/employee/user/', methods=['GET'])
+@Employee.route('/employee/user/all', methods=['GET'])
 @employee_required
 def user_list(message=''):
     """ Lists all existing users.
     """
     return Response(render_template('employee/user/list.html',
                                     users=User.query.all(),
+                                    message=message),
+                    mimetype='text/html')
+
+
+@Employee.route('/employee/user/name', methods=['GET'])
+@employee_required
+def user_list(message=''):
+    """ Lists all existing users.
+    """
+    target_users = User.query.filter_by(name=request.args['name']).all()
+    return Response(render_template('employee/user/list.html',
+                                    users=target_users,
                                     message=message),
                     mimetype='text/html')
