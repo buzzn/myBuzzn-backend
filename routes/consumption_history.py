@@ -93,7 +93,12 @@ def get_first_and_last_energy_for_date(meter_id, date):
     redis_keys = get_sorted_keys_date_prefix(redis_client, meter_id, date)
 
     for key in redis_keys:
-        data = json.loads(redis_client.get(key))
+        try:
+            data = json.loads(redis_client.get(key))
+
+        except Exception as e:
+            logger.error(e)
+
         if data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id) + 1:])
             result[reading_date.strftime(
@@ -101,13 +106,18 @@ def get_first_and_last_energy_for_date(meter_id, date):
             break
 
     for key in reversed(redis_keys):
-        data = json.loads(redis_client.get(key))
+        try:
+            data = json.loads(redis_client.get(key))
+
+        except Exception as e:
+            logger.error(e)
+
         if data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id) + 1:])
             result[reading_date.strftime(
                 '%Y-%m-%d %H:%M:%S')] = data.get('values').get('energy')
             break
-    print(result)
+
     return result
 
 
@@ -131,7 +141,7 @@ def create_member_data(member):
         for key in member_readings:
             member_powers[key] = member_readings[key].get('power')
         member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
-        print("Member_consumption: %s", member_consumptions)
+
     return dict(power=member_powers, energy=member_consumptions)
 
 
@@ -217,8 +227,6 @@ def group_consumption_history():
         consumed_energy = get_first_and_last_energy_for_date(group.group_meter_id,
                                                              datetime.strftime(datetime.utcnow(),
                                                                                '%Y-%m-%d'))
-        print("Consumed %s", consumed_energy)
-
         # First group production meter
         readings = get_default_readings(group.group_production_meter_id_first)
         for key in readings:
@@ -227,7 +235,6 @@ def group_consumption_history():
         produced_first_meter_energy = get_first_and_last_energy_for_date(
             group.group_production_meter_id_first, datetime.strftime(
                 datetime.utcnow(), '%Y-%m-%d'))
-        print("Produced1 %s", produced_first_meter_energy)
 
         # Second group production meter
         readings = get_default_readings(group.group_production_meter_id_second)
@@ -238,7 +245,6 @@ def group_consumption_history():
         produced_second_meter_energy = get_first_and_last_energy_for_date(
             group.group_production_meter_id_second, datetime.strftime(
                 datetime.utcnow(), '%Y-%m-%d'))
-        print("Produced2 %s", produced_second_meter_energy)
 
         # Group members
         for member in get_group_members(user_id):
@@ -246,7 +252,6 @@ def group_consumption_history():
             group_users[member.get('id')] = member_data
 
         # Return result
-        print("Hallo")
         return jsonify(dict(consumed_power=consumed_power,
                             produced_first_meter_power=produced_first_meter_power,
                             produced_second_meter_power=produced_second_meter_power,
