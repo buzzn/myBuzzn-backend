@@ -1,3 +1,8 @@
+from datetime import datetime
+
+ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
+                      '52d7c87f8c26433dbd095048ad30c8cf',
+                      '117154df05874f41bfdaebcae6abfe98']
 CONSUMPTION = {"2020-01-15 10:00:04": {'power': 27279, 'power3': -27279,
                                        'energyOut': 0, 'power1': 0,
                                        'energy': 2180256872214000,
@@ -49,3 +54,25 @@ INDIVIDUAL_DISAGGREGATION = {"2020-01-15 10:01:04": {'Durchlauferhitzer-1': 0,
                                                      'Grundlast-1': 50000000},
                              "2020-01-15 10:01:10": {'Durchlauferhitzer-1': 0,
                                                      'Grundlast-1': 50000000}}
+LAST_READING_ONGOING_TERM = bytes(
+    '52d7c87f8c26433dbd095048ad30c8cf_' + datetime.today().
+    strftime('%Y-%m-%d %H:%M:%S'), encoding='utf-8')
+READINGS = [b'{"type": "reading", "values": {"energy": 1512027002819000}}',
+            b'{"type": "reading", "values": {"energy": 1512028877416000}}',
+            b'{"type": "reading", "values": {"energy": 1512032408202000}}']
+READINGS_LAST_TERM = [
+    b'{"type": "reading", "values": {"energy": 1512027005000000}}',
+    b'{"type": "reading", "values": {"energy": 1512027002819000}}']
+READINGS_ONGOING_TERM = [
+    b'{"type": "reading", "values": {"energy": 1512027009000000}}',
+    b'{"type": "reading", "values": {"energy": 1512027005000100}}']
+SORTED_KEYS = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00',
+               b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00',
+               b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 02:00:00']
+SORTED_KEYS_LAST_TERM = [
+    [b'52d7c87f8c26433dbd095048ad30c8cf_2020-03-11 04:15:00'],
+    [b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-12 04:15:00']]
+SORTED_KEYS_ONGOING_TERM = [
+    [LAST_READING_ONGOING_TERM],
+    [b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-12 04:15:00']]
+SQLALCHEMY_RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]

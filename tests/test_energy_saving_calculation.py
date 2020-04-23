@@ -4,51 +4,22 @@ import json
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
+from tests.string_constants import ALL_USER_METER_IDS, READINGS,\
+    READINGS_LAST_TERM, READINGS_ONGOING_TERM, SORTED_KEYS,\
+    SORTED_KEYS_LAST_TERM, SORTED_KEYS_ONGOING_TERM, SQLALCHEMY_RETURN_VALUES
 from util.database import db
 from util.energy_saving_calculation import calc_ratio_values, get_last_meter_reading_date,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
     calc_estimated_energy_consumption, calc_estimated_energy_saving
 
 
-ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
-                      '52d7c87f8c26433dbd095048ad30c8cf', '117154df05874f41bfdaebcae6abfe98']
-
-RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
-
-SORTED_KEYS = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00',
-               b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00',
-               b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 02:00:00']
-
-DATA = [b'{"type": "reading", "values": {"energy": 1512027002819000}}',
-        b'{"type": "reading", "values": {"energy": 1512028877416000}}',
-        b'{"type": "reading", "values": {"energy": 1512032408202000}}']
-
-SORTED_KEYS_LAST_TERM = [
-    [b'52d7c87f8c26433dbd095048ad30c8cf_2020-03-11 04:15:00'],
-    [b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-12 04:15:00']]
-
-LAST_READING_ONGOING_TERM = bytes(
-    '52d7c87f8c26433dbd095048ad30c8cf_' + datetime.today().
-    strftime('%Y-%m-%d %H:%M:%S'), encoding='utf-8')
-
-SORTED_KEYS_ONGOING_TERM = [
-    [LAST_READING_ONGOING_TERM],
-    [b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-12 04:15:00']]
-
-DATA_LAST_TERM = [
-    b'{"type": "reading", "values": {"energy": 1512027005000000}}',
-    b'{"type": "reading", "values": {"energy": 1512027002819000}}']
-
-DATA_ONGOING_TERM = [
-    b'{"type": "reading", "values": {"energy": 1512027009000000}}',
-    b'{"type": "reading", "values": {"energy": 1512027005000100}}']
-
 SORTED_KEYS_ALL_TERMS = [[b'52d7c87f8c26433dbd095048ad30c8cf_2019-03-11 01:00:00'],
                          [b'52d7c87f8c26433dbd095048ad30c8cf_2018-03-12 01:00:00'],
                          SORTED_KEYS_ONGOING_TERM[0], SORTED_KEYS_ONGOING_TERM[1]]
 
-DATA_ALL_TERMS = [DATA_LAST_TERM[0], DATA_LAST_TERM[1], DATA_ONGOING_TERM[0],
-                  DATA_ONGOING_TERM[1]]
+DATA_ALL_TERMS = [READINGS_LAST_TERM[0], READINGS_LAST_TERM[1],
+                  READINGS_ONGOING_TERM[0],
+                  READINGS_ONGOING_TERM[1]]
 
 SORTED_KEYS_ESTIMATION = [SORTED_KEYS_ALL_TERMS[0],
                           SORTED_KEYS_ALL_TERMS[1]] + SORTED_KEYS_ALL_TERMS
@@ -84,7 +55,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
                                                     'password': 'some_password'}))
 
     # pylint: disable=unused-argument
-    @mock.patch('sqlalchemy.engine.result.ResultProxy.first', side_effect=RETURN_VALUES)
+    @mock.patch('sqlalchemy.engine.result.ResultProxy.first',
+                side_effect=SQLALCHEMY_RETURN_VALUES)
     def test_calc_ratio_values(self, first):
         """ Unit tests for function calc_ratio_values(). """
 
@@ -99,7 +71,7 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
-    @mock.patch('redis.Redis.get', side_effect=DATA)
+    @mock.patch('redis.Redis.get', side_effect=READINGS)
     def test_get_last_meter_reading_date(self, scan_iter, get):
         """ Unit tests for function get_last_meter_reading_date() """
 
@@ -112,7 +84,7 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
                 side_effect=SORTED_KEYS_LAST_TERM)
-    @mock.patch('redis.Redis.get', side_effect=DATA_LAST_TERM)
+    @mock.patch('redis.Redis.get', side_effect=READINGS_LAST_TERM)
     def test_calc_energy_consumption_last_term(self, scan_iter, get):
         """ Unit tests for function calc_energy_consumption_last_term() """
 
@@ -126,7 +98,7 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
                 side_effect=SORTED_KEYS_ONGOING_TERM)
-    @mock.patch('redis.Redis.get', side_effect=DATA_ONGOING_TERM)
+    @mock.patch('redis.Redis.get', side_effect=READINGS_ONGOING_TERM)
     def test_calc_energy_consumption_ongoing_term(self, scan_iter, get):
         """ Unit tests for function calc_energy_consumption_ongoing_term() """
 
