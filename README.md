@@ -221,6 +221,16 @@ Group=mybuzznbackend
 WantedBy=multi-user.target⏎
 ```
 
+### Upgrading to a new version
+To upgrade to a new version, go to the project root and run `git pull`.
+If something has changed in the database models, run `source ./venv/bin/activate` to
+activate the python environment. Then run `./flask db upgrade` to
+upgrade the database.
+
+Finally restart the the web server and the redis task which fills the redis database with meter
+readings:
+`systemctl restart apache2.service redis-task.service mybuzzn-backend.service`
+
 ## Logging
 To ensure that the logger has the correct configuration, you must create a logger configuration file named ```logger_configuration.conf``` and save it under ```util```. The configuration file should look like this:
 ```
@@ -258,13 +268,8 @@ format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 You can change the path of the logfile in  ```args=('/var/www/mybuzzn-backend.buzzn.net/logs/logfile.log',)``` under ```[handler_fileHandler]``` to what suits your production. When running it locally you can relace it with ```args=('logfile.log',)```.
 
-### Upgrading to a new version
-To upgrade to a new version, go to the project root and run `git pull`.
-If something has changed in the database models, run `source ./venv/bin/activate` to
-activate the python environment. Then run `./flask db upgrade` to
-upgrade the database.
 
-Finally restart the the web server and the redis task which fills the redis database with meter
-readings:
-`systemctl restart apache2.service redis-task.service mybuzzn-backend.service`
-
+## Glossary
+|Term|Description|
+| ------------- |:-------------:|
+| per capita consumption / pcc| Defined as consumption divided by inhabitants in kWh|

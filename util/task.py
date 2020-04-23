@@ -11,7 +11,7 @@ from util.database import create_session
 from util.date_helpers import calc_support_year_start, calc_term_boundaries,\
     calc_end, calc_support_week_start, calc_two_days_back
 from util.sqlite_helpers import get_all_meter_ids, write_baselines,\
-    write_savings, write_base_values_or_pkv
+    write_savings, write_base_values_or_per_capita_consumption
 
 
 log_file_path = path.join(path.dirname(
@@ -308,7 +308,7 @@ class Task:
                 self.populate_redis()
                 write_baselines(session)
                 write_savings(session)
-                write_base_values_or_pkv(session)
+                write_base_values_or_per_capita_consumption(session)
 
             self.write_last_readings(session)
             self.write_last_disaggregations(session)

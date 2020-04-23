@@ -87,6 +87,7 @@ class User(db.Model):
     password_reset_token_expires = db.Column(db.DateTime)
     avatar = db.Column(db.LargeBinary)
     baseline = db.Column(db.Integer)
+    registration_date = db.Column(db.DateTime)
 
     # Plain value constructor, too many arguments is ok here
     #pylint: disable=too-many-arguments
