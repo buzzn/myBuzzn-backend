@@ -16,6 +16,25 @@ CONSUMPTION = {"2020-01-15 10:00:04": {'power': 27279, 'power3': -27279,
                                        'energyOut': 0, 'power1': 0,
                                        'energy': 2180256872214000,
                                        'power2': -2437}}
+
+FIRST_LAST_ENERGY = [{'2020-01-15 10:00:04': 2180256872214000,
+                      '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                      '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                      '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                      '2020-01-15 10:01:10': 2180256872214000},
+                     {'2020-01-15 10:00:04': 2180256872214000,
+                      '2020-01-15 10:01:10': 2180256872214000}]
+
+FIRST_LAST_ENERGY_2 = {'2020-01-15 10:00:04': 2180256872214000,
+                       '2020-01-15 10:01:10': 2180256872214000}
+
+FIRST_LAST_ENERGY_EMPTY = [{}, {}, {}, {}, {},
+                           {}, {}, {}, {}, {},
+                           {}, {}, {}, {}, {}]
+
 EMPTY_RESPONSE = {}
 INDIVIDUAL_CONSUMPTION = {'energy': {'2020-01-15 10:00:04': 2180256872214000,
                                      '2020-01-15 10:01:10': 2180256872214000},
@@ -25,16 +44,14 @@ GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000
                                          '2020-01-15 10:01:10': 2180256872214000},
                      'consumed_power': {'2020-01-15 10:00:04': 27279,
                                         '2020-01-15 10:01:10': 27200},
-                     'group_users': [{'1':
-                                      {'energy': [{'2020-01-15 10:00:04': 2180256872214000},
-                                                  {'2020-01-15 10:01:10': 2180256872214000}],
-                                       'power': [{'2020-01-15 10:00:04': 27279},
-                                                 {'2020-01-15 10:01:10': 27200}]}},
-                                     {'2':
-                                      {'energy': [{'2020-01-15 10:00:04': 2180256872214000},
-                                                  {'2020-01-15 10:01:10': 2180256872214000}],
-                                       'power': [{'2020-01-15 10:00:04': 27279},
-                                                 {'2020-01-15 10:01:10': 27200}]}}],
+                     'group_users': {'1': {'energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                                      '2020-01-15 10:01:10': 2180256872214000},
+                                           'power': {'2020-01-15 10:00:04': 27279,
+                                                     '2020-01-15 10:01:10': 27200}},
+                                     '2': {'energy': {'2020-01-15 10:00:04': 2180256872214000,
+                                                      '2020-01-15 10:01:10': 2180256872214000},
+                                           'power': {'2020-01-15 10:00:04': 27279,
+                                                     '2020-01-15 10:01:10': 27200}}},
                      'produced_first_meter_energy': {'2020-01-15 10:00:04': 2180256872214000,
                                                      '2020-01-15 10:01:10': 2180256872214000},
                      'produced_first_meter_power': {'2020-01-15 10:00:04': 27279,
@@ -45,8 +62,8 @@ GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000
                                                      '2020-01-15 10:01:10': 27200}}
 EMPTY_GROUP_CONSUMPTION = {'consumed_energy': {},
                            'consumed_power': {},
-                           'group_users': [{'1': {'energy': [], 'power': []}},
-                                           {'2': {'energy': [], 'power': []}}],
+                           'group_users': {'1': {'energy': {}, 'power': {}},
+                                           '2': {'energy': {}, 'power': {}}},
                            'produced_first_meter_energy': {},
                            'produced_first_meter_power': {},
                            'produced_second_meter_energy': {},
@@ -157,7 +174,10 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
-    def test_group_consumption_history(self, get_default_readings):
+    @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
+                return_value=FIRST_LAST_ENERGY_2)
+    def test_group_consumption_history(self, get_default_readings,
+                                       get_first_and_last_energy_for_date):
         """ Unit tests for group_consumption_history()."""
 
         # Check if route exists
@@ -178,7 +198,9 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_default_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_default_readings):
+    @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
+                return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_default_readings, get_first_and_last_energy_for_date):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
