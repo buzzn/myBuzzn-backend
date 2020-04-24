@@ -11,8 +11,7 @@ from util.sqlite_helpers import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
 from routes.global_challenge import get_individual_saving, get_community_saving,\
     get_individual_baseline
-from tests.test_energy_saving_calculation import SORTED_KEYS_ESTIMATION,\
-    DATA_ESTIMATION
+from tests.string_constants import READINGS_ESTIMATION, SORTED_KEYS_ESTIMATION
 
 
 INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
@@ -63,7 +62,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
                 side_effect=SORTED_KEYS_ESTIMATION)
-    @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
+    @mock.patch('redis.Redis.get', side_effect=READINGS_ESTIMATION)
     def test_estimate_energy_saving_each_user(self, scan_iter, get):
         """ Unit tests for function estimate_energy_saving_each_user(). """
 
@@ -79,7 +78,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
                 side_effect=SORTED_KEYS_ESTIMATION)
-    @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
+    @mock.patch('redis.Redis.get', side_effect=READINGS_ESTIMATION)
     def test_estimate_energy_saving_all_users(self, scan_iter, get):
         """ Unit tests for function estimate_energy_saving_each_user(). """
 
