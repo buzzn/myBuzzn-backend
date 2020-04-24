@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, request
 from flask_api import status
 
@@ -47,6 +49,7 @@ def set_password():
     if len(password_requested) < 8:
         return Errors.PASSWORD_TOO_SHORT.to_json(), status.HTTP_400_BAD_REQUEST
 
+    targetUser.registration_date = datetime.utcnow()
     targetUser.password = password_requested
     targetUser.activate()
 
