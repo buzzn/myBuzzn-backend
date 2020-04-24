@@ -7,13 +7,8 @@ from models.group import Group
 from models.user import User
 from routes.group_profile_pictures import get_group_members
 from tests.buzzn_test_case import BuzznTestCase
-from tests.test_profile import sample_avatar
+from tests.string_constants import GROUP_PROFILE_PICTURES, SAMPLE_AVATAR
 from util.database import db
-
-
-DATA = [{'id': 1, 'avatar': sample_avatar},
-        {'id': 2, 'avatar': sample_avatar},
-        {'id': 3, 'avatar': sample_avatar}]
 
 
 class GroupProfilePictures(BuzznTestCase):
@@ -53,7 +48,7 @@ class GroupProfilePictures(BuzznTestCase):
                         data=json.dumps({'nick': 'newNick',
                                          'flatSize': 33.0,
                                          'inhabitants': 2,
-                                         'avatar': sample_avatar}))
+                                         'avatar': SAMPLE_AVATAR}))
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'judith@buzzn.net',
                                                           'password': 'some_password2'}))
@@ -63,7 +58,7 @@ class GroupProfilePictures(BuzznTestCase):
                         data=json.dumps({'nick': 'newNick',
                                          'flatSize': 34.0,
                                          'inhabitants': 3,
-                                         'avatar': sample_avatar}))
+                                         'avatar': SAMPLE_AVATAR}))
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'danny@buzzn.net',
                                                           'password':
@@ -74,7 +69,7 @@ class GroupProfilePictures(BuzznTestCase):
                         data=json.dumps({'nick': 'newNick',
                                          'flatSize': 35.0,
                                          'inhabitants': 4,
-                                         'avatar': sample_avatar}))
+                                         'avatar': SAMPLE_AVATAR}))
 
     def test_get_group_members(self):
         """ Unit tests for function get_group_members(). """
@@ -93,7 +88,7 @@ class GroupProfilePictures(BuzznTestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('routes.group_profile_pictures.get_group_members',
-                return_value=DATA)
+                return_value=GROUP_PROFILE_PICTURES)
     def test_group_profile_pictures(self, _get_group_members):
         """ Unit tests for group_profile_pictures(). """
 
@@ -112,4 +107,5 @@ class GroupProfilePictures(BuzznTestCase):
 
         # Check response content
         self.assertIsInstance(response.data, bytes)
-        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')), DATA)
+        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')),
+                         GROUP_PROFILE_PICTURES)
