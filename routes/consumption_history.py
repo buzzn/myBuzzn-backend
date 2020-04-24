@@ -79,6 +79,10 @@ def get_default_readings(meter_id):
 
     for key in redis_keys:
         data = json.loads(redis_client.get(key))
+
+        if "last" in key[len(meter_id) + 1:]:
+            continue
+
         if data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
             result[reading_date.strftime(

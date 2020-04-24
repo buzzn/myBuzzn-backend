@@ -159,17 +159,14 @@ def write_per_capita_consumption(dt, session):
             # Check if entry exists
             pcc_today = session.query(PerCapitaConsumption).filter_by(
                 date=dt, meter_id=user.meter_id).first()
-
             # Create today's entry if it does not exist
             if not pcc_today:
                 dataset = calc_per_capita_consumption(
                     user.meter_id, user.inhabitants, dt, session)
-
                 # If there are no yesterday's values in the database for this user,
                 # define the base values
                 if dataset is None:
                     dataset = define_base_values(user.inhabitants, dt)
-
             # Create PerCapitaConsumption instance
                 session.add(PerCapitaConsumption(dt, user.meter_id, dataset['consumption'],
                                                  dataset['consumption_cumulated'],
