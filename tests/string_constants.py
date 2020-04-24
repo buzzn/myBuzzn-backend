@@ -126,6 +126,15 @@ PCC_DAY_ONE = PerCapitaConsumption(DAY_ONE, ALL_USER_METER_IDS[1], 2.1749714, 2.
 PCC_DAY_TWO = PerCapitaConsumption(DAY_TWO, ALL_USER_METER_IDS[1], 1.5, 3.6749714, 2, 0.75,
                                    1.8374857, 2, 0.91874285, 335)
 
+READING = {'time': 1585177200000, 'values': {'power': 5727055, 'power3': 1898229,
+                                             'energyOut': 0, 'power1': 1917350,
+                                             'energy': 1551192369639000, 'power2': 1900643}}
+
+READING_NEGATIVE_POWER = {'time': 1584572400000, 'values': {'power': -4784541, 'power3': 1583777,
+                                                            'energyOut': 0, 'power1': 1599778,
+                                                            'energy': 1541570917834000,
+                                                            'power2': 1589981}}
+
 READINGS = [b'{"type": "reading", "values": {"energy": 1512027002819000}}',
             b'{"type": "reading", "values": {"energy": 1512028877416000}}',
             b'{"type": "reading", "values": {"energy": 1512032408202000}}']
