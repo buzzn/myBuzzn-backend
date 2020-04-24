@@ -12,6 +12,10 @@ from util.database import db
 class SetPasswordTest(BuzznTestCase):
     """Checks if users can perform password resets."""
 
+    def setUp(self):
+        db.drop_all()
+        db.create_all()
+
     def test_unknown_user(self):
         """Expect an unknown username requesting a new
         password to result in a bad request."""
