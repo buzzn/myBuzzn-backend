@@ -3,7 +3,6 @@ import json
 from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
-from models.group import Group
 from models.user import User
 from routes.group_profile_pictures import get_group_members
 from tests.buzzn_test_case import BuzznTestCase
