@@ -3,6 +3,8 @@ from datetime import datetime
 ALL_USER_METER_IDS = ['b4234cd4bed143a6b9bd09e347e17d34',
                       '52d7c87f8c26433dbd095048ad30c8cf',
                       '117154df05874f41bfdaebcae6abfe98']
+COMMUNITY_SAVING = ('2020-02-13 16:20:21.977425', 85184267259376.5)
+COMMUNITY_SAVING_DICT = {'2020-02-13 16:20:21': 85184267259376.5}
 CONSUMPTION = {"2020-01-15 10:00:04": {'power': 27279, 'power3': -27279,
                                        'energyOut': 0, 'power1': 0,
                                        'energy': 2180256872214000,
@@ -47,6 +49,7 @@ GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000
                                                       '2020-01-15 10:01:10': 2180256872214000},
                      'produced_second_meter_power': {'2020-01-15 10:00:04': 27279,
                                                      '2020-01-15 10:01:10': 27200}}
+INDIVIDUAL_BASELINE = 19361634120995
 INDIVIDUAL_CONSUMPTION = {'energy': {'2020-01-15 10:00:04': 2180256872214000,
                                      '2020-01-15 10:01:10': 2180256872214000},
                           'power': {'2020-01-15 10:00:04': 27279, '2020-01-15 10:01:10': 27200}}
@@ -54,6 +57,10 @@ INDIVIDUAL_DISAGGREGATION = {"2020-01-15 10:01:04": {'Durchlauferhitzer-1': 0,
                                                      'Grundlast-1': 50000000},
                              "2020-01-15 10:01:10": {'Durchlauferhitzer-1': 0,
                                                      'Grundlast-1': 50000000}}
+INDIVIDUAL_GLOBAL_CHALLENGE = {'baseline': 19361634120995,
+                               'saving': {'2020-02-13 09:57:03.620809': 3148577026610.7812}}
+INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
+INDIVIDUAL_SAVING_DICT = {'2020-02-13 09:57:03.620809': 3148577026610.7812}
 LAST_READING_ONGOING_TERM = bytes(
     '52d7c87f8c26433dbd095048ad30c8cf_' + datetime.today().
     strftime('%Y-%m-%d %H:%M:%S'), encoding='utf-8')
