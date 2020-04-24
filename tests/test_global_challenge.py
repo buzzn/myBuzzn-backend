@@ -11,16 +11,9 @@ from util.sqlite_helpers import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
 from routes.global_challenge import get_individual_saving, get_community_saving,\
     get_individual_baseline
-from tests.string_constants import READINGS_ESTIMATION, SORTED_KEYS_ESTIMATION
-
-
-INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
-INDIVIDUAL_SAVING_DICT = {'2020-02-13 09:57:03.620809': 3148577026610.7812}
-INDIVIDUAL_BASELINE = 19361634120995
-INDIVIDUAL_GLOBAL_CHALLENGE = {'baseline': 19361634120995,
-                               'saving': {'2020-02-13 09:57:03.620809': 3148577026610.7812}}
-COMMUNITY_SAVING = ('2020-02-13 16:20:21.977425', 85184267259376.5)
-COMMUNITY_SAVING_DICT = {'2020-02-13 16:20:21': 85184267259376.5}
+from tests.string_constants import COMMUNITY_SAVING, COMMUNITY_SAVING_DICT, INDIVIDUAL_BASELINE,\
+    INDIVIDUAL_GLOBAL_CHALLENGE, INDIVIDUAL_SAVING, INDIVIDUAL_SAVING_DICT,\
+    READINGS_ESTIMATION, SORTED_KEYS_ESTIMATION
 
 
 class GlobalChallengeTestCase(BuzznTestCase):
