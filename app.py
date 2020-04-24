@@ -8,7 +8,6 @@ import eventlet
 from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
-from models.user import User
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message

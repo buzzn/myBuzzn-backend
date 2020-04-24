@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, time
 from os import path
 import logging.config
-from models.baseline import BaseLine
 from models.group import Group
 from models.per_capita_consumption import PerCapitaConsumption
 from models.savings import UserSaving, CommunitySaving
@@ -12,11 +11,15 @@ from util.energy_saving_calculation import calc_energy_consumption_last_term,\
 from util.error import exception_message
 from util.per_capita_consumption_calculation import define_base_values, calc_per_capita_consumption
 
-
 log_file_path = path.join(path.dirname(
     path.abspath(__file__)), 'logger_configuration.conf')
 logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
+
+ERROR_MESSAGE_SAVING = """\nCannot calculate saving for meter id {} on {} because last
+term\'s energy consumption or estimated energy consumption is missing. Writing 0.0 instead"""
+ERROR_MESSAGE_BASELINE = """\nCannot write baseline for meter id {} on {} because last
+term\'s energy consumption is missing"""
 
 
 def get_all_meter_ids(session):
@@ -55,10 +58,7 @@ def write_savings(session):
                                                            session).items():
 
             if value is None:
-                message = """Cannot calculate saving for meter id {} on {}
-                because last term\'s energy consumption or estimated energy
-                consumption is missing. Writing 0.0 instead""".format(key,
-                                                                      message_timestamp)
+                message = ERROR_MESSAGE_SAVING.format(key, message_timestamp)
                 logger.info(message)
 
                 # Create UserSaving instance and set saving to 0.0
@@ -83,23 +83,32 @@ def write_baselines(session):
     """ Write the baseline for each user to the SQLite database. """
 
     start = calc_support_year_start_datetime()
-    try:
-        for meter_id in get_all_user_meter_ids(session):
-            baseline = calc_energy_consumption_last_term(meter_id, start)
+    for user in get_all_users(session):
 
-            if baseline is None:
-                message = """Cannot write baseline for meter id {} on {} because last term\'s energy
-                consumption is missing""".format(meter_id, message_timestamp)
-                logger.info(message)
+        try:
+            # Check if entry exists
+            baseline = session.query(
+                User.baseline).filter_by(meter_id=user.meter_id).first()[0]
 
-            else:
-                # Create BaseLine instance
-                session.add(BaseLine(datetime.utcnow(), meter_id, baseline))
+            # Create baseline entry if it does not exist
+            if not baseline:
 
-        session.commit()
-    except Exception as e:
-        message = exception_message(e)
-        logger.error(message)
+                # Try to create new baseline entry
+                baseline = calc_energy_consumption_last_term(
+                    user.meter_id, start)
+                if not baseline:
+                    message = ERROR_MESSAGE_BASELINE.format(
+                        user.meter_id, message_timestamp)
+                    logger.info(message)
+                else:
+                    user.baseline = baseline
+                    session.add(user)
+
+        except Exception as e:
+            message = exception_message(e)
+            logger.error(message)
+
+    session.commit()
 
 
 def write_base_values_or_per_capita_consumption(session):
