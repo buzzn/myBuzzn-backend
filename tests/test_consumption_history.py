@@ -3,7 +3,6 @@ import json
 from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
-from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
 from tests.string_constants import CONSUMPTION, EMPTY_GROUP_CONSUMPTION,\
     EMPTY_RESPONSE, EMPTY_RESPONSE_BYTES, GROUP_CONSUMPTION, INDIVIDUAL_CONSUMPTION
@@ -13,16 +12,6 @@ from util.database import db
 class IndividualConsumptionHistoryTestCase(BuzznTestCase):
     """ Unit tests for route IndividualConsumptionHistory. """
 
-    def setUp(self):
-        super().setUp()
-        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
-                                "SomeToken", "SomeMeterId", "SomeGroup")
-        self.target_user.set_password("some_password")
-        self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'EASYMETER_60404854'
-        db.session.add(self.target_user)
-        db.session.commit()
-
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
@@ -31,7 +20,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check if route exists
         login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
+                                         data=json.dumps({'user': 'test@test.net',
                                                           'password': 'some_password'}))
         response = self.client.get('/individual-consumption-history',
                                    headers={'Authorization': 'Bearer {}'.
@@ -52,7 +41,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
         """ Check handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
+                                         data=json.dumps({'user': 'test@test.net',
                                                           'password': 'some_password'}))
         response_timestamp_format = self.client.get('/individual-consumption-history?begin=123.123',
                                                     headers={'Authorization':
@@ -91,19 +80,6 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        self.target_user = User(GenderType.MALE, "Some", "User", "user@some.net",
-                                "SomeToken", "SomeMeterId", "SomeGroup")
-        self.target_user.set_password("some_password")
-        self.target_user.state = StateType.ACTIVE
-        self.target_user.meter_id = 'EASYMETER_60404854'
-        self.target_user.group_id = 1
-        db.session.add(self.target_user)
-        self.target_group = Group(
-            'SomeGroup',
-            'EASYMETER_60327599',
-            '2c52403eef11408dbec88ae5f61e1ee7',
-            'EASYMETER_60404854')
-        db.session.add(self.target_group)
         group_member2 = User(GenderType.FEMALE, 'judith', 'greif',
                              'judith@buzzn.net', 'TestToken2',
                              'EASYMETER_60404852', 1)
@@ -119,7 +95,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
         # Check if route exists
         login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
+                                         data=json.dumps({'user': 'test@test.net',
                                                           'password': 'some_password'}))
         response = self.client.get('/group-consumption-history', headers={
             'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
@@ -139,7 +115,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
-                                         data=json.dumps({'user': 'User@Some.net',
+                                         data=json.dumps({'user': 'test@test.net',
                                                           'password': 'some_password'}))
         response_timestamp_format = self.client.get('/group-consumption-history?begin=123.123',
                                                     headers={'Authorization':

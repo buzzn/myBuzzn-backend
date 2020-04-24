@@ -1,8 +1,7 @@
 from unittest import mock
 from datetime import datetime
 import json
-from models.user import User, GenderType, StateType
-from models.group import Group
+from models.user import User, GenderType
 from tests.buzzn_test_case import BuzznTestCase
 from tests.string_constants import ALL_USER_METER_IDS, READINGS,\
     READINGS_ALL_TERMS, READINGS_ESTIMATION, READINGS_LAST_TERM, READINGS_ONGOING_TERM, \
@@ -20,23 +19,11 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
     def setUp(self):
         """ Create test users, test group and load profile in the database. """
 
-        db.drop_all()
-        db.create_all()
-        test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
-                         'TestToken', 'b4234cd4bed143a6b9bd09e347e17d34', 1)
-        test_user.flat_size = 60.0
-        test_user.inhabitants = 2
-        test_user.set_password('some_password')
-        test_user.state = StateType.ACTIVE
-        db.session.add(test_user)
+        super().setUp()
         db.session.add(User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
                             'TestToken2', '52d7c87f8c26433dbd095048ad30c8cf', 1))
         db.session.add(User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
                             'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
-        db.session.add(Group('TestGroup',
-                             '0a0f65e992c042e4b86956f3f080114d',
-                             '5e769d5b83934bccae11a8fa95e0dc5f',
-                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
                                                     'password': 'some_password'}))

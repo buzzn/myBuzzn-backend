@@ -13,7 +13,9 @@ class ProfileTestCase(BuzznTestCase):
     """Tests the login behavior"""
 
     def setUp(self):
-        super().setUp()
+
+        db.drop_all()
+        db.create_all()
         users_group = Group("SomeGroup", "group_meter_id",
                             '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
         db.session.add(users_group)

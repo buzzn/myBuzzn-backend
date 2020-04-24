@@ -15,7 +15,8 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
     def setUp(self):
         """ Create test user and test PerCapitaConsumprion values in the database. """
 
-        super().setUp()
+        db.drop_all()
+        db.create_all()
         self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
                               'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
         self.test_user.inhabitants = 2
