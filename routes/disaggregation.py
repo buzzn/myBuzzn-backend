@@ -38,10 +38,10 @@ def get_disaggregation(meter_id, begin):
     for key in get_sorted_keys(redis_client, meter_id):
         data = json.loads(redis_client.get(key))
 
-        if "last" in key[len(meter_id) + 1:]:
+        if data is not None and "last" in key[len(meter_id) + 1:]:
             continue
 
-        if data.get('type') == 'disaggregation':
+        if data is not None and data.get('type') == 'disaggregation':
             disaggregation_date = parser.parse(key[len(meter_id)+1:])
 
             # Parse timestamp as int to use consistent timestamps
@@ -83,10 +83,10 @@ def get_default_disaggregation(meter_id):
     for key in redis_keys:
         data = json.loads(redis_client.get(key))
 
-        if "last" in key[len(meter_id) + 1:]:
+        if data is not None and "last" in key[len(meter_id) + 1:]:
             continue
 
-        if data.get('type') == 'disaggregation':
+        if data is not None and data.get('type') == 'disaggregation':
             disaggregation_date = parser.parse(key[len(meter_id)+1:])
             result[disaggregation_date.strftime(
                 '%Y-%m-%d %H:%M:%S')] = data.get('values')

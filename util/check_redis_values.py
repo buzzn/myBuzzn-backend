@@ -25,10 +25,10 @@ def get_readings(meter_id, begin):
     for key in all_keys:
         data = json.loads(redis_client.get(key))
 
-        if "last" in key[len(meter_id) + 1:]:
+        if data is not None and "last" in key[len(meter_id) + 1:]:
             continue
 
-        if data.get('type') == 'reading':
+        if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
             reading_timestamp = reading_date.timestamp()
             if reading_timestamp >= begin:
