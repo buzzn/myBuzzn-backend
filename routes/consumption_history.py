@@ -41,7 +41,8 @@ def get_readings(meter_id, begin):
     for key in get_sorted_keys(redis_client, meter_id):
         data = json.loads(redis_client.get(key))
 
-        if data is not None and "last" in key[len(meter_id) + 1:]:
+        if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
         if data is not None and data.get('type') == 'reading':
@@ -80,7 +81,8 @@ def get_default_readings(meter_id):
     for key in redis_keys:
         data = json.loads(redis_client.get(key))
 
-        if data is not None and "last" in key[len(meter_id) + 1:]:
+        if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
         if data is not None and data.get('type') == 'reading':
