@@ -42,6 +42,7 @@ def get_readings(meter_id, begin):
         data = json.loads(redis_client.get(key))
 
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
@@ -82,6 +83,7 @@ def get_default_readings(meter_id):
         data = json.loads(redis_client.get(key))
 
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
@@ -96,33 +98,25 @@ def get_default_readings(meter_id):
 def get_first_and_last_energy_for_date(meter_id, date):
     result = {}
 
-    redis_keys = get_sorted_keys_date_prefix(redis_client, meter_id, date)
+    try:
+        key_first = f"{meter_id}_{date.strftime('%Y-%m-%d')}_first"
+        data = json.loads(redis_client.get(key_first))
+        result[data.get("time")] = data.get('values').get('energy')
 
-    for key in redis_keys:
-        try:
-            data = json.loads(redis_client.get(key))
+    except Exception as e:
+        message = 'No first reading available for date {}: {}'.format(
+            date, e)
+        logger.error(message)
 
-        except Exception as e:
-            logger.error(e)
+    try:
+        key_last = f"{meter_id}_{date.strftime('%Y-%m-%d')}_last"
+        data = json.loads(redis_client.get(key_last))
+        result[data.get("time")] = data.get('values').get('energy')
 
-        if data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id) + 1:])
-            result[reading_date.strftime(
-                '%Y-%m-%d %H:%M:%S')] = data.get('values').get('energy')
-            break
-
-    for key in reversed(redis_keys):
-        try:
-            data = json.loads(redis_client.get(key))
-
-        except Exception as e:
-            logger.error(e)
-
-        if data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id) + 1:])
-            result[reading_date.strftime(
-                '%Y-%m-%d %H:%M:%S')] = data.get('values').get('energy')
-            break
+    except Exception as e:
+        message = 'No last reading available for date {}: {}'.format(
+                        date, e)
+        logger.error(message)
 
     return result
 

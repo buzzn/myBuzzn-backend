@@ -26,6 +26,7 @@ def get_readings(meter_id, begin):
         data = json.loads(redis_client.get(key))
 
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 

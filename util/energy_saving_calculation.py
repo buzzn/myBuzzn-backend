@@ -82,6 +82,7 @@ def get_last_meter_reading_date(meter_id, date):
             logger.error(message)
 
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
