@@ -131,10 +131,10 @@ class Task:
                 self.redis_client.set(key, json.dumps(data))
                 self.redis_client.set(meter_id + '_last', json.dumps(data))
                 data["time"] = reading_timestamp
-                self.redis_client.set(meter_id + date_key + '_last', json.dumps(data))
+                self.redis_client.set(meter_id + '_' + date_key + '_last', json.dumps(data))
 
-                if self.redis_client.get(meter_id + date_key + '_first') is None:
-                    self.redis_client.set(meter_id + date_key + '_first', json.dumps(data))
+                if self.redis_client.get(meter_id + '_' + date_key + '_first') is None:
+                    self.redis_client.set(meter_id + '_' + date_key + '_first', json.dumps(data))
 
             except Exception as e:
                 message = exception_message(e)
