@@ -123,13 +123,17 @@ class Task:
                 key = meter_id + '_' + \
                     str(datetime.utcfromtimestamp(
                         adjusted_reading['time']/1000).strftime('%F %T'))
-
+                date_key = datetime.utcnow().strftime('%Y-%m-%d')
                 # Write reading to redis database as key-value-pair
                 # The unique key consists meter id, separator '_' and UTC
                 # timestamp
                 data = dict(type='reading', values=adjusted_reading['values'])
-                self.redis_client.set(meter_id + '_last', json.dumps(data))
                 self.redis_client.set(key, json.dumps(data))
+                self.redis_client.set(meter_id + '_last', json.dumps(data))
+                self.redis_client.set(meter_id + date_key + '_last', json.dumps(data))
+
+                if self.redis_client.get(meter_id + date_key + '_first') is None:
+                    self.redis_client.set(meter_id + date_key + '_first', json.dumps(data))
 
             except Exception as e:
                 message = exception_message(e)
