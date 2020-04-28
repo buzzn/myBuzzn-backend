@@ -123,9 +123,11 @@ def get_first_and_last_energy_for_date(meter_id, date):
         message = 'No last reading available for date {}: {}'.format(
                         date, e)
         logger.error(message)
-
+    logger.warning(result)
     return result
 
+def get_first_and_last_energy_for_date_empty(meter_id, date):
+    return {}
 
 def create_member_data(member):
     """ Create a data package for a group member.
@@ -140,7 +142,7 @@ def create_member_data(member):
     member_powers = {}
 
     member_readings = get_default_readings(member_meter_id)
-    print(f"got default reading for member {member_meter_id}")
+    logger.warning(f"got default reading for member {member_meter_id}")
     if member_readings == {}:
         logger.error('No readings for meter id %s in the database.',
                      member_meter_id)
@@ -148,7 +150,7 @@ def create_member_data(member):
         for key in member_readings:
             member_powers[key] = member_readings[key].get('power')
         member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
-        print(f"got member consumption for {member_meter_id}")
+        logger.warning(f"got member consumption for {member_meter_id}")
 
     return dict(power=member_powers, energy=member_consumptions)
 
@@ -233,18 +235,18 @@ def group_consumption_history():
 
         # Group community consumption meter
         readings = get_default_readings(group.group_meter_id)
-        print(f"got readings for {group.group_meter_id}")
+        logger.warning(f"got readings for {group.group_meter_id}")
         for key in readings:
             consumed_power[key] = readings[key].get('power')
         # Get first and last group energy consumption of today
         logger.warning("for loop for consumed power ended")
-        consumed_energy = get_first_and_last_energy_for_date(group.group_meter_id,
+        consumed_energy = get_first_and_last_energy_for_date_empty(group.group_meter_id,
                                                              datetime.strftime(datetime.utcnow(),
                                                                                '%Y-%m-%d'))
-        print(f"got consumed energy for {group.group_meter_id}")
+        logger.warning(f"got consumed energy for {group.group_meter_id}")
         # First group production meter
         readings = get_default_readings(group.group_production_meter_id_first)
-        print(f"got readings for {group.group_production_meter_id_first}")
+        logger.warning(f"got readings for {group.group_production_meter_id_first}")
         for key in readings:
             produced_first_meter_power[key] = readings[key].get('power')
         logger.warning("for loop for produced first meter power ended")
@@ -252,11 +254,11 @@ def group_consumption_history():
         produced_first_meter_energy = get_first_and_last_energy_for_date(
             group.group_production_meter_id_first, datetime.strftime(
                 datetime.utcnow(), '%Y-%m-%d'))
-        print(f"got produced energy 1 for {group.group_production_meter_id_first}")
+        logger.warning(f"got produced energy 1 for {group.group_production_meter_id_first}")
 
         # Second group production meter
         readings = get_default_readings(group.group_production_meter_id_second)
-        print(f"got readings for {group.group_production_meter_id_second}")
+        logger.warning(f"got readings for {group.group_production_meter_id_second}")
         for key in readings:
             produced_second_meter_power[key] = readings[key].get(
                 'power')
@@ -265,7 +267,7 @@ def group_consumption_history():
         produced_second_meter_energy = get_first_and_last_energy_for_date(
             group.group_production_meter_id_second, datetime.strftime(
                 datetime.utcnow(), '%Y-%m-%d'))
-        print(f"got produced energy 2 for {group.group_production_meter_id_second}")
+        logger.warning(f"got produced energy 2 for {group.group_production_meter_id_second}")
 
         # Group members
         for member in get_group_members(user_id):
