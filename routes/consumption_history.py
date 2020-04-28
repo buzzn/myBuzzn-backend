@@ -74,14 +74,16 @@ def get_default_readings(meter_id):
 
     # Get today's date
     today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
+    print("calc yesterday and today")
 
     # Get data from yesterday until now
     redis_keys = get_sorted_keys_date_prefix(redis_client, meter_id, yesterday) +\
         get_sorted_keys_date_prefix(redis_client, meter_id, today)
+    print("get sorted keys yesterday and today")
 
     for key in redis_keys:
         data = json.loads(redis_client.get(key))
-
+        print(f"load json + get key for {key}")
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
                                  or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
@@ -89,9 +91,11 @@ def get_default_readings(meter_id):
 
         if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
+            print("calc reading date")
             result[reading_date.strftime(
                 '%Y-%m-%d %H:%M:%S')] = data.get('values')
-
+            print("set result key value pair")
+        print(f"end for for {key}")
     return result
 
 
@@ -99,7 +103,7 @@ def get_first_and_last_energy_for_date(meter_id, date):
     result = {}
 
     try:
-        key_first = f"{meter_id}_{date.strftime('%Y-%m-%d')}_first"
+        key_first = f"{meter_id}_{date}_first"
         data = json.loads(redis_client.get(key_first))
         result[data.get("time")] = data.get('values').get('energy')
 
@@ -109,7 +113,7 @@ def get_first_and_last_energy_for_date(meter_id, date):
         logger.error(message)
 
     try:
-        key_last = f"{meter_id}_{date.strftime('%Y-%m-%d')}_last"
+        key_last = f"{meter_id}_{date}_last"
         data = json.loads(redis_client.get(key_last))
         result[data.get("time")] = data.get('values').get('energy')
 
@@ -129,18 +133,24 @@ def create_member_data(member):
     """
 
     today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
+    print("got today")
     member_meter_id = member.get('meter_id')
+    print("set member_meter_id")
     member_consumptions = {}
     member_powers = {}
+    print("set empty dict for memeber_consumption and power")
 
     member_readings = get_default_readings(member_meter_id)
+    print(f"got default reading for member {member_meter_id}")
     if member_readings == {}:
         logger.error('No readings for meter id %s in the database.',
                      member_meter_id)
     else:
         for key in member_readings:
             member_powers[key] = member_readings[key].get('power')
+            print(f"gor power for member {key}")
         member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
+        print(f"got member consumption for {member_meter_id}")
 
     return dict(power=member_powers, energy=member_consumptions)
 
@@ -203,10 +213,13 @@ def group_consumption_history():
     """
 
     user_id = get_jwt_identity()
+    print("identified user")
     user = db.session.query(User).filter_by(id=user_id).first()
+    print("get user")
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     group = db.session.query(Group).filter_by(id=user.group_id).first()
+    print("get group")
     if group is None:
         return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
 
@@ -214,6 +227,7 @@ def group_consumption_history():
     produced_first_meter_power = {}
     produced_second_meter_power = {}
     group_users = {}
+    print("set empty dict")
 
     try:
 
@@ -221,35 +235,46 @@ def group_consumption_history():
 
         # Group community consumption meter
         readings = get_default_readings(group.group_meter_id)
+        print(f"got readings for {group.group_meter_id}")
         for key in readings:
             consumed_power[key] = readings[key].get('power')
+            print(f"got consumed power for {key}")
         # Get first and last group energy consumption of today
         consumed_energy = get_first_and_last_energy_for_date(group.group_meter_id,
                                                              datetime.strftime(datetime.utcnow(),
                                                                                '%Y-%m-%d'))
+        print(f"got consumed energy for {group.group_meter_id}")
         # First group production meter
         readings = get_default_readings(group.group_production_meter_id_first)
+        print(f"got readings for {group.group_production_meter_id_first}")
         for key in readings:
             produced_first_meter_power[key] = readings[key].get('power')
+            print(f"got produced power 1 for {key}")
         # Get first and last group energy production of first production meter of today
         produced_first_meter_energy = get_first_and_last_energy_for_date(
             group.group_production_meter_id_first, datetime.strftime(
                 datetime.utcnow(), '%Y-%m-%d'))
+        print(f"got produced energy 1 for {group.group_production_meter_id_first}")
 
         # Second group production meter
         readings = get_default_readings(group.group_production_meter_id_second)
+        print(f"got readings for {group.group_production_meter_id_second}")
         for key in readings:
             produced_second_meter_power[key] = readings[key].get(
                 'power')
+            print(f"got produced power 2 for {key}")
         # Get first and last group energy production of first production meter of today
         produced_second_meter_energy = get_first_and_last_energy_for_date(
             group.group_production_meter_id_second, datetime.strftime(
                 datetime.utcnow(), '%Y-%m-%d'))
+        print(f"got produced energy 2 for {group.group_production_meter_id_second}")
 
         # Group members
         for member in get_group_members(user_id):
             member_data = create_member_data(member)
+            print(f"created member data for {member} ")
             group_users[member.get('id')] = member_data
+            print(f"set key value pair for group user {member}")
 
         # Return result
         return jsonify(dict(consumed_power=consumed_power,
