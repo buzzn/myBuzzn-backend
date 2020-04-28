@@ -4,7 +4,7 @@ def get_sorted_keys(redis_client, meter_id):
     """
 
     return sorted([key.decode('utf-8') for key in
-                   redis_client.scan_iter(meter_id + '*')])
+                   redis_client.scan_iter(meter_id + '*', 100)])
 
 
 def get_sorted_keys_date_prefix(redis_client, meter_id, date):
@@ -15,4 +15,4 @@ def get_sorted_keys_date_prefix(redis_client, meter_id, date):
     """
 
     return sorted([key.decode('utf-8') for key in
-                   redis_client.scan_iter(meter_id + '_' + date + '*')])
+                   redis_client.scan_iter(meter_id + '_' + date + '*', 100)])
