@@ -90,7 +90,7 @@ def employee():
     return Response(render_template('employee/employee.html'))
 
 
-@Employee.route('/employee/baseline', methods=['POST'])
+@Employee.route('/employee/baseline', methods=['GET'])
 @employee_required
 def search_user():
 
