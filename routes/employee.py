@@ -10,8 +10,8 @@ Employee = Blueprint('Employee', __name__)
 
 
 def employee_required(fn):
-    """ Wraps a function and injects an admin check before each call.
-    Redirects to the login page, if the current user is not an admin, or no
+    """ Wraps a function and injects an admin/employee check before each call.
+    Redirects to the login page, if the current user is not an admin/employee, or no
     user is logged in.
     :param fn: The function to wrap.
     """
@@ -22,10 +22,10 @@ def employee_required(fn):
         target_user = User.query.filter_by(id=user_id).first()
 
         if target_user is None:
-            return redirect("/admin/login", code=403)
+            return redirect('employee/login_employee.html', code=403)
 
         if target_user.role != RoleType.ADMINISTRATOR and target_user.role != RoleType.EMPLOYEE:
-            return redirect("/admin/login", code=403)
+            return redirect('employee/login_employee.html', code=403)
         return fn(*args, **kwargs)
     return wrapper
 
@@ -48,18 +48,18 @@ def do_employee_login():
 
     target_user = User.query.filter_by(mail=user_requested).first()
     if target_user is None:
-        return Response(render_template('admin/login.html',
+        return Response(render_template('employee/login_employee.html',
                                         message="Unknown Credentials"))
 
     if not target_user.check_password(password_requested):
-        return Response(render_template('admin/login.html',
+        return Response(render_template('employee/login_employee.html',
                                         message="Unknown Credentials"))
 
     if not target_user.state == StateType.ACTIVE:
-        return Response(render_template('admin/login.html',
+        return Response(render_template('employee/login_employee.html',
                                         message="User account deactivated. Cannot login."))
 
-    resp = Response(render_template('employee/employee.html',
+    resp = Response(render_template('employee/login_employee.html',
                                     csrf_token=(
                                             get_raw_jwt() or {}).get("csrf"),
                                     user=target_user.name,
@@ -72,14 +72,14 @@ def do_employee_login():
 def employee_login():
     """Returns a login form.
     """
-    return Response(render_template('admin/login.html'))
+    return Response(render_template('employee/login_employee.html'))
 
 
 @Employee.route('/employee/logout')
 def logout():
     """Performs a logout for the current user.
     """
-    resp = Response(render_template('admin/login.html',
+    resp = Response(render_template('employee/login_employee.html',
                                     message='Your session has been canceled.'))
     unset_jwt_cookies(resp)
     return resp
@@ -87,8 +87,8 @@ def logout():
 
 @Employee.route('/employee/')
 @employee_required
-def admin():
-    """Returns the admin home page.
+def employee():
+    """Returns the employee home page.
     """
     return Response(render_template('employee/employee.html'))
 
