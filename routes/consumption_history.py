@@ -100,7 +100,9 @@ def get_first_and_last_energy_for_date(meter_id, date):
     try:
         key_first = f"{meter_id}_{date}_first"
         data = json.loads(redis_client.get(key_first))
-        result[data.get("time")] = data.get('values').get('energy')
+
+        if data is not None:
+            result[data.get("time")] = data.get('values').get('energy')
 
     except Exception as e:
         message = 'No first reading available for date {}: {}'.format(
@@ -110,7 +112,9 @@ def get_first_and_last_energy_for_date(meter_id, date):
     try:
         key_last = f"{meter_id}_{date}_last"
         data = json.loads(redis_client.get(key_last))
-        result[data.get("time")] = data.get('values').get('energy')
+
+        if data is not None:
+            result[data.get("time")] = data.get('values').get('energy')
 
     except Exception as e:
         message = 'No last reading available for date {}: {}'.format(
