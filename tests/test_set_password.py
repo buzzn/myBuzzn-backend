@@ -12,8 +12,8 @@ class SetPasswordTest(BuzznTestCase):
     """Checks if users can be created."""
 
     def setUp(self):
-        super().setUp()
-
+        db.drop_all()
+        db.create_all()
         db.session.add(User(GenderType.MALE, "Some", "User", "User@Some.net",
                             "SomeToken", "SomeMeterId", "SomeGroup"))
         db.session.commit()
@@ -40,7 +40,6 @@ class SetPasswordTest(BuzznTestCase):
         self.assertEqual(response.status_code,
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json, Errors.WRONG_TOKEN.__dict__)
-
 
     def test_no_activation_pending(self):
         """Expect an error if an account is activated for the seconds time."""

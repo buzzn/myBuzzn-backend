@@ -81,6 +81,10 @@ def get_last_meter_reading_date(meter_id, date):
             message = exception_message(e)
             logger.error(message)
 
+        if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+            continue
+
         if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
             reading_timestamp = reading_date.timestamp()

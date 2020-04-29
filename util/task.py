@@ -128,6 +128,7 @@ class Task:
                 # The unique key consists meter id, separator '_' and UTC
                 # timestamp
                 data = dict(type='reading', values=adjusted_reading['values'])
+                self.redis_client.set(meter_id + '_last', json.dumps(data))
                 self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
@@ -191,6 +192,7 @@ class Task:
         for meter_id in get_all_meter_ids(session):
 
             try:
+
                 disaggregation = self.d.get_disaggregation(
                     meter_id, calc_support_week_start(), end)
 
@@ -211,6 +213,7 @@ class Task:
                     # The unique key consists of meter id, separator '_' and UTC timestamp
                     data = dict(type='disaggregation',
                                 values=disaggregation[timestamp])
+                    self.redis_client.set(meter_id + '_last_disaggregation', json.dumps(data))
                     self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
@@ -251,6 +254,7 @@ class Task:
                     # timestamp
                     data = dict(type='disaggregation',
                                 values=disaggregation[timestamp])
+
                     self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:

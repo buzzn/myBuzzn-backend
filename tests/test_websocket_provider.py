@@ -3,60 +3,11 @@ from unittest import mock
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
+from tests.string_constants import GROUP_LAST_READING, GROUP_MEMBERS, GROUP_PRODUCTION_METER_IDS,\
+    GROUPMEMBER1_LAST_READING, GROUPMEMBER1_WEBSOCKET_DATA, MEMBER_WEBSOCKET_DATA, WEBSOCKET_DATA
 from util.database import db
 from util.websocket_provider import WebsocketProvider, get_group_production_meter_ids,\
     get_group_members
-
-
-GROUP_LAST_READING = {'type': 'reading',
-                      'values': {'energyOut': 2189063000, 'energy2': 0,
-                                 'energy1': 0, 'voltage1': 231000,
-                                 'voltage2': 231900, 'voltage3': 231500,
-                                 'energyOut1': 0, 'power': 21520,
-                                 'energyOut2': 0, 'power3': 0, 'power1': 1700,
-                                 'energy': 2466839634000, 'power2': 19820}}
-GROUPMEMBER1_LAST_READING = {'type': 'reading',
-                             'values': {'power': 20032100, 'power3': -2730,
-                                        'energyOut': 0, 'power1': -173960,
-                                        'energy': 3603609657330000, 'power2': -5900}}
-GROUPMEMBER2_LAST_READING = {'type': 'reading',
-                             'values': {'power': 734100, 'power3': 35180,
-                                        'energyOut': 0, 'power1': 125670,
-                                        'energy': 190585532038000, 'power2': 26720}}
-GROUPMEMBER3_LAST_READING = {'type': 'reading',
-                             'values': {'power': 5877540, 'power3': 1361800,
-                                        'energyOut': 0, 'power1': 1410390,
-                                        'energy': 1500976759905000, 'power2': 1388390}}
-DATA = {"date": 1584534049261,
-        "group_production": 43040,
-        "group_users": [{"id": 1, "meter_id": "b4234cd4bed143a6b9bd09e347e17d34",
-                         "consumption": 3603609657330000, "power": 20032100},
-                        {"id": 2, "meter_id": "52d7c87f8c26433dbd095048ad30c8cf",
-                         "consumption": 190585532038000, "power": 734100},
-                        {"id": 3, "meter_id": "117154df05874f41bfdaebcae6abfe98",
-                         "consumption": 1500976759905000, "power": 5877540}]}
-RETURN_VALUES = [GROUPMEMBER1_LAST_READING,
-                 GROUPMEMBER2_LAST_READING, GROUPMEMBER3_LAST_READING]
-GROUPMEMBER1_FIRST_READING = {'type': 'reading',
-                              'values': {'power': 13374273, 'power3': 3902020,
-                                         'energyOut': 0, 'power1': 3565876,
-                                         'energy': 3055907952664000, 'power2': 4029106}}
-GROUP_MEMBERS = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                  'inhabitants': 2},
-                 {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
-                  'inhabitants': 2},
-                 {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
-                  'inhabitants': 2}]
-GROUP_PRODUCTION_METER_IDS = (
-    '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
-MEMBER_DATA = [{'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                'consumption': 3603609657330000, 'power': 20032100},
-               {'id': 2, 'meter_id': '52d7c87f8c26433dbd095048ad30c8cf',
-                'consumption': 190585532038000, 'power': 734100},
-               {'id': 3, 'meter_id': '117154df05874f41bfdaebcae6abfe98',
-                'consumption': 1500976759905000, 'power': 5877540}]
-GROUPMEMBER1_DATA = {'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
-                     'consumption': 3603609657330000, 'power': 20032100}
 
 
 class WebsocketProviderTestCase(BuzznTestCase):
@@ -112,7 +63,8 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
         # Check return values
         for param in 'id', 'meter_id', 'consumption', 'power':
-            self.assertEqual(data.get(param), GROUPMEMBER1_DATA.get(param))
+            self.assertEqual(
+                data.get(param), GROUPMEMBER1_WEBSOCKET_DATA.get(param))
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
@@ -120,7 +72,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
     @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
                 return_value=GROUP_LAST_READING)
     @mock.patch('util.websocket_provider.WebsocketProvider.create_member_data',
-                side_effect=MEMBER_DATA)
+                side_effect=MEMBER_WEBSOCKET_DATA)
     def test_create_data(self, socketio, get_last_reading, _create_member_data):
         """ Unit tests for function create_data(). """
 
@@ -134,8 +86,8 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
         # Check return values
         self.assertEqual(data.get('group_production'),
-                         DATA.get('group_production'))
-        for item1, item2 in zip(data.get('group_users'), DATA.get('group_users')):
+                         WEBSOCKET_DATA.get('group_production'))
+        for item1, item2 in zip(data.get('group_users'), WEBSOCKET_DATA.get('group_users')):
             self.assertEqual(item1.get('id'), item2.get('id'))
             self.assertEqual(item1.get('meter_id'), item2.get('meter_id'))
             self.assertEqual(item1.get('consumption'),
