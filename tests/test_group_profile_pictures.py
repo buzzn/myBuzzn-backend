@@ -3,17 +3,11 @@ import json
 from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
-from models.group import Group
 from models.user import User
 from routes.group_profile_pictures import get_group_members
 from tests.buzzn_test_case import BuzznTestCase
-from tests.test_profile import sample_avatar
+from tests.string_constants import GROUP_PROFILE_PICTURES, SAMPLE_AVATAR
 from util.database import db
-
-
-DATA = [{'id': 1, 'avatar': sample_avatar},
-        {'id': 2, 'avatar': sample_avatar},
-        {'id': 3, 'avatar': sample_avatar}]
 
 
 class GroupProfilePictures(BuzznTestCase):
@@ -21,15 +15,6 @@ class GroupProfilePictures(BuzznTestCase):
 
     def setUp(self):
         super().setUp()
-        db.session.add(Group('TestGroup',
-                             '269e682dbfd74a569ff4561b6416c999',
-                             '5e769d5b83934bccae11a8fa95e0dc5f',
-                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
-        test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net', 'TestToken',
-                         'b4234cd4bed143a6b9bd09e347e17d34', 1)
-        test_user.set_password('some_password')
-        test_user.state = StateType.ACTIVE
-        db.session.add(test_user)
         group_member2 = User(GenderType.FEMALE, 'judith', 'greif',
                              'judith@buzzn.net', 'TestToken2',
                              '52d7c87f8c26433dbd095048ad30c8cf', 1)
@@ -40,7 +25,6 @@ class GroupProfilePictures(BuzznTestCase):
                              '117154df05874f41bfdaebcae6abfe98', 1)
         group_member3.set_password('some_password3')
         group_member3.state = StateType.ACTIVE
-        db.session.add(test_user)
         db.session.add(group_member2)
         db.session.add(group_member3)
         db.session.commit()
@@ -53,7 +37,7 @@ class GroupProfilePictures(BuzznTestCase):
                         data=json.dumps({'nick': 'newNick',
                                          'flatSize': 33.0,
                                          'inhabitants': 2,
-                                         'avatar': sample_avatar}))
+                                         'avatar': SAMPLE_AVATAR}))
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'judith@buzzn.net',
                                                           'password': 'some_password2'}))
@@ -63,7 +47,7 @@ class GroupProfilePictures(BuzznTestCase):
                         data=json.dumps({'nick': 'newNick',
                                          'flatSize': 34.0,
                                          'inhabitants': 3,
-                                         'avatar': sample_avatar}))
+                                         'avatar': SAMPLE_AVATAR}))
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'danny@buzzn.net',
                                                           'password':
@@ -74,7 +58,7 @@ class GroupProfilePictures(BuzznTestCase):
                         data=json.dumps({'nick': 'newNick',
                                          'flatSize': 35.0,
                                          'inhabitants': 4,
-                                         'avatar': sample_avatar}))
+                                         'avatar': SAMPLE_AVATAR}))
 
     def test_get_group_members(self):
         """ Unit tests for function get_group_members(). """
@@ -93,7 +77,7 @@ class GroupProfilePictures(BuzznTestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('routes.group_profile_pictures.get_group_members',
-                return_value=DATA)
+                return_value=GROUP_PROFILE_PICTURES)
     def test_group_profile_pictures(self, _get_group_members):
         """ Unit tests for group_profile_pictures(). """
 
@@ -112,4 +96,5 @@ class GroupProfilePictures(BuzznTestCase):
 
         # Check response content
         self.assertIsInstance(response.data, bytes)
-        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')), DATA)
+        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')),
+                         GROUP_PROFILE_PICTURES)

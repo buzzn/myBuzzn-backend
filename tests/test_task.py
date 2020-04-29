@@ -4,18 +4,9 @@ import redis
 from models.user import User, GenderType, StateType
 from models.group import Group
 from tests.buzzn_test_case import BuzznTestCase
+from tests.string_constants import READING, READING_NEGATIVE_POWER
 from util.database import db
 from util.task import check_and_nullify_power_value, client_name, Task
-
-
-READING = {'time': 1585177200000, 'values': {'power': 5727055, 'power3': 1898229,
-                                             'energyOut': 0, 'power1': 1917350,
-                                             'energy': 1551192369639000, 'power2': 1900643}}
-
-READING_NEGATIVE_POWER = {'time': 1584572400000, 'values': {'power': -4784541, 'power3': 1583777,
-                                                            'energyOut': 0, 'power1': 1599778,
-                                                            'energy': 1541570917834000,
-                                                            'power2': 1589981}}
 
 
 class TaskTestCase(BuzznTestCase):
