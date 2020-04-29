@@ -59,7 +59,7 @@ def do_employee_login():
         return Response(render_template('employee/login_employee.html',
                                         message="User account deactivated. Cannot login."))
 
-    resp = Response(render_template('employee/login_employee.html',
+    resp = Response(render_template('employee/employee.html',
                                     csrf_token=(
                                             get_raw_jwt() or {}).get("csrf"),
                                     user=target_user.name,
