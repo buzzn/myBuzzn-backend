@@ -2,9 +2,9 @@
 
 {% block body %}
 <h1 class="title">Users</h1><a class="list" href="/employee/user/all">Show all users</a>
-<div class="field">
-    <label>name</label>
-    <div class="control">
-      <input class="input" type="text" name="name" value="{}" />
-    </div>
-  </div>
+
+
+<form method="POST" action="/employee/user/name">
+    <label>Name</label><input type="name" name="name" /><br>
+    <button type="submit">Search</button>
+  </form>

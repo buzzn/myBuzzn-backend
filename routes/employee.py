@@ -1,9 +1,8 @@
-import secrets
 from functools import wraps
 from flask import render_template, Blueprint, Response, request, redirect
 from flask_jwt_extended import (create_access_token, get_raw_jwt, get_jwt_identity,
                                 set_access_cookies, verify_jwt_in_request, unset_jwt_cookies)
-from models.user import User, GenderType, StateType, RoleType
+from models.user import User, StateType, RoleType
 from util.database import db
 
 
@@ -106,7 +105,7 @@ def do_user_baseline_update():
     targetUser.baseline = request.form['baseline']
 
     db.session.commit()
-    return user_list("Updated user " + targetUser.name)
+    return user_list("Updated baseline for " + targetUser.name)
 
 
 @Employee.route('/employee/user/update', methods=['GET'])
@@ -122,30 +121,19 @@ def request_user_baseline_update():
     return Response(render_template('employee/user/update_baseline.html',
                                     csrf_token=(
                                         get_raw_jwt() or {}).get("csrf"),
-                                    target="/admin/user/update",
+                                    target="/employee/user/update",
                                     first_name=target_user.first_name,
                                     name=target_user.name,
                                     baseline=target_user.baseline,
-                    mimetype='text/html'))
+                                    mimetype='text/html'))
 
 
-@Employee.route('/employee/user/all', methods=['GET'])
+@Employee.route('/employee/user/name', methods=['POST'])
 @employee_required
 def user_list(message=''):
     """ Lists all existing users.
     """
-    return Response(render_template('employee/user/list.html',
-                                    users=User.query.all(),
-                                    message=message),
-                    mimetype='text/html')
-
-
-@Employee.route('/employee/user/name', methods=['GET'])
-@employee_required
-def user_list(message=''):
-    """ Lists all existing users.
-    """
-    target_users = User.query.filter_by(name=request.args['name']).all()
+    target_users = User.query.filter_by(name=request.form['name']).all()
     return Response(render_template('employee/user/list.html',
                                     users=target_users,
                                     message=message),
