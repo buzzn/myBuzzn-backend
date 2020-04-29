@@ -59,7 +59,7 @@ def do_employee_login():
         return Response(render_template('admin/login.html',
                                         message="User account deactivated. Cannot login."))
 
-    resp = Response(render_template('admin/admin.html', user=target_user.name,
+    resp = Response(render_template('employee/employee.html', user=target_user.name,
                                     message="Login succeeded"))
     set_access_cookies(resp, create_access_token(identity=target_user.id))
     return resp
