@@ -95,8 +95,7 @@ def employee():
 def search_user():
 
     return Response(render_template('employee/baseline.html',
-                                    csrf_token=(
-                                            get_raw_jwt() or {}).get("csrf")))
+                                    csrf_token=(get_raw_jwt() or {}).get("csrf")))
 
 
 @Employee.route('/employee/user/update', methods=['POST'])
