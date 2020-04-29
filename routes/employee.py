@@ -59,12 +59,14 @@ def do_employee_login():
         return Response(render_template('employee/login_employee.html',
                                         message="User account deactivated. Cannot login."))
 
+    access_token = create_access_token(identity=target_user.id)
     resp = Response(render_template('employee/employee.html',
-                                    csrf_token=(
-                                            get_raw_jwt() or {}).get("csrf"),
+                                    csrf_token=access_token.get("csrf"),
                                     user=target_user.name,
                                     message="Login succeeded"))
-    set_access_cookies(resp, create_access_token(identity=target_user.id))
+
+    set_access_cookies(resp, access_token)
+
     return resp
 
 
