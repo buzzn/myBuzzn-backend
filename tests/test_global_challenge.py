@@ -5,26 +5,15 @@ from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
 from models.savings import UserSaving, CommunitySaving
-from models.baseline import BaseLine
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from util.sqlite_helpers import estimate_energy_saving_each_user,\
     estimate_energy_saving_all_users
 from routes.global_challenge import get_individual_saving, get_community_saving,\
     get_individual_baseline
-from tests.test_energy_saving_calculation import SORTED_KEYS_ESTIMATION,\
-    DATA_ESTIMATION
-
-
-INDIVIDUAL_SAVING = ('2020-02-13 09:57:03.620809', 3148577026610.7812)
-INDIVIDUAL_SAVING_DICT = {'2020-02-13 09:57:03.620809': 3148577026610.7812}
-INDIVIDUAL_BASELINE = ('2020-02-21 09:40:04', 53011346257574)
-INDIVIDUAL_BASELINE_DICT = {'2020-02-21 09:40:04': 53011346257574}
-INDIVIDUAL_GLOBAL_CHALLENGE = {'baseline': {'2020-02-21 09:40:04': 53011346257574},
-                               'saving': {'2020-02-13 09:57:03.620809': 3148577026610.7812}}
-COMMUNITY_SAVING = ('2020-02-13 16:20:21.977425', 85184267259376.5)
-COMMUNITY_SAVING_DICT = {'2020-02-13 16:20:21': 85184267259376.5}
-METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
+from tests.string_constants import COMMUNITY_SAVING, COMMUNITY_SAVING_DICT, INDIVIDUAL_BASELINE,\
+    INDIVIDUAL_GLOBAL_CHALLENGE, INDIVIDUAL_SAVING, INDIVIDUAL_SAVING_DICT,\
+    READINGS_ESTIMATION, SORTED_KEYS_ESTIMATION
 
 
 class GlobalChallengeTestCase(BuzznTestCase):
@@ -35,12 +24,13 @@ class GlobalChallengeTestCase(BuzznTestCase):
 
         db.drop_all()
         db.create_all()
-        test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
-                         'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
-        test_user.flat_size = 60.0
-        test_user.inhabitants = 2
-        test_user.set_password('some_password')
-        test_user.state = StateType.ACTIVE
+        self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
+                              'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
+        self.test_user.flat_size = 60.0
+        self.test_user.inhabitants = 2
+        self.test_user.set_password('some_password')
+        self.test_user.state = StateType.ACTIVE
+        self.test_user.baseline = 19361634120995
         test_first_timestamp = datetime(2020, 2, 13, 9, 57, 3)
         test_first_user_saving = UserSaving(test_first_timestamp,
                                             '52d7c87f8c26433dbd095048ad30c8cf',
@@ -49,22 +39,13 @@ class GlobalChallengeTestCase(BuzznTestCase):
         test_second_user_saving = UserSaving(test_second_timestamp,
                                              '52d7c87f8c26433dbd095048ad30c8cf',
                                              3259689137721.8923)
-        test_third_timestamp = datetime(2020, 2, 21, 9, 40, 4)
-        test_first_user_baseline = BaseLine(test_third_timestamp,
-                                            '52d7c87f8c26433dbd095048ad30c8cf',
-                                            53011346257574)
-        test_second_user_baseline = BaseLine(test_second_timestamp,
-                                             '52d7c87f8c26433dbd095048ad30c8cf',
-                                             54122457368685)
         test_first_community_saving = CommunitySaving(
             test_first_timestamp, 85184267259376.5)
         test_second_community_saving = CommunitySaving(
             test_second_timestamp, 86295378361487.6)
-        db.session.add(test_user)
+        db.session.add(self.test_user)
         db.session.add(test_first_user_saving)
         db.session.add(test_second_user_saving)
-        db.session.add(test_first_user_baseline)
-        db.session.add(test_second_user_baseline)
         db.session.add(test_first_community_saving)
         db.session.add(test_second_community_saving)
         db.session.commit()
@@ -74,7 +55,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
                 side_effect=SORTED_KEYS_ESTIMATION)
-    @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
+    @mock.patch('redis.Redis.get', side_effect=READINGS_ESTIMATION)
     def test_estimate_energy_saving_each_user(self, scan_iter, get):
         """ Unit tests for function estimate_energy_saving_each_user(). """
 
@@ -90,7 +71,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
                 side_effect=SORTED_KEYS_ESTIMATION)
-    @mock.patch('redis.Redis.get', side_effect=DATA_ESTIMATION)
+    @mock.patch('redis.Redis.get', side_effect=READINGS_ESTIMATION)
     def test_estimate_energy_saving_all_users(self, scan_iter, get):
         """ Unit tests for function estimate_energy_saving_each_user(). """
 
@@ -107,7 +88,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
     def test_get_individual_saving(self, first, create_engine):
         """ Unit tests for function get_individual_saving(). """
 
-        result = get_individual_saving(METER_ID)
+        result = get_individual_saving(self.test_user.meter_id)
 
         # Check result types
         self.assertIsInstance(result, (dict, type(None)))
@@ -136,30 +117,24 @@ class GlobalChallengeTestCase(BuzznTestCase):
                 self.assertIsInstance(value, float)
 
     # pylint: disable=unused-argument
-    @mock.patch('sqlalchemy.engine.result.ResultProxy.first',
-                return_value=INDIVIDUAL_BASELINE)
+    @mock.patch('sqlalchemy.engine.result.ResultProxy.first', return_value=INDIVIDUAL_BASELINE)
     @mock.patch('sqlalchemy.create_engine')
-    def test_get_individual_baseline(self, first, create_engine):
+    def test_get_individual_baseline(self, create_engine, first):
         """ Unit tests for function get_individual_baseline(). """
 
-        result = get_individual_baseline(METER_ID)
+        result = get_individual_baseline(self.test_user.id)
 
-        # Check result types
-        self.assertIsInstance(result, (dict, type(None)))
-        if isinstance(result, dict):
-            for key, value in result.items():
-                self.assertIsInstance(key, str)
-                self.assertIsInstance(value, int)
+        # Check result type
+        self.assertIsInstance(result, int)
 
-                # Check result values
-                self.assertEqual(key, INDIVIDUAL_BASELINE[0].split('.')[0])
-                self.assertEqual(value, INDIVIDUAL_BASELINE[1])
+        # Check result values
+        self.assertEqual(result, self.test_user.baseline)
 
     # pylint: disable=unused-argument
     @mock.patch('routes.global_challenge.get_individual_saving',
                 return_value=INDIVIDUAL_SAVING_DICT)
     @mock.patch('routes.global_challenge.get_individual_baseline',
-                return_value=INDIVIDUAL_BASELINE_DICT)
+                return_value=INDIVIDUAL_BASELINE)
     def test_individual_global_challenge(self, _get_individual_saving,
                                          _get_individual_baseline):
         """ Unit tests for individual_global_challenge(). """
@@ -171,8 +146,8 @@ class GlobalChallengeTestCase(BuzznTestCase):
                                                                     'some_password'}))
         response = self.client.get('/individual-global-challenge',
                                    headers={'Authorization': 'Bearer {}'.
-                                                             format(login_request.json
-                                                                    ["sessionToken"])})
+                                                             format(login_request.
+                                                                    json["sessionToken"])})
 
         # Check response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -180,8 +155,8 @@ class GlobalChallengeTestCase(BuzznTestCase):
         # Check response content
         self.assertIsInstance(response.data, bytes)
 
-        self.assertEqual(ast.literal_eval(response.data.decode('utf-8')),
-                         INDIVIDUAL_GLOBAL_CHALLENGE)
+        self.assertEqual(ast.literal_eval(
+            response.data.decode('utf-8')), INDIVIDUAL_GLOBAL_CHALLENGE)
 
     # pylint: disable=unused-argument
     @mock.patch('routes.global_challenge.get_community_saving',

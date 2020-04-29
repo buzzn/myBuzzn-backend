@@ -40,7 +40,12 @@ def get_readings(meter_id, begin):
     result = {}
     for key in get_sorted_keys(redis_client, meter_id):
         data = json.loads(redis_client.get(key))
-        if data.get('type') == 'reading':
+
+        if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+            continue
+
+        if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
 
             # Parse timestamp as int to use consistent timestamps
@@ -75,7 +80,12 @@ def get_default_readings(meter_id):
 
     for key in redis_keys:
         data = json.loads(redis_client.get(key))
-        if data.get('type') == 'reading':
+
+        if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+            continue
+
+        if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])
             result[reading_date.strftime(
                 '%Y-%m-%d %H:%M:%S')] = data.get('values')

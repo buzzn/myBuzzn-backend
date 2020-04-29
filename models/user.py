@@ -35,6 +35,8 @@ class StateType(Enum):
 
 # Maybe setters should not count as public.
 #pylint: disable=too-many-public-methods
+
+
 class User(db.Model):
     """Represents a user account in the backend.
     """
@@ -84,6 +86,8 @@ class User(db.Model):
     password_reset_token = db.Column(db.String(33), unique=True)
     password_reset_token_expires = db.Column(db.DateTime)
     avatar = db.Column(db.LargeBinary)
+    baseline = db.Column(db.Integer)
+    registration_date = db.Column(db.DateTime)
 
     # Plain value constructor, too many arguments is ok here
     #pylint: disable=too-many-arguments

@@ -4,55 +4,13 @@ from unittest import mock
 from models.per_capita_consumption import PerCapitaConsumption
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
+from tests.string_constants import BASE_VALUES, DAY_ONE, SORTED_KEYS_DAY_ONE, DAY_TWO, DAY_ZERO,\
+    PCC_DAY_ONE, PCC_DAY_TWO, SORTED_KEYS_DAY_TWO, USER_CONSUMPTION_DAY_ONE,\
+    USER_CONSUMPTION_DAY_ONE_TWICE, USER_CONSUMPTION_DAY_TWO_TWICE
 from util.database import db
 from util.per_capita_consumption_calculation import define_base_values, \
     calc_per_capita_consumption, get_first_meter_reading_date, check_input_parameter_date,\
     get_data_day_before, build_data_package
-
-DAY_ONE = datetime.today() - timedelta(days=1)
-KEY1_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
-    DAY_ONE.strftime('%Y-%m-%d') + ' 12:02:00'
-KEY2_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
-    DAY_ONE.strftime('%Y-%m-%d') + ' 12:07:00'
-KEY3_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
-    DAY_ONE.strftime('%Y-%m-%d') + ' 12:40:00'
-SORTED_KEYS_DAY_ONE = [bytes(KEY1_DAY_ONE, 'utf-8'), bytes(
-    KEY2_DAY_ONE, 'utf-8'), bytes(KEY3_DAY_ONE, 'utf-8')]
-
-DAY_TWO = datetime.today()
-KEY1_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
-    DAY_TWO.strftime('%Y-%m-%d') + ' 12:02:00'
-KEY2_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
-    DAY_TWO.strftime('%Y-%m-%d') + ' 12:07:00'
-KEY3_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
-    DAY_TWO.strftime('%Y-%m-%d') + ' 12:40:00'
-SORTED_KEYS_DAY_TWO = [bytes(KEY1_DAY_TWO, 'utf-8'), bytes(
-    KEY2_DAY_TWO, 'utf-8'), bytes(KEY3_DAY_TWO, 'utf-8')]
-
-USER_CONSUMPTION_DAY_ONE = [
-    b'{"type": "reading", "values": {"energy": 198360858657000}}',
-    b'{"type": "reading", "values": {"energy": 198370000000000}}',
-    b'{"type": "reading", "values": {"energy": 198382608371000}}']
-
-USER_CONSUMPTION_DAY_TWO = [
-    b'{"type": "reading", "values": {"energy": 198385000000000}}',
-    b'{"type": "reading", "values": {"energy": 198390000000000}}',
-    b'{"type": "reading", "values": {"energy": 198400000000000}}']
-
-USER_CONSUMPTION_DAY_ONE_TWICE = USER_CONSUMPTION_DAY_ONE +\
-    USER_CONSUMPTION_DAY_ONE
-
-USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
-    USER_CONSUMPTION_DAY_TWO
-
-DAY_ZERO = datetime.today() - timedelta(days=2)
-TEST_USER_METER_ID = '52d7c87f8c26433dbd095048ad30c8cf'
-BASE_VALUES = PerCapitaConsumption(DAY_ZERO, TEST_USER_METER_ID,
-                                   0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
-PCC_DAY_ONE = PerCapitaConsumption(DAY_ONE, TEST_USER_METER_ID, 2.1749714, 2.1749714, 2,
-                                   1.0874857, 1.0874857, 1, 1.0874857, 397)
-PCC_DAY_TWO = PerCapitaConsumption(DAY_TWO, TEST_USER_METER_ID, 1.5, 3.6749714, 2, 0.75,
-                                   1.8374857, 2, 0.91874285, 335)
 
 
 class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
@@ -115,7 +73,8 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         self.assertIsInstance(data_day_one.consumption_cumulated, float)
         self.assertIsInstance(data_day_one.inhabitants, int)
         self.assertIsInstance(data_day_one.per_capita_consumption, float)
-        self.assertIsInstance(data_day_one.per_capita_consumption_cumulated, float)
+        self.assertIsInstance(
+            data_day_one.per_capita_consumption_cumulated, float)
         self.assertIsInstance(data_day_one.days, int)
         self.assertIsInstance(data_day_one.moving_average, float)
         self.assertIsInstance(data_day_one.moving_average_annualized, int)
@@ -212,8 +171,10 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
         self.assertIsInstance(data_package_day_one.get(
             'consumption_cumulated'), float)
         self.assertIsInstance(data_package_day_one.get('inhabitants'), int)
-        self.assertIsInstance(data_package_day_one.get('per_capita_consumption'), float)
-        self.assertIsInstance(data_package_day_one.get('per_capita_consumption_cumulated'), float)
+        self.assertIsInstance(data_package_day_one.get(
+            'per_capita_consumption'), float)
+        self.assertIsInstance(data_package_day_one.get(
+            'per_capita_consumption_cumulated'), float)
         self.assertIsInstance(data_package_day_one.get('days'), int)
         self.assertIsInstance(
             data_package_day_one.get('moving_average'), float)

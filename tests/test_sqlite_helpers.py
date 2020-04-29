@@ -3,15 +3,7 @@ from models.group import Group
 from util.database import db
 from util.sqlite_helpers import get_all_meter_ids, get_all_users, get_all_user_meter_ids
 from tests.buzzn_test_case import BuzznTestCase
-
-
-ALL_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6', '6fdbd41a93d8421cac4ea033203844d1',
-                 'bf60438327b1498c9df4e43fc9327849', '0a0f65e992c042e4b86956f3f080114d',
-                 '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d']
-
-ALL_USER_METER_IDS = ['dca0ec32454e4bdd9ed719fbc9fb75d6',
-                      '6fdbd41a93d8421cac4ea033203844d1',
-                      'bf60438327b1498c9df4e43fc9327849']
+from tests.string_constants import ALL_METER_IDS, ALL_USER_METER_IDS
 
 
 class TestSqliteHelpers(BuzznTestCase):
@@ -23,18 +15,18 @@ class TestSqliteHelpers(BuzznTestCase):
         db.drop_all()
         db.create_all()
         self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
-                              'TestToken', 'dca0ec32454e4bdd9ed719fbc9fb75d6', 1)
+                              'TestToken', ALL_USER_METER_IDS[0], 1)
         db.session.add(self.test_user)
         self.test_user2 = User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
-                               'TestToken2', '6fdbd41a93d8421cac4ea033203844d1', 1)
+                               'TestToken2', ALL_USER_METER_IDS[1], 1)
         db.session.add(self.test_user2)
         self.test_user3 = User(GenderType.MALE, 'danny', 'stey', 'danny@buzzn.net',
-                               'TestToken3', 'bf60438327b1498c9df4e43fc9327849', 1)
+                               'TestToken3', ALL_USER_METER_IDS[2], 1)
         db.session.add(self.test_user3)
         db.session.add(Group('TestGroup',
-                             '0a0f65e992c042e4b86956f3f080114d',
-                             '5e769d5b83934bccae11a8fa95e0dc5f',
-                             'e2a7468f0cf64b7ca3f3d1350b893c6d'))
+                             ALL_METER_IDS[3],
+                             ALL_METER_IDS[4],
+                             ALL_METER_IDS[5]))
         db.session.commit()
 
     def test_get_all_meter_ids(self):

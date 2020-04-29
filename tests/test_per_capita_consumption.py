@@ -6,7 +6,7 @@ from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from routes.per_capita_consumption import get_moving_average_annualized
-from tests.test_per_capita_consumption_calculation import DAY_ZERO, DAY_ONE, PCC_DAY_ONE
+from tests.string_constants import DAY_ONE, DAY_ZERO, PCC_DAY_ONE
 
 
 class PerCapitaConsumptionTestCase(BuzznTestCase):
@@ -15,7 +15,8 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
     def setUp(self):
         """ Create test user and test PerCapitaConsumprion values in the database. """
 
-        super().setUp()
+        db.drop_all()
+        db.create_all()
         self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
                               'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
         self.test_user.inhabitants = 2
