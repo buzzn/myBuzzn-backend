@@ -59,7 +59,10 @@ def do_employee_login():
         return Response(render_template('admin/login.html',
                                         message="User account deactivated. Cannot login."))
 
-    resp = Response(render_template('employee/employee.html', user=target_user.name,
+    resp = Response(render_template('employee/employee.html',
+                                    csrf_token=(
+                                            get_raw_jwt() or {}).get("csrf"),
+                                    user=target_user.name,
                                     message="Login succeeded"))
     set_access_cookies(resp, create_access_token(identity=target_user.id))
     return resp
@@ -126,6 +129,17 @@ def request_user_baseline_update():
                                     name=target_user.name,
                                     baseline=target_user.baseline,
                                     mimetype='text/html'))
+
+
+@Employee.route('/employee/user/all', methods=['GET'])
+@employee_required
+def user_list_all(message=''):
+    """ Lists all existing users.
+    """
+    return Response(render_template('employee/user/list.html',
+                                    users=User.query.all(),
+                                    message=message),
+                    mimetype='text/html')
 
 
 @Employee.route('/employee/user/name', methods=['POST'])

@@ -5,6 +5,7 @@
 
 
 <form method="POST" action="/employee/user/name">
+    <input class="input" name="csrf_token" type="hidden" value="{{ csrf_token }}">
     <label>Name</label><input type="name" name="name" /><br>
     <button type="submit">Search</button>
   </form>
