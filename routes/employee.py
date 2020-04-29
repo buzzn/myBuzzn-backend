@@ -59,14 +59,9 @@ def do_employee_login():
         return Response(render_template('employee/login_employee.html',
                                         message="User account deactivated. Cannot login."))
 
-    access_token = create_access_token(identity=target_user.id)
-    resp = Response(render_template('employee/employee.html',
-                                    csrf_token=access_token.get("csrf"),
-                                    user=target_user.name,
+    resp = Response(render_template('employee/employee.html', user=target_user.name,
                                     message="Login succeeded"))
-
-    set_access_cookies(resp, access_token)
-
+    set_access_cookies(resp, create_access_token(identity=target_user.id))
     return resp
 
 
@@ -93,6 +88,15 @@ def employee():
     """Returns the employee home page.
     """
     return Response(render_template('employee/employee.html'))
+
+
+@Employee.route('/employee/baseline', methods=['POST'])
+@employee_required
+def search_user():
+
+    return Response(render_template('employee/baseline.html',
+                                    csrf_token=(
+                                            get_raw_jwt() or {}).get("csrf")))
 
 
 @Employee.route('/employee/user/update', methods=['POST'])
