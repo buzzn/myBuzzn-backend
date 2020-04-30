@@ -4,9 +4,14 @@
 <p>
 <h1 class="title">Find User</h1><a class="list" href="/employee/user/all">Show all users</a>
 </p>
+<p>
 <form method="POST" action="/employee/user/name">
     <input class="input" name="csrf_token" type="hidden" value="{{ csrf_token }}">
     <label>Find user with last name: </label><input type="name" name="name" />
     <button type="submit">Search</button>
   </form>
+</p>
+<p>
+    {{message}}
+</p>
 {% endblock %}

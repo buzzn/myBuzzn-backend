@@ -92,9 +92,10 @@ def employee():
 
 @Employee.route('/employee/baseline', methods=['GET'])
 @employee_required
-def search_user():
+def search_user(message=''):
 
     return Response(render_template('employee/baseline.html',
+                                    message=message,
                                     csrf_token=(get_raw_jwt() or {}).get("csrf")))
 
 
@@ -157,6 +158,10 @@ def user_list(message=''):
     """ Lists all existing users.
     """
     target_users = User.query.filter_by(name=request.form['name']).all()
+
+    if not any(target_users):
+        return search_user("Unknown user.")
+
     return Response(render_template('employee/user/list.html',
                                     users=target_users,
                                     message=message),
