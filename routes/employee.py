@@ -113,7 +113,10 @@ def do_user_baseline_update():
     targetUser.baseline = request.form['baseline']
 
     db.session.commit()
-    return user_list("Updated baseline for " + targetUser.name)
+    return Response(render_template('employee/user/list.html',
+                                    users=targetUser,
+                                    message=f"Updated baseline for {targetUser.name}"),
+                    mimetype='text/html')
 
 
 @Employee.route('/employee/user/update', methods=['GET'])
