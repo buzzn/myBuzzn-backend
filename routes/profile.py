@@ -28,7 +28,7 @@ def profile():
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
     target_profile = {k: v for k, v in target_user.__dict__.items() if k in (
-        'id', 'name', 'nick', 'mail', 'inhabitants', 'registration_date'
+        'id', 'name', 'nick', 'mail', 'inhabitants', 'registration_date', 'baseline_state'
     )}
 
     if target_user.avatar is not None:

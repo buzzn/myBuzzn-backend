@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, request, jsonify
 from flask_api import status
 from flask_jwt_extended import create_access_token
 from flask import current_app as app
 
-from models.user import User, StateType
+from models.user import User, StateType, BaselineStateType
 from util.error import Error
 
 Login = Blueprint('Login', __name__)
@@ -39,7 +39,17 @@ def login():
     if not target_user.state == StateType.ACTIVE:
         return Error('User not active', 'Can not login.').to_json(), status.HTTP_403_FORBIDDEN
 
+    if not target_user.baseline_state == BaselineStateType.READY:
+        if target_user.baseline is not None:
+            target_user.baseline_state = BaselineStateType.READY
+        else:
+            if timedelta(target_user.registration_date, datetime.utcnow()) <= 2486400000000:
+                target_user.baseline_state = BaselineStateType.WAITING_FOR_DATA
+            else:
+                target_user.baseline_state = BaselineStateType.NO_READINGS_AVAILABLE
+
     access_token = create_access_token(identity=target_user.id)
     expired_timestamp = (datetime.utcnow() + app.config['JWT_ACCESS_TOKEN_EXPIRES']).timestamp()
+
     return jsonify(sessionToken=access_token,
                    expiredTimestamp=expired_timestamp), status.HTTP_200_OK
