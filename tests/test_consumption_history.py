@@ -5,7 +5,8 @@ from flask_api import status
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from tests.string_constants import CONSUMPTION, EMPTY_GROUP_CONSUMPTION,\
-    EMPTY_RESPONSE, EMPTY_RESPONSE_BYTES, GROUP_CONSUMPTION, INDIVIDUAL_CONSUMPTION
+    EMPTY_RESPONSE, EMPTY_RESPONSE_BYTES, GROUP_CONSUMPTION, INDIVIDUAL_CONSUMPTION, \
+    FIRST_LAST_ENERGY
 from util.database import db
 
 
@@ -90,7 +91,10 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
-    def test_group_consumption_history(self, get_default_readings):
+    @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
+                return_value=FIRST_LAST_ENERGY)
+    def test_group_consumption_history(self, get_default_readings,
+                                       get_first_and_last_energy_for_date):
         """ Unit tests for group_consumption_history()."""
 
         # Check if route exists
@@ -111,7 +115,9 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
     # pylint: disable=unused-argument
     @mock.patch('routes.consumption_history.get_default_readings',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_default_readings):
+    @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
+                return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_default_readings, get_first_and_last_energy_for_date):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',

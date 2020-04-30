@@ -120,16 +120,21 @@ class Task:
 
                 adjusted_reading = check_and_nullify_power_value(
                     reading, meter_id)
-                key = meter_id + '_' + \
-                    str(datetime.utcfromtimestamp(
-                        adjusted_reading['time']/1000).strftime('%F %T'))
-
+                reading_timestamp = str(datetime.utcfromtimestamp(
+                    adjusted_reading['time']/1000).strftime('%F %T'))
+                key = meter_id + '_' + reading_timestamp
+                date_key = datetime.utcnow().strftime('%Y-%m-%d')
                 # Write reading to redis database as key-value-pair
                 # The unique key consists meter id, separator '_' and UTC
                 # timestamp
                 data = dict(type='reading', values=adjusted_reading['values'])
-                self.redis_client.set(meter_id + '_last', json.dumps(data))
                 self.redis_client.set(key, json.dumps(data))
+                self.redis_client.set(meter_id + '_last', json.dumps(data))
+                data["time"] = reading_timestamp
+                self.redis_client.set(meter_id + '_' + date_key + '_last', json.dumps(data))
+
+                if self.redis_client.get(meter_id + '_' + date_key + '_first') is None:
+                    self.redis_client.set(meter_id + '_' + date_key + '_first', json.dumps(data))
 
             except Exception as e:
                 message = exception_message(e)
