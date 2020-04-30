@@ -101,7 +101,7 @@ def search_user():
 @Employee.route('/employee/user/update', methods=['POST'])
 @employee_required
 def do_user_baseline_update():
-    """Updates an existing user.
+    """Updates an existing user baseline.
     :param str baseline: The user's baseline.
     """
     targetUsers = User.query.filter_by(id=request.form['id']).all()
@@ -133,6 +133,7 @@ def request_user_baseline_update():
                                     first_name=target_user.first_name,
                                     name=target_user.name,
                                     baseline=target_user.baseline,
+                                    id=target_user.id,
                                     mimetype='text/html'))
 
 
