@@ -42,6 +42,7 @@ def get_readings(meter_id, begin):
         data = json.loads(redis_client.get(key))
 
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
@@ -80,8 +81,8 @@ def get_default_readings(meter_id):
 
     for key in redis_keys:
         data = json.loads(redis_client.get(key))
-
         if data is not None and (key[len(meter_id) + 1:].endswith("last")
+                                 or key[len(meter_id) + 1:].endswith("first")
                                  or key[len(meter_id) + 1:].endswith("last_disaggregation")):
             continue
 
@@ -93,6 +94,36 @@ def get_default_readings(meter_id):
     return result
 
 
+def get_first_and_last_energy_for_date(meter_id, date):
+    result = {}
+
+    try:
+        key_first = f"{meter_id}_{date}_first"
+        data = json.loads(redis_client.get(key_first))
+
+        if data is not None:
+            result[data.get("time")] = data.get('values').get('energy')
+
+    except Exception as e:
+        message = 'No first reading available for date {}: {}'.format(
+            date, e)
+        logger.error(message)
+
+    try:
+        key_last = f"{meter_id}_{date}_last"
+        data = json.loads(redis_client.get(key_last))
+
+        if data is not None:
+            result[data.get("time")] = data.get('values').get('energy')
+
+    except Exception as e:
+        message = 'No last reading available for date {}: {}'.format(
+                        date, e)
+        logger.error(message)
+
+    return result
+
+
 def create_member_data(member):
     """ Create a data package for a group member.
     :param dict member: a group member's parameters
@@ -100,20 +131,21 @@ def create_member_data(member):
     :rtype: dict
     """
 
+    today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
     member_meter_id = member.get('meter_id')
-    member_consumptions = []
-    member_powers = []
+    member_consumptions = {}
+    member_powers = {}
 
     member_readings = get_default_readings(member_meter_id)
+
     if member_readings == {}:
         logger.error('No readings for meter id %s in the database.',
                      member_meter_id)
     else:
         for key in member_readings:
-            member_consumptions.append(
-                {key: member_readings[key].get('energy')})
-            member_powers.append(
-                {key: member_readings[key].get('power')})
+            member_powers[key] = member_readings[key].get('power')
+        member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
+
 
     return dict(power=member_powers, energy=member_consumptions)
 
@@ -186,37 +218,46 @@ def group_consumption_history():
     consumed_power = {}
     produced_first_meter_power = {}
     produced_second_meter_power = {}
-    consumed_energy = {}
-    produced_first_meter_energy = {}
-    produced_second_meter_energy = {}
-    group_users = []
+    group_users = {}
 
     try:
+
+        #today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
 
         # Group community consumption meter
         readings = get_default_readings(group.group_meter_id)
         for key in readings:
             consumed_power[key] = readings[key].get('power')
-            consumed_energy[key] = readings[key].get('energy')
+        # Get first and last group energy consumption of today
+        consumed_energy = get_first_and_last_energy_for_date(group.group_meter_id,
+                                                             datetime.strftime(datetime.utcnow(),
+                                                                               '%Y-%m-%d'))
 
         # First group production meter
         readings = get_default_readings(group.group_production_meter_id_first)
         for key in readings:
             produced_first_meter_power[key] = readings[key].get('power')
-            produced_first_meter_energy[key] = readings[key].get('energy')
+
+        # Get first and last group energy production of first production meter of today
+        produced_first_meter_energy = get_first_and_last_energy_for_date(
+            group.group_production_meter_id_first, datetime.strftime(
+                datetime.utcnow(), '%Y-%m-%d'))
 
         # Second group production meter
         readings = get_default_readings(group.group_production_meter_id_second)
         for key in readings:
             produced_second_meter_power[key] = readings[key].get(
                 'power')
-            produced_second_meter_energy[key] = readings[key].get(
-                'energy')
+
+        # Get first and last group energy production of first production meter of today
+        produced_second_meter_energy = get_first_and_last_energy_for_date(
+            group.group_production_meter_id_second, datetime.strftime(
+                datetime.utcnow(), '%Y-%m-%d'))
 
         # Group members
         for member in get_group_members(user_id):
             member_data = create_member_data(member)
-            group_users.append({member.get('id'): member_data})
+            group_users[member.get('id')] = member_data
 
         # Return result
         return jsonify(dict(consumed_power=consumed_power,
