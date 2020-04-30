@@ -114,7 +114,7 @@ def do_user_baseline_update():
 
     db.session.commit()
     return Response(render_template('employee/user/list.html',
-                                    users=[].append(targetUser),
+                                    users=targetUsers,
                                     message=f"Updated baseline for {targetUser.name}"),
                     mimetype='text/html')
 
