@@ -81,7 +81,10 @@ def connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
-    clients[request.sid] = {'meter_id': session['meter_id']}
+    meter_id = request.args.get('meter_id', default=None, type=str)
+    if meter_id is None:
+        meter_id = session['meter_id']
+    clients[request.sid] = {'meter_id': meter_id }
     emit('live_data', {'data': 'Connected with sid ' +
                                request.sid}, room=request.sid)
 
