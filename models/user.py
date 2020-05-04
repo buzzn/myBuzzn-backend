@@ -96,7 +96,7 @@ class User(db.Model):
     avatar = db.Column(db.LargeBinary)
     baseline = db.Column(db.Integer)
     registration_date = db.Column(db.DateTime)
-    baseline_sate = db.Column(db.Enum(BaselineStateType))
+    baseline_state = db.Column(db.Enum(BaselineStateType))
 
     # Plain value constructor, too many arguments is ok here
     #pylint: disable=too-many-arguments
