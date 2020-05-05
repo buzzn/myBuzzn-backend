@@ -43,11 +43,14 @@ def login():
         if target_user.baseline is not None:
             target_user.baseline_state = BaselineStateType.READY
         else:
-            if target_user.registration_date is None or \
-                    timedelta(target_user.registration_date, datetime.utcnow()) <= 2486400000000:
+            if target_user.registration_date is None:
                 target_user.baseline_state = BaselineStateType.WAITING_FOR_DATA
             else:
-                target_user.baseline_state = BaselineStateType.NO_READINGS_AVAILABLE
+                time_diff = datetime.utcnow() - target_user.registration_date
+                if time_diff <= timedelta(hours=24):
+                    target_user.baseline_state = BaselineStateType.WAITING_FOR_DATA
+                else:
+                    target_user.baseline_state = BaselineStateType.NO_READINGS_AVAILABLE
 
     access_token = create_access_token(identity=target_user.id)
     expired_timestamp = (datetime.utcnow() + app.config['JWT_ACCESS_TOKEN_EXPIRES']).timestamp()
