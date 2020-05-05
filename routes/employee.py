@@ -22,19 +22,12 @@ def employee_required(fn):
         target_user = User.query.filter_by(id=user_id).first()
 
         if target_user is None:
-            return redirect('employee/login_employee.html', code=403)
+            return redirect('admin/login.html', code=403)
 
         if target_user.role != RoleType.ADMINISTRATOR and target_user.role != RoleType.EMPLOYEE:
-            return redirect('employee/login_employee.html', code=403)
+            return redirect('admin/login.html', code=403)
         return fn(*args, **kwargs)
     return wrapper
-
-
-@Employee.route('/favicon.ico', methods=['GET'])
-def favicon():
-    """Prevents the logger from logging 404 when the browser asks for a favicon.
-    """
-    return ''
 
 
 @Employee.route('/employee/login', methods=['POST'])
@@ -69,14 +62,14 @@ def do_employee_login():
 def employee_login():
     """Returns a login form.
     """
-    return Response(render_template('employee/login_employee.html'))
+    return Response(render_template('admin/login.html'))
 
 
 @Employee.route('/employee/logout')
 def logout():
     """Performs a logout for the current user.
     """
-    resp = Response(render_template('employee/login_employee.html',
+    resp = Response(render_template('admin/login.html',
                                     message='Your session has been canceled.'))
     unset_jwt_cookies(resp)
     return resp
