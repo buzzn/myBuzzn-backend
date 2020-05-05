@@ -44,8 +44,8 @@ def login():
 
     if not target_user.baseline_state == BaselineStateType.READY:
         if target_user.baseline is not None:
-            target_user.baseline_state = BaselineStateType.READY
-        else:
+            #target_user.baseline_state = BaselineStateType.READY
+        #else:
             if target_user.registration_date is None:
                 target_user.baseline_state = BaselineStateType.WAITING_FOR_DATA
             else:
