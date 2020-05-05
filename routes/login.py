@@ -5,6 +5,8 @@ from flask_api import status
 from flask_jwt_extended import create_access_token
 from flask import current_app as app
 
+from util.database import db
+
 from models.user import User, StateType, BaselineStateType
 from util.error import Error
 
@@ -25,7 +27,8 @@ def login():
     user_requested = j['user'].lower()
     password_requested = j['password']
 
-    target_user = User.query.filter_by(mail=user_requested).first()
+    #target_user = User.query.filter_by(mail=user_requested).first()
+    target_user = db.session.query(User).filter_by(mail=user_requested).first()
     if target_user is None:
         return (Error('Unknown credentials',
                       'Try again with proper username/password.').to_json(),
@@ -51,6 +54,8 @@ def login():
                     target_user.baseline_state = BaselineStateType.WAITING_FOR_DATA
                 else:
                     target_user.baseline_state = BaselineStateType.NO_READINGS_AVAILABLE
+    db.session.add(target_user)
+    db.session.commit()
 
     access_token = create_access_token(identity=target_user.id)
     expired_timestamp = (datetime.utcnow() + app.config['JWT_ACCESS_TOKEN_EXPIRES']).timestamp()
