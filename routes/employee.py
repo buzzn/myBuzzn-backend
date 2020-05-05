@@ -48,15 +48,15 @@ def do_employee_login():
 
     target_user = User.query.filter_by(mail=user_requested).first()
     if target_user is None:
-        return Response(render_template('employee/login_employee.html',
+        return Response(render_template('admin/login.html',
                                         message="Unknown Credentials"))
 
     if not target_user.check_password(password_requested):
-        return Response(render_template('employee/login_employee.html',
+        return Response(render_template('admin/login.html',
                                         message="Unknown Credentials"))
 
     if not target_user.state == StateType.ACTIVE:
-        return Response(render_template('employee/login_employee.html',
+        return Response(render_template('admin/login.html',
                                         message="User account deactivated. Cannot login."))
 
     resp = Response(render_template('employee/employee.html', user=target_user.name,
