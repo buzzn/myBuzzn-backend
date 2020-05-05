@@ -131,7 +131,7 @@ def upgrade():
                                                                      "%Y-%m-%d %H:%M:%S.%f")
         else:
             user_entry_dict['registration_date'] = datetime.strptime(
-                "2020-05-04 17:00:00.000000", "%Y-%m-%d %H:%M:%S.%f")
+                "2020-05-03 08:00:00.000000", "%Y-%m-%d %H:%M:%S.%f")
 
         user_old.append(user_entry_dict)
 
