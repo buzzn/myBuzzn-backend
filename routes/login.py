@@ -18,7 +18,7 @@ def set_baseline_state(user_id):
         the registration date of the user.
         :param str user_id: the user's id
         """
-    target_user = db.session.query(User).filter_by(user_id).first()
+    target_user = db.session.query(User).filter_by(id=user_id).first()
     if not target_user.baseline_state == BaselineStateType.READY:
         if target_user.baseline is not None:
             #target_user.baseline_state = BaselineStateType.READY
