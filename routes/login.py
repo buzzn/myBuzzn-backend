@@ -42,7 +42,8 @@ def login():
     if not target_user.state == StateType.ACTIVE:
         return Error('User not active', 'Can not login.').to_json(), status.HTTP_403_FORBIDDEN
 
-    if not target_user.baseline_state == BaselineStateType.READY:
+    #if not target_user.baseline_state == BaselineStateType.READY:
+    if target_user.baseline_state == BaselineStateType.READY:
         if target_user.baseline is not None:
             #target_user.baseline_state = BaselineStateType.READY
         #else:
