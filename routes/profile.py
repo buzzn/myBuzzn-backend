@@ -28,7 +28,7 @@ def profile():
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
 
     target_profile = {k: v for k, v in target_user.__dict__.items() if k in (
-        'id', 'name', 'nick', 'mail', 'inhabitants', 'registration_date'
+        'id', 'name', 'nick', 'mail', 'inhabitants'
     )}
 
     if target_user.avatar is not None:
@@ -37,7 +37,12 @@ def profile():
     target_profile['firstName'] = target_user.first_name
     target_profile['flatSize'] = target_user.flat_size
     target_profile['meterId'] = target_user.meter_id
-
+    if target_user.registration_date is not None:
+        target_profile['registration_date'] = target_user.registration_date.strftime(
+            "%Y-%m-%d %H:%M:%S.%f")
+    else:
+        target_profile['registration_date'] = target_user.registration_date
+        
     if target_user.baseline_state == BaselineStateType.READY:
         target_profile['baseline_state'] = "READY"
     elif target_user.baseline_state == BaselineStateType.WAITING_FOR_DATA:
