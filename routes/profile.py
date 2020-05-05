@@ -42,7 +42,7 @@ def profile():
             "%Y-%m-%d %H:%M:%S.%f")
     else:
         target_profile['registration_date'] = target_user.registration_date
-        
+
     if target_user.baseline_state == BaselineStateType.READY:
         target_profile['baseline_state'] = "READY"
     elif target_user.baseline_state == BaselineStateType.WAITING_FOR_DATA:
