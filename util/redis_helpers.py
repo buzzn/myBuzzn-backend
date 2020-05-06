@@ -26,4 +26,4 @@ def get_keys_date_hour_prefix(redis_client, meter_id, date, hour):
     :param str hour: the hour prefix
     """
     return [key.decode('utf-8') for key in
-                   redis_client.scan_iter(meter_id + '_' + date + ' ' + hour + '*')]
+            redis_client.scan_iter(meter_id + '_' + date + ' ' + hour + '*')]

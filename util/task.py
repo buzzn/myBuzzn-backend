@@ -4,8 +4,8 @@ import math
 from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta
-from dateutil import parser
 import logging.config
+from dateutil import parser
 from discovergy.discovergy import Discovergy
 import redis
 from util.error import exception_message
@@ -56,13 +56,14 @@ class Task:
         self.redis_client = redis.Redis(
             host=redis_host, port=redis_port, db=redis_db)  # connect to server
 
+        # pylint: disable=global-statement
         global end_next_interval
         # set end_next_interval to end of next quarter-hour
         current_time = datetime.utcnow()
         nsecs = current_time.minute * 60 + current_time.second + \
                 current_time.microsecond * 1e-6
         delta = math.ceil(nsecs / 900) * 900 - nsecs
-        end_next_interval = current_time + datetime.timedelta(seconds=delta)
+        end_next_interval = current_time + timedelta(seconds=delta)
 
     def login(self):
         """ Authenticate against the discovergy backend. """
@@ -279,13 +280,14 @@ class Task:
                 logger.error(message)
 
     def calculate_average_power(self, session):
+        # pylint: disable=global-statement
         global end_next_interval
         current_date = datetime.utcnow().strftime("%Y-%m-%d")
         current_hour = (end_next_interval - timedelta(minutes=15)).strftime("%H")
 
         for meter_id in get_all_meter_ids(session):
             average_power_key = 'average_power_' + meter_id + current_date
-            sum = 0
+            power_sum = 0
             divider = 0
             for key in get_keys_date_hour_prefix(self.redis_client, meter_id, current_date,
                                                  current_hour):
@@ -298,8 +300,8 @@ class Task:
 
                 if data is not None and (key[len(meter_id) + 1:].endswith("last")
                                          or key[len(meter_id) + 1:].endswith("first")
-                                         or key[len(meter_id) + 1:].endswith(
-                            "last_disaggregation")):
+                                         or
+                                         key[len(meter_id) + 1:].endswith("last_disaggregation")):
                     continue
 
                 if data is not None and data.get('type') == 'reading':
@@ -308,11 +310,11 @@ class Task:
 
                     if ((end_next_interval - timedelta(minutes=15)).timestamp() <= reading_timestamp
                             <= end_next_interval.timestamp()):
-                        sum += data.get('values').get('power')
+                        power_sum += data.get('values').get('power')
                         divider += 1
 
-            average = sum / divider
-            if len(self.redis_client.keys(average_power_key)) is 0:
+            average = power_sum / divider
+            if len(self.redis_client.keys(average_power_key)) == 0:
                 data = {end_next_interval.strftime("%Y-%m-%d %H:%M:%S"): average}
                 self.redis_client.set(average_power_key, json.dumps(data))
                 self.redis_client.expire(average_power_key, int(timedelta(2).total_seconds()))
