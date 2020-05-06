@@ -3,7 +3,7 @@ import json
 from flask_api import status
 
 from tests.buzzn_test_case import BuzznTestCase
-from models.user import User, GenderType, StateType
+from models.user import User, GenderType, StateType, BaselineStateType
 from models.group import Group
 from tests.string_constants import SAMPLE_AVATAR
 from util.database import db
@@ -28,6 +28,7 @@ class ProfileTestCase(BuzznTestCase):
         self.target_user.name = "SomeName"
         self.target_user.first_name = "SomeFirstName"
         self.target_user.state = StateType.ACTIVE
+        self.target_user.baseline_state = BaselineStateType.READY
         db.session.add(self.target_user)
         db.session.commit()
 
@@ -58,6 +59,7 @@ class ProfileTestCase(BuzznTestCase):
                              None)
         user_no_group.set_password("some_password")
         user_no_group.state = StateType.ACTIVE
+        user_no_group.baseline_state = BaselineStateType.READY
         db.session.add(user_no_group)
         db.session.commit()
 

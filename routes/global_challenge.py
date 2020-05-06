@@ -111,7 +111,7 @@ def individual_global_challenge():
         if saving is None:
             return NO_GLOBAL_CHALLENGE.to_json(), status.HTTP_206_PARTIAL_CONTENT
 
-        baseline = get_individual_baseline(user.meter_id)
+        baseline = get_individual_baseline(user.id)
         if baseline is None:
             return NO_BASELINE.to_json(), status.HTTP_206_PARTIAL_CONTENT
 
