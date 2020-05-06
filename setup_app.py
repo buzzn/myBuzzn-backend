@@ -3,6 +3,7 @@ from flask_migrate import Migrate
 from flask import Flask
 
 from routes.admin import Admin
+from routes.employee import Employee
 from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
@@ -76,6 +77,7 @@ def setup_app(app_config):
     app.register_blueprint(Admin)
     app.register_blueprint(GroupProfilePictures)
     app.register_blueprint(_PerCapitaConsumption)
+    app.register_blueprint(Employee)
 
     # Routes are called by the user, so they are actually used.
     #pylint: disable=unused-variable
