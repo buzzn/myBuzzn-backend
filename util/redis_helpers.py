@@ -16,3 +16,14 @@ def get_sorted_keys_date_prefix(redis_client, meter_id, date):
 
     return sorted([key.decode('utf-8') for key in
                    redis_client.scan_iter(meter_id + '_' + date + '*', 200)])
+
+
+def get_keys_date_hour_prefix(redis_client, meter_id, date, hour):
+    """ Return all keys in the redis database for a given meter id with
+    the given date and hour  prefix.
+    :param str meter_id: the meter id to prefix the scan with
+    :param str date: the date prefix
+    :param str hour: the hour prefix
+    """
+    return [key.decode('utf-8') for key in
+                   redis_client.scan_iter(meter_id + '_' + date + ' ' + hour + '*')]
