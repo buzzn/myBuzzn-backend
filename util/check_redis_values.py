@@ -23,12 +23,14 @@ def get_readings(meter_id, begin):
     all_keys = sorted([key.decode('utf-8')
                        for key in redis_client.scan_iter(meter_id + '*')])
     for key in all_keys:
-        data = json.loads(redis_client.get(key))
 
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+        if (key[len(meter_id) + 1:].endswith("last")
+                or key[len(meter_id) + 1:].endswith("first")
+                or key[len(meter_id) + 1:].endswith("last_disaggregation")
+                or key.startswith('average_power')):
             continue
+
+        data = json.loads(redis_client.get(key))
 
         if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])

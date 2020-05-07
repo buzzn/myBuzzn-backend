@@ -74,17 +74,19 @@ def get_last_meter_reading_date(meter_id, date):
     end = (timezone.localize(naive_end)).timestamp()
 
     for key in get_sorted_keys(redis_client, meter_id):
+
+        if (key[len(meter_id) + 1:].endswith("last")
+                or key[len(meter_id) + 1:].endswith("first")
+                or key[len(meter_id) + 1:].endswith("last_disaggregation")
+                or key.startswith('average_power')):
+            continue
+
         try:
             data = json.loads(redis_client.get(key))
 
         except Exception as e:
             message = exception_message(e)
             logger.error(message)
-
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
-            continue
 
         if data is not None and data.get('type') == 'reading':
             reading_date = parser.parse(key[len(meter_id)+1:])

@@ -286,23 +286,24 @@ class Task:
         current_hour = (end_next_interval - timedelta(minutes=15)).strftime("%H")
 
         for meter_id in get_all_meter_ids(session):
-            average_power_key = 'average_power_' + meter_id + current_date
+            average_power_key = 'average_power_' + meter_id + '_' + current_date
             power_sum = 0
             divider = 0
             for key in get_keys_date_hour_prefix(self.redis_client, meter_id, current_date,
                                                  current_hour):
+
+                if (key[len(meter_id) + 1:].endswith("last")
+                        or key[len(meter_id) + 1:].endswith("first")
+                        or key[len(meter_id) + 1:].endswith("last_disaggregation")
+                        or key.startswith('average_power')):
+                    continue
+
                 try:
                     data = json.loads(self.redis_client.get(key))
 
                 except Exception as e:
                     message = exception_message(e)
                     logger.error(message)
-
-                if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                         or key[len(meter_id) + 1:].endswith("first")
-                                         or
-                                         key[len(meter_id) + 1:].endswith("last_disaggregation")):
-                    continue
 
                 if data is not None and data.get('type') == 'reading':
                     reading_date = parser.parse(key[len(meter_id) + 1:])

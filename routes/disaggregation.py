@@ -36,12 +36,14 @@ def get_disaggregation(meter_id, begin):
 
     result = {}
     for key in get_sorted_keys(redis_client, meter_id):
-        data = json.loads(redis_client.get(key))
 
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+        if (key[len(meter_id) + 1:].endswith("last")
+                or key[len(meter_id) + 1:].endswith("first")
+                or key[len(meter_id) + 1:].endswith("last_disaggregation")
+                or key.startswith('average_power')):
             continue
+
+        data = json.loads(redis_client.get(key))
 
         if data is not None and data.get('type') == 'disaggregation':
             disaggregation_date = parser.parse(key[len(meter_id)+1:])
@@ -83,12 +85,14 @@ def get_default_disaggregation(meter_id):
         get_sorted_keys_date_prefix(redis_client, meter_id, today)
 
     for key in redis_keys:
-        data = json.loads(redis_client.get(key))
 
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+        if (key[len(meter_id) + 1:].endswith("last")
+                or key[len(meter_id) + 1:].endswith("first")
+                or key[len(meter_id) + 1:].endswith("last_disaggregation")
+                or key.startswith('average_power')):
             continue
+
+        data = json.loads(redis_client.get(key))
 
         if data is not None and data.get('type') == 'disaggregation':
             disaggregation_date = parser.parse(key[len(meter_id)+1:])
