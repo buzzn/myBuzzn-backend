@@ -317,12 +317,13 @@ class Task:
             average = power_sum / divider
             if len(self.redis_client.keys(average_power_key)) == 0:
                 data = {end_next_interval.strftime("%Y-%m-%d %H:%M:%S"): average}
-                self.redis_client.set(average_power_key, json.dumps(data))
-                self.redis_client.expire(average_power_key, int(timedelta(2).total_seconds()))
+
             else:
                 data = json.loads(self.redis_client.get(average_power_key))
                 data[end_next_interval.strftime("%Y-%m-%d %H:%M:%S")] = average
-                self.redis_client.set(average_power_key, json.dumps(data))
+
+            self.redis_client.set(average_power_key, json.dumps(data))
+            self.redis_client.expire(average_power_key, int(timedelta(days=2).total_seconds()))
 
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past. """
