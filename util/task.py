@@ -1,6 +1,6 @@
 import json
 import os
-# import math
+import math
 from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta
@@ -59,12 +59,12 @@ class Task:
         # pylint: disable=global-statement
         global end_next_interval
         # set end_next_interval to end of next quarter-hour
-        #current_time = datetime.utcnow()
-        #nsecs = current_time.minute * 60 + current_time.second + \
-         #       current_time.microsecond * 1e-6
-        #delta = math.ceil(nsecs / 900) * 900 - nsecs
-        #end_next_interval = current_time + timedelta(seconds=delta)
-        end_next_interval = datetime.strptime("2020-05-08 00:00:00.000000", "%Y-%m-%d %H:%M:%S.%f")
+        current_time = datetime.utcnow()
+        nsecs = current_time.minute * 60 + current_time.second + \
+                current_time.microsecond * 1e-6
+        delta = math.ceil(nsecs / 900) * 900 - nsecs
+        end_next_interval = current_time + timedelta(seconds=delta)
+
 
     def login(self):
         """ Authenticate against the discovergy backend. """
@@ -283,7 +283,6 @@ class Task:
     def calculate_average_power(self, session):
         # pylint: disable=global-statement
         global end_next_interval
-        #current_date = datetime.utcnow().strftime("%Y-%m-%d")
         date_interval = (end_next_interval - timedelta(minutes=15)).strftime("%Y-%m-%d")
         hour_interval = (end_next_interval - timedelta(minutes=15)).strftime("%H")
 
@@ -329,7 +328,7 @@ class Task:
                 data[end_next_interval.strftime("%Y-%m-%d %H:%M:%S")] = average
 
             self.redis_client.set(average_power_key, json.dumps(data))
-            self.redis_client.expire(average_power_key, int(timedelta(days=2).total_seconds()))
+            self.redis_client.expire(average_power_key, int(timedelta(days=3).total_seconds()))
 
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past. """
