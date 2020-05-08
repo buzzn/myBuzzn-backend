@@ -310,7 +310,7 @@ class Task:
                     reading_date = parser.parse(key[len(meter_id) + 1:])
                     reading_timestamp = reading_date.timestamp()
 
-                    if ((end_next_interval - timedelta(minutes=15)).timestamp() <= reading_timestamp
+                    if ((end_next_interval - timedelta(minutes=15)).timestamp() < reading_timestamp
                             <= end_next_interval.timestamp()):
                         power_sum += data.get('values').get('power')
                         divider += 1
@@ -319,6 +319,9 @@ class Task:
                 average = power_sum / divider
             else:
                 average = 0
+                message = f"No readings available for {meter_id} between " \
+                          f"{(end_next_interval - timedelta(minutes=15))} and {end_next_interval}"
+                logger.info(message)
 
             if len(self.redis_client.keys(average_power_key)) == 0:
                 data = {end_next_interval.strftime("%Y-%m-%d %H:%M:%S"): average}
