@@ -59,11 +59,12 @@ class Task:
         # pylint: disable=global-statement
         global end_next_interval
         # set end_next_interval to end of next quarter-hour
-        current_time = datetime.utcnow()
-        nsecs = current_time.minute * 60 + current_time.second + \
-                current_time.microsecond * 1e-6
-        delta = math.ceil(nsecs / 900) * 900 - nsecs
-        end_next_interval = current_time + timedelta(seconds=delta)
+        #current_time = datetime.utcnow()
+        #nsecs = current_time.minute * 60 + current_time.second + \
+         #       current_time.microsecond * 1e-6
+        #delta = math.ceil(nsecs / 900) * 900 - nsecs
+        #end_next_interval = current_time + timedelta(seconds=delta)
+        end_next_interval = datetime.strptime("2020-05-08 00:00:00.000000", "%Y-%m-%d %H:%M:%S.%f")
 
     def login(self):
         """ Authenticate against the discovergy backend. """
@@ -314,7 +315,11 @@ class Task:
                         power_sum += data.get('values').get('power')
                         divider += 1
 
-            average = power_sum / divider
+            if divider != 0:
+                average = power_sum / divider
+            else:
+                average = 0
+
             if len(self.redis_client.keys(average_power_key)) == 0:
                 data = {end_next_interval.strftime("%Y-%m-%d %H:%M:%S"): average}
 
