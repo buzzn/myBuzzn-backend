@@ -1,6 +1,6 @@
 import json
 import os
-import math
+# import math
 from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta
@@ -283,15 +283,16 @@ class Task:
     def calculate_average_power(self, session):
         # pylint: disable=global-statement
         global end_next_interval
-        current_date = datetime.utcnow().strftime("%Y-%m-%d")
-        current_hour = (end_next_interval - timedelta(minutes=15)).strftime("%H")
+        #current_date = datetime.utcnow().strftime("%Y-%m-%d")
+        date_interval = (end_next_interval - timedelta(minutes=15)).strftime("%Y-%m-%d")
+        hour_interval = (end_next_interval - timedelta(minutes=15)).strftime("%H")
 
         for meter_id in get_all_meter_ids(session):
-            average_power_key = 'average_power_' + meter_id + '_' + current_date
+            average_power_key = 'average_power_' + meter_id + '_' + date_interval
             power_sum = 0
             divider = 0
-            for key in get_keys_date_hour_prefix(self.redis_client, meter_id, current_date,
-                                                 current_hour):
+            for key in get_keys_date_hour_prefix(self.redis_client, meter_id, date_interval,
+                                                 hour_interval):
 
                 if (key[len(meter_id) + 1:].endswith("last")
                         or key[len(meter_id) + 1:].endswith("first")
