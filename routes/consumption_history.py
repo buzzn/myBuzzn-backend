@@ -2,7 +2,6 @@ import json
 import os
 from datetime import datetime, timedelta
 import logging.config
-from dateutil import parser
 import redis
 from flask import Blueprint, jsonify
 from flask_api import status
@@ -13,7 +12,7 @@ from routes.disaggregation import read_begin_parameter
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required
-from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix
+from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix, get_entry_date
 from util.websocket_provider import get_group_members
 
 
@@ -40,23 +39,16 @@ def get_readings(meter_id, begin):
     result = {}
     for key in get_sorted_keys(redis_client, meter_id):
 
-        if (key[len(meter_id) + 1:].endswith("last")
-                or key[len(meter_id) + 1:].endswith("first")
-                or key[len(meter_id) + 1:].endswith("last_disaggregation")
-                or key.startswith('average_power')):
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None:
             continue
 
-        data = json.loads(redis_client.get(key))
+        # Parse timestamp as int to use consistent timestamps
+        reading_timestamp = int(reading_date.timestamp())
 
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-
-            # Parse timestamp as int to use consistent timestamps
-            reading_timestamp = int(reading_date.timestamp())
-
-            if reading_timestamp >= begin:
-                result[reading_date.strftime(
-                    '%Y-%m-%d %H:%M:%S')] = data.get('values')
+        if reading_timestamp >= begin:
+            result[reading_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
 
     return result
 
@@ -83,18 +75,12 @@ def get_default_readings(meter_id):
 
     for key in redis_keys:
 
-        if (key[len(meter_id) + 1:].endswith("last")
-                or key[len(meter_id) + 1:].endswith("first")
-                or key[len(meter_id) + 1:].endswith("last_disaggregation")
-                or key.startswith('average_power')):
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None:
             continue
 
-        data = json.loads(redis_client.get(key))
-
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-            result[reading_date.strftime(
-                '%Y-%m-%d %H:%M:%S')] = data.get('values')
+        result[reading_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
 
     return result
 

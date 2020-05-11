@@ -5,7 +5,6 @@ from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta
 import logging.config
-from dateutil import parser
 from discovergy.discovergy import Discovergy
 import redis
 from util.error import exception_message
@@ -14,7 +13,7 @@ from util.date_helpers import calc_support_year_start, calc_term_boundaries,\
     calc_end, calc_support_week_start, calc_two_days_back
 from util.sqlite_helpers import get_all_meter_ids, write_baselines,\
     write_savings, write_base_values_or_per_capita_consumption
-from util.redis_helpers import get_keys_date_hour_prefix
+from util.redis_helpers import get_keys_date_hour_prefix, get_entry_date
 
 
 log_file_path = path.join(path.dirname(
@@ -293,27 +292,17 @@ class Task:
             for key in get_keys_date_hour_prefix(self.redis_client, meter_id, date_interval,
                                                  hour_interval):
 
-                if (key[len(meter_id) + 1:].endswith("last")
-                        or key[len(meter_id) + 1:].endswith("first")
-                        or key[len(meter_id) + 1:].endswith("last_disaggregation")
-                        or key.startswith('average_power')):
+                reading_date, data = get_entry_date(self.redis_client, meter_id, key, 'reading')
+
+                if reading_date is None:
                     continue
 
-                try:
-                    data = json.loads(self.redis_client.get(key))
+                reading_timestamp = reading_date.timestamp()
 
-                except Exception as e:
-                    message = exception_message(e)
-                    logger.error(message)
-
-                if data is not None and data.get('type') == 'reading':
-                    reading_date = parser.parse(key[len(meter_id) + 1:])
-                    reading_timestamp = reading_date.timestamp()
-
-                    if ((end_next_interval - timedelta(minutes=15)).timestamp() < reading_timestamp
-                            <= end_next_interval.timestamp()):
-                        power_sum += data.get('values').get('power')
-                        divider += 1
+                if ((end_next_interval - timedelta(minutes=15)).timestamp() < reading_timestamp
+                        <= end_next_interval.timestamp()):
+                    power_sum += data.get('values').get('power')
+                    divider += 1
 
             if divider != 0:
                 average = power_sum / divider

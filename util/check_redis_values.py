@@ -1,8 +1,7 @@
-import json
 import os
 from datetime import datetime
-from dateutil import parser
 import redis
+from util.redis_helpers import get_entry_date
 
 
 redis_host = os.environ['REDIS_HOST']
@@ -24,20 +23,15 @@ def get_readings(meter_id, begin):
                        for key in redis_client.scan_iter(meter_id + '*')])
     for key in all_keys:
 
-        if (key[len(meter_id) + 1:].endswith("last")
-                or key[len(meter_id) + 1:].endswith("first")
-                or key[len(meter_id) + 1:].endswith("last_disaggregation")
-                or key.startswith('average_power')):
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None:
             continue
 
-        data = json.loads(redis_client.get(key))
+        reading_timestamp = reading_date.timestamp()
+        if reading_timestamp >= begin:
+            result[reading_date.strftime('%Y-%d-%m %H:%S:%M')] = data.get('values')
 
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-            reading_timestamp = reading_date.timestamp()
-            if reading_timestamp >= begin:
-                result[reading_date.strftime(
-                    '%Y-%d-%m %H:%S:%M')] = data.get('values')
     return result
 
 

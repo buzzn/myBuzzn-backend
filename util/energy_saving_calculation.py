@@ -1,13 +1,11 @@
 from datetime import datetime, time, timedelta
-import json
 import os
 import logging.config
-from dateutil import parser
 import redis
 import pytz
 from util.error import exception_message
 from util.database import get_engine
-from util.redis_helpers import get_sorted_keys
+from util.redis_helpers import get_sorted_keys, get_entry_date
 
 
 logger = logging.getLogger(__name__)
@@ -75,25 +73,15 @@ def get_last_meter_reading_date(meter_id, date):
 
     for key in get_sorted_keys(redis_client, meter_id):
 
-        if (key[len(meter_id) + 1:].endswith("last")
-                or key[len(meter_id) + 1:].endswith("first")
-                or key[len(meter_id) + 1:].endswith("last_disaggregation")
-                or key.startswith('average_power')):
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None:
             continue
 
-        try:
-            data = json.loads(redis_client.get(key))
+        reading_timestamp = reading_date.timestamp()
 
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-            reading_timestamp = reading_date.timestamp()
-
-            if begin <= reading_timestamp <= end:
-                readings.append(data.get('values')['energy'])
+        if begin <= reading_timestamp <= end:
+            readings.append(data.get('values')['energy'])
 
     if len(readings) > 0:
         return readings[-1]
