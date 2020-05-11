@@ -25,7 +25,7 @@ def get_readings(meter_id, begin):
 
         reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
 
-        if reading_date is None:
+        if reading_date is None or data is None:
             continue
 
         reading_timestamp = reading_date.timestamp()

@@ -37,7 +37,7 @@ def get_disaggregation(meter_id, begin):
 
         disaggregation_date, data = get_entry_date(redis_client, meter_id, key, 'disaggregation')
 
-        if disaggregation_date is None:
+        if disaggregation_date is None or data is None:
             continue
 
         # Parse timestamp as int to use consistent timestamps
@@ -79,7 +79,7 @@ def get_default_disaggregation(meter_id):
 
         disaggregation_date, data = get_entry_date(redis_client, meter_id, key, 'disaggregation')
 
-        if disaggregation_date is None:
+        if disaggregation_date is None or data is None:
             continue
 
         result[disaggregation_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')

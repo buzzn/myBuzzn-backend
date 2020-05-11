@@ -47,7 +47,7 @@ def get_entry_date(redis_client, meter_id, key, entry_type):
             or key[len(meter_id) + 1:].endswith("first")
             or key[len(meter_id) + 1:].endswith("last_disaggregation")
             or key.startswith('average_power')):
-        return None
+        return None, None
 
     try:
         data = json.loads(redis_client.get(key))
@@ -60,4 +60,4 @@ def get_entry_date(redis_client, meter_id, key, entry_type):
         entry_date = parser.parse(key[len(meter_id) + 1:])
         return entry_date, data
 
-    return None
+    return None, None

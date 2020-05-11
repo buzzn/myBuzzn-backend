@@ -64,7 +64,6 @@ def get_last_meter_reading_date(meter_id, date):
     """
 
     readings = []
-    data = None
     naive_begin = datetime.combine(date, time(0, 0, 0))
     naive_end = datetime.combine(date, time(23, 59, 59))
     timezone = pytz.timezone('UTC')
@@ -75,7 +74,7 @@ def get_last_meter_reading_date(meter_id, date):
 
         reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
 
-        if reading_date is None:
+        if reading_date is None or data is None:
             continue
 
         reading_timestamp = reading_date.timestamp()

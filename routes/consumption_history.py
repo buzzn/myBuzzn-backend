@@ -41,7 +41,7 @@ def get_readings(meter_id, begin):
 
         reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
 
-        if reading_date is None:
+        if reading_date is None or data is None:
             continue
 
         # Parse timestamp as int to use consistent timestamps
@@ -77,7 +77,7 @@ def get_default_readings(meter_id):
 
         reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
 
-        if reading_date is None:
+        if reading_date is None or data is None:
             continue
 
         result[reading_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
