@@ -1,5 +1,6 @@
 import json
 import os
+import math
 from os import path
 import time as stdlib_time
 from datetime import datetime, timedelta
@@ -12,6 +13,7 @@ from util.date_helpers import calc_support_year_start, calc_term_boundaries,\
     calc_end, calc_support_week_start, calc_two_days_back
 from util.sqlite_helpers import get_all_meter_ids, write_baselines,\
     write_savings, write_base_values_or_per_capita_consumption
+from util.redis_helpers import get_keys_date_hour_prefix, get_entry_date
 
 
 log_file_path = path.join(path.dirname(
@@ -25,6 +27,7 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 last_data_flush = None
+end_next_interval = None
 
 
 def check_and_nullify_power_value(reading, meter_id):
@@ -51,6 +54,16 @@ class Task:
         self.d = Discovergy(client_name)
         self.redis_client = redis.Redis(
             host=redis_host, port=redis_port, db=redis_db)  # connect to server
+
+        # pylint: disable=global-statement
+        global end_next_interval
+        # set end_next_interval to end of next quarter-hour
+        current_time = datetime.utcnow()
+        nsecs = current_time.minute * 60 + current_time.second + \
+                current_time.microsecond * 1e-6
+        delta = math.ceil(nsecs / 900) * 900 - nsecs
+        end_next_interval = current_time + timedelta(seconds=delta)
+
 
     def login(self):
         """ Authenticate against the discovergy backend. """
@@ -266,6 +279,49 @@ class Task:
                 message = exception_message(e)
                 logger.error(message)
 
+    def calculate_average_power(self, session):
+        # pylint: disable=global-statement
+        global end_next_interval
+        date_interval = (end_next_interval - timedelta(minutes=15)).strftime("%Y-%m-%d")
+        hour_interval = (end_next_interval - timedelta(minutes=15)).strftime("%H")
+
+        for meter_id in get_all_meter_ids(session):
+            average_power_key = 'average_power_' + meter_id + '_' + date_interval
+            power_sum = 0
+            divider = 0
+            for key in get_keys_date_hour_prefix(self.redis_client, meter_id, date_interval,
+                                                 hour_interval):
+
+                reading_date, data = get_entry_date(self.redis_client, meter_id, key, 'reading')
+
+                if reading_date is None or data is None:
+                    continue
+
+                reading_timestamp = reading_date.timestamp()
+
+                if ((end_next_interval - timedelta(minutes=15)).timestamp() < reading_timestamp
+                        <= end_next_interval.timestamp()):
+                    power_sum += data.get('values').get('power')
+                    divider += 1
+
+            if divider != 0:
+                average = power_sum / divider
+            else:
+                average = 0
+                message = f"No readings available for {meter_id} between " \
+                          f"{(end_next_interval - timedelta(minutes=15))} and {end_next_interval}"
+                logger.info(message)
+
+            if len(self.redis_client.keys(average_power_key)) == 0:
+                data = {end_next_interval.strftime("%Y-%m-%d %H:%M:%S"): average}
+
+            else:
+                data = json.loads(self.redis_client.get(average_power_key))
+                data[end_next_interval.strftime("%Y-%m-%d %H:%M:%S")] = average
+
+            self.redis_client.set(average_power_key, json.dumps(data))
+            self.redis_client.expire(average_power_key, int(timedelta(days=3).total_seconds()))
+
     def populate_redis(self):
         """ Populate the redis database with all discovergy data from the past. """
 
@@ -307,6 +363,7 @@ class Task:
             # Populate redis if last data flush was more than 24h ago
             # pylint: disable=global-statement
             global last_data_flush
+            global end_next_interval
 
             # Connect to SQLite database
             session = create_session()
@@ -321,6 +378,10 @@ class Task:
 
             self.write_last_readings(session)
             self.write_last_disaggregations(session)
+
+            if (datetime.utcnow() - end_next_interval) > timedelta(0):
+                self.calculate_average_power(session)
+                end_next_interval = end_next_interval + timedelta(minutes=15)
 
 
 def run():

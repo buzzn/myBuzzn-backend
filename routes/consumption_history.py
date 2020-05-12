@@ -2,7 +2,6 @@ import json
 import os
 from datetime import datetime, timedelta
 import logging.config
-from dateutil import parser
 import redis
 from flask import Blueprint, jsonify
 from flask_api import status
@@ -13,7 +12,7 @@ from routes.disaggregation import read_begin_parameter
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required
-from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix
+from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix, get_entry_date
 from util.websocket_provider import get_group_members
 
 
@@ -39,22 +38,17 @@ def get_readings(meter_id, begin):
 
     result = {}
     for key in get_sorted_keys(redis_client, meter_id):
-        data = json.loads(redis_client.get(key))
 
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None or data is None:
             continue
 
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
+        # Parse timestamp as int to use consistent timestamps
+        reading_timestamp = int(reading_date.timestamp())
 
-            # Parse timestamp as int to use consistent timestamps
-            reading_timestamp = int(reading_date.timestamp())
-
-            if reading_timestamp >= begin:
-                result[reading_date.strftime(
-                    '%Y-%m-%d %H:%M:%S')] = data.get('values')
+        if reading_timestamp >= begin:
+            result[reading_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
 
     return result
 
@@ -80,21 +74,24 @@ def get_default_readings(meter_id):
         get_sorted_keys_date_prefix(redis_client, meter_id, today)
 
     for key in redis_keys:
-        data = json.loads(redis_client.get(key))
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None or data is None:
             continue
 
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-            result[reading_date.strftime(
-                '%Y-%m-%d %H:%M:%S')] = data.get('values')
+        result[reading_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
 
     return result
 
 
 def get_first_and_last_energy_for_date(meter_id, date):
+    """ Returns first and last energy consumption for a given meter_id of today
+    :param str meter_id: the meter id for which to get the values
+    :param datetime date: the date for which to get the values
+    :return: the first and last energy consumption of date mapped to their timestamps
+    :rtype: dict
+    """
     result = {}
 
     try:
@@ -124,6 +121,28 @@ def get_first_and_last_energy_for_date(meter_id, date):
     return result
 
 
+def get_average_power_for_meter_id_and_date(meter_id, date):
+    """ Return date's average power values for the given meter id per 15 minutes.
+    :param str meter_id: the meter id for which to get the values
+    :param datetime date: the date for which to get the values
+    :return: the average power values mapped to their timestamps
+    :rtype: dict
+    """
+    average_power = {}
+
+    try:
+        key_average_power = f"average_power_{meter_id}_{date}"
+        data = json.loads(redis_client.get(key_average_power))
+        average_power = data
+
+    except Exception as e:
+        message = f"No average power available for {meter_id} " \
+                  f"for date {date}: {e}"
+        logger.error(message)
+
+    return average_power
+
+
 def create_member_data(member):
     """ Create a data package for a group member.
     :param dict member: a group member's parameters
@@ -133,19 +152,12 @@ def create_member_data(member):
 
     today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
     member_meter_id = member.get('meter_id')
-    member_consumptions = {}
-    member_powers = {}
 
-    member_readings = get_default_readings(member_meter_id)
+    # Get today's average power values per 15 minutes
+    member_powers = get_average_power_for_meter_id_and_date(member_meter_id, today)
 
-    if member_readings == {}:
-        logger.error('No readings for meter id %s in the database.',
-                     member_meter_id)
-    else:
-        for key in member_readings:
-            member_powers[key] = member_readings[key].get('power')
-        member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
-
+    # Get first and last energy consumption of today
+    member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
 
     return dict(power=member_powers, energy=member_consumptions)
 
@@ -215,44 +227,32 @@ def group_consumption_history():
     if group is None:
         return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
 
-    consumed_power = {}
-    produced_first_meter_power = {}
-    produced_second_meter_power = {}
     group_users = {}
 
     try:
-
-        #today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
+        today = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
 
         # Group community consumption meter
-        readings = get_default_readings(group.group_meter_id)
-        for key in readings:
-            consumed_power[key] = readings[key].get('power')
+        # Get today's average consumed power per 15 minutes
+        consumed_power = get_average_power_for_meter_id_and_date(group.group_meter_id, today)
         # Get first and last group energy consumption of today
-        consumed_energy = get_first_and_last_energy_for_date(group.group_meter_id,
-                                                             datetime.strftime(datetime.utcnow(),
-                                                                               '%Y-%m-%d'))
+        consumed_energy = get_first_and_last_energy_for_date(group.group_meter_id, today)
 
         # First group production meter
-        readings = get_default_readings(group.group_production_meter_id_first)
-        for key in readings:
-            produced_first_meter_power[key] = readings[key].get('power')
-
+        # Get today's average production power for first production meter per 15 minutes
+        produced_first_meter_power = get_average_power_for_meter_id_and_date(
+            group.group_production_meter_id_first, today)
         # Get first and last group energy production of first production meter of today
         produced_first_meter_energy = get_first_and_last_energy_for_date(
-            group.group_production_meter_id_first, datetime.strftime(
-                datetime.utcnow(), '%Y-%m-%d'))
+            group.group_production_meter_id_first, today)
 
         # Second group production meter
-        readings = get_default_readings(group.group_production_meter_id_second)
-        for key in readings:
-            produced_second_meter_power[key] = readings[key].get(
-                'power')
-
+        # Get today's average production power for second production meter per 15 minutes
+        produced_second_meter_power = get_average_power_for_meter_id_and_date(
+            group.group_production_meter_id_second, today)
         # Get first and last group energy production of first production meter of today
         produced_second_meter_energy = get_first_and_last_energy_for_date(
-            group.group_production_meter_id_second, datetime.strftime(
-                datetime.utcnow(), '%Y-%m-%d'))
+            group.group_production_meter_id_second, today)
 
         # Group members
         for member in get_group_members(user_id):

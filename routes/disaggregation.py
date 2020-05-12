@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
-import json
 import os
 import logging.config
-from dateutil import parser
 import redis
 from flask import Blueprint, jsonify, request
 from flask_api import status
@@ -11,7 +9,7 @@ from models.user import User
 from util.database import db
 from util.error import UNKNOWN_USER, UNKNOWN_GROUP
 from util.login import login_required, get_parameters
-from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix
+from util.redis_helpers import get_sorted_keys, get_sorted_keys_date_prefix, get_entry_date
 
 
 logger = logging.getLogger(__name__)
@@ -36,22 +34,17 @@ def get_disaggregation(meter_id, begin):
 
     result = {}
     for key in get_sorted_keys(redis_client, meter_id):
-        data = json.loads(redis_client.get(key))
 
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+        disaggregation_date, data = get_entry_date(redis_client, meter_id, key, 'disaggregation')
+
+        if disaggregation_date is None or data is None:
             continue
 
-        if data is not None and data.get('type') == 'disaggregation':
-            disaggregation_date = parser.parse(key[len(meter_id)+1:])
+        # Parse timestamp as int to use consistent timestamps
+        disaggregation_timestamp = int(disaggregation_date.timestamp())
 
-            # Parse timestamp as int to use consistent timestamps
-            disaggregation_timestamp = int(disaggregation_date.timestamp())
-
-            if disaggregation_timestamp >= begin:
-                result[disaggregation_date.strftime(
-                    '%Y-%m-%d %H:%M:%S')] = data.get('values')
+        if disaggregation_timestamp >= begin:
+            result[disaggregation_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
 
     return result
 
@@ -83,17 +76,13 @@ def get_default_disaggregation(meter_id):
         get_sorted_keys_date_prefix(redis_client, meter_id, today)
 
     for key in redis_keys:
-        data = json.loads(redis_client.get(key))
 
-        if data is not None and (key[len(meter_id) + 1:].endswith("last")
-                                 or key[len(meter_id) + 1:].endswith("first")
-                                 or key[len(meter_id) + 1:].endswith("last_disaggregation")):
+        disaggregation_date, data = get_entry_date(redis_client, meter_id, key, 'disaggregation')
+
+        if disaggregation_date is None or data is None:
             continue
 
-        if data is not None and data.get('type') == 'disaggregation':
-            disaggregation_date = parser.parse(key[len(meter_id)+1:])
-            result[disaggregation_date.strftime(
-                '%Y-%m-%d %H:%M:%S')] = data.get('values')
+        result[disaggregation_date.strftime('%Y-%m-%d %H:%M:%S')] = data.get('values')
 
     return result
 
