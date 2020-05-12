@@ -1,0 +1,39 @@
+Shows the power curve disaggregation from the given starting point for a user.
+---
+tags:
+  - disaggregation
+summary: User disaggregation
+description:
+  Shows the power curve disaggregation from the given starting point for a
+  user.
+operationId: individualDisaggregation
+produces:
+  - application/json
+parameters:
+  - name: begin
+    in: query
+    description:
+      Start time of disaggregation as unix timestamp. Default is two days
+      ago at 00:00:00 am.
+    required: false
+    type: integer
+responses:
+  '200':
+    description: Successful operation
+    schema:
+      id: successful_individual_disaggregation
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: integer
+      example:
+        '2020-01-15 10:01:10':
+          Waschmaschine-1: 0
+          Spülmaschine-1: 0
+          Durchlauferhitzer-2: 0
+          Durchlauferhitzer-3: 0
+          Grundlast-1: 2500000
+          Durchlauferhitzer-1: 0
+  '206':
+    description: No history available

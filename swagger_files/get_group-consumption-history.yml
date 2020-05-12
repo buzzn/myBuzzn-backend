@@ -1,0 +1,118 @@
+Shows the history of power consumption of a group.
+---
+tags:
+  - consumption history
+summary: Group consumption history
+description: Shows the history of power consumption of a group.
+operationId: groupConsumptionHistory
+produces:
+  - application/json
+responses:
+  '200':
+    description: Successful operation
+    schema:
+      id: sucessful_group_consumption_history
+      type: object
+      properties:
+        consumed_energy:
+          description:
+            A dictionary (JSON object) with the first and the latest meter
+            reading (μWh/10) of the day mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            '2020-01-15 00:00:04': 2180256872214000,
+            '2020-01-15 00:47:10': 2180256872214000
+        consumed_power:
+          description:
+            A dictionary (JSON object) with average power consumptions (mW) of 15 minute
+            timeframes mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+          example:
+            '2020-01-15 00:15:00': 224550.0,
+            '2020-01-15 00:30:00': 232000.0,
+            '2020-01-15 00:45:00': 227630.0
+        group_users:
+          description:
+            A dictionary (JSON objects) with the first and the latest
+            meter reading (μWh/10) of the day and average power consumption values
+            (mW) of 15 minutes timeframes of each group user mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              energy:
+                type: object
+                additionalProperties:
+                  type: integer
+              power:
+                type: object
+                additionalProperties:
+                  type: integer
+          example:
+            '1':
+              energy:
+                '2020-01-15 00:00:04': 2180256872214000,
+                '2020-01-15 00:47:10': 2180256872214000
+              power:
+                '2020-01-15 00:15:00': 224550.0,
+                '2020-01-15 00:30:00': 232000.0,
+                '2020-01-15 00:45:00': 227630.0
+            '2':
+              energy:
+                '2020-01-15 00:00:04': 2180256872214000,
+                '2020-01-15 00:47:10': 2180256872214000
+              power:
+                '2020-01-15 00:15:00': 224550.0,
+                '2020-01-15 00:30:00': 232000.0,
+                '2020-01-15 00:45:00': 227630.0
+        produced_first_meter_energy:
+          description:
+            A dictionary (JSON object) with the first and the latest meter
+            reading (μWh/10) of the day mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            '2020-01-15 00:00:04': 2180256872214000,
+            '2020-01-15 00:47:10': 2180256872214000
+        produced_first_meter_power:
+          description:
+            A dictionary (JSON object) with average power productions (mW) of 15 minute
+            timeframes mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+          example:
+            '2020-01-15 00:15:00': 224550.0,
+            '2020-01-15 00:30:00': 232000.0,
+            '2020-01-15 00:45:00': 227630.0
+        produced_second_meter_energy:
+          description:
+            A dictionary (JSON object) with the first and the latest meter
+            reading (μWh/10) of the day mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            '2020-01-15 00:00:04': 2180256872214000,
+            '2020-01-15 00:47:10': 2180256872214000
+        produced_second_meter_power:
+          description:
+            A dictionary (JSON object) with average power productions (mW) of 15 minute
+            timeframes mapped to their timestamps.
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+          example:
+            '2020-01-15 00:15:00': 224550.0,
+            '2020-01-15 00:30:00': 232000.0,
+            '2020-01-15 00:45:00': 227630.0
+  '206':
+    description: No history available

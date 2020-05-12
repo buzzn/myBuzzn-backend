@@ -146,7 +146,6 @@ def create_member_data(member):
             member_powers[key] = member_readings[key].get('power')
         member_consumptions = get_first_and_last_energy_for_date(member_meter_id, today)
 
-
     return dict(power=member_powers, energy=member_consumptions)
 
 
@@ -160,6 +159,7 @@ def individual_consumption_history():
     :return: (a JSON object with each power consumption/meter reading mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: ../swagger_files/get_individual-consumption-history.yml
     """
 
     user_id = get_jwt_identity()
@@ -205,6 +205,7 @@ def group_consumption_history():
     production mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: ../swagger_files/get_group-consumption-history.yml
     """
 
     user_id = get_jwt_identity()

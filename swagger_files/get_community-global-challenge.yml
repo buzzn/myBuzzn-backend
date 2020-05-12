@@ -1,0 +1,22 @@
+Shows the community saving prognosis for today in µWh/10
+---
+tags:
+  - global challenge
+summary: Community global challenge
+description: Shows the community saving prognosis for today in µWh/10.
+operationId: communityGlobalChallenge
+produces:
+  - application/json
+responses:
+  '200':
+    description: Successful operation
+    schema:
+      id: successful_community_global_challenge
+      type: object
+      additionalProperties:
+        type: number
+        format: float
+      example:
+        '2020-02-13 16:20:21': 85184267259376.5
+  '206':
+    description: No history available

@@ -119,6 +119,7 @@ def individual_disaggregation():
     :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: ../swagger_files/get_individual-disaggregation.yml
     """
 
     user_id = get_jwt_identity()
@@ -154,6 +155,7 @@ def group_disaggregation():
     :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: ../swagger_files/get_group-disaggregation.yml
     """
 
     user, group = get_parameters()
