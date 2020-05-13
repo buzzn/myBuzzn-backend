@@ -6,7 +6,7 @@ from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from tests.string_constants import CONSUMPTION, EMPTY_GROUP_CONSUMPTION,\
     EMPTY_RESPONSE, EMPTY_RESPONSE_BYTES, GROUP_CONSUMPTION, INDIVIDUAL_CONSUMPTION, \
-    FIRST_LAST_ENERGY
+    FIRST_LAST_ENERGY, AVERAGE_POWER
 from util.database import db
 
 
@@ -90,10 +90,11 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         db.session.commit()
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
+    @mock.patch('routes.consumption_history.get_average_power_for_meter_id_and_date',
+                return_value=AVERAGE_POWER)
     @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
                 return_value=FIRST_LAST_ENERGY)
-    def test_group_consumption_history(self, get_default_readings,
+    def test_group_consumption_history(self, get_average_power_for_meter_id_and_date,
                                        get_first_and_last_energy_for_date):
         """ Unit tests for group_consumption_history()."""
 
@@ -113,11 +114,12 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), GROUP_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_default_readings',
+    @mock.patch('routes.consumption_history.get_average_power_for_meter_id_and_date',
                 return_value=EMPTY_RESPONSE)
     @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
                 return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_default_readings, get_first_and_last_energy_for_date):
+    def test_parameters(self, get_average_power_for_meter_id_and_date,
+                        get_first_and_last_energy_for_date):
         """ Test handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
