@@ -9,6 +9,7 @@ flask_migrate
 flask_sqlalchemy
 flask_socketio
 flask_testing
+flask_swagger
 pylint
 blinker
 redis
