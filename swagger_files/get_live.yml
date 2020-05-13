@@ -1,0 +1,151 @@
+Live data via websocket
+---
+tags:
+  - live data via websocket
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The user's id.
+      gender:
+        type: string
+        description: The user's gender
+        enum:
+          - MALE
+          - FEMALE
+      first_name:
+        type: string
+        description: The user's first name.
+        maxLength: 33
+      name:
+        type: string
+        description: The user's name.
+        maxLength: 33
+      nick:
+        type: string
+        maxLength: 33
+        description: The user's nick name.
+      mail:
+        type: string
+        maxLength: 33
+        description: The user's mail address.
+      activation_token:
+        type: string
+        maxLength: 33
+        description: The user's activation token
+      password:
+        type: string
+        maxLength: 333
+        description: The user's password
+      state:
+        type: string
+        description: The user account's state in its lifecycle
+        enum:
+          - ACTIVATION_PENDING
+          - PASSWORT_RESET_PENDING
+          - ACTIVE
+          - DEACTIVATED
+      role:
+        type: string
+        description:
+          The role of a user account. This may privilege the user for specific
+          actions.
+        enum:
+          - LOCAL_POWER_TAKER
+          - ADMINISTRATOR
+      meter_id:
+        type: string
+        description: The id of the user's meter.
+        maxLength: 32
+      inhabitants:
+        type: integer
+        description: The number of people living in the flat.
+      flat_size:
+        type: number
+        format: float
+        description: The user's flat size in m^2.
+      group_id:
+        $ref: '#/definitions/Group/properties/id'
+      password_reset_token:
+        type: string
+        maxLength: 33
+      password_reset_token_expires:
+        type: string
+        format: date-time
+      avatar:
+        type: string
+        format: binary
+        description: The user's avatar encoded in base64.
+      baseline:
+        type: integer
+        description: The user's baseline.
+      baseline_state:
+        type: string
+        description: the user's baseline state
+        enum:
+          - READY
+          - WAITING_FOR_DATA
+          - NO_READINGS_AVAILABLE
+      registration_date:
+        type: string
+        format: date-time
+        description: The user's registration date.
+  Group:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+        maxLength: 100
+      group_meter_id:
+        type: string
+        maxLength: 32
+      group_production_meter_id_first:
+        type: string
+        maxLength: 32
+      group_production_meter_id_second:
+        type: string
+        maxLength: 32
+summary: ''
+description: ''
+operationId: liveData
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: user's meter_id
+    required: true
+    schema:
+      id: user_meter_id
+      type: object
+      properties:
+        meter_id:
+          type: string
+responses:
+  '200':
+    description: Successful operation
+    schema:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        group_production:
+          type: integer
+        group_users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                $ref: '#/definitions/User/properties/id'
+              meter_id:
+                $ref: '#/definitions/User/properties/meter_id'
+              consumption:
+                type: integer
+              power:
+                type: integer

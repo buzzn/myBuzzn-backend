@@ -1,0 +1,39 @@
+Sets the user's profile stats.
+---
+tags:
+  - profile
+summary: Updates profile
+description: Sets the user's profile stats.
+operationId: updateProfile
+consumes:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: profile stats to update
+    schema:
+      id: user_stats
+      type: object
+      properties:
+        flatSize:
+          type: number
+          format: float
+        inhabitants:
+          type: integer
+        nick:
+          type: string
+        avatar:
+          type: string
+responses:
+  '200':
+    description: Validation passed
+  '400':
+    description: Validation failed
+    schema:
+      id: failed_put_profile
+      type: object
+      properties:
+        errorName:
+          type: string
+        errorDescription:
+          type: string

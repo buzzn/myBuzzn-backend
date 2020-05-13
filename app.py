@@ -5,9 +5,10 @@ from os import path
 import logging.config
 from threading import Lock
 import eventlet
-from flask import render_template, Response, request, session
+from flask import render_template, Response, request, session, jsonify
 from flask_api import status
 from flask_socketio import SocketIO, emit
+from flask_swagger import swagger
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message
@@ -46,8 +47,19 @@ wp = WebsocketProvider()
 clients = {}
 
 
+@app.route("/spec")
+def spec():
+    swag = swagger(app)
+    swag['info']['version'] = "1.0"
+    swag['info']['title'] = "myBuzzn App API"
+    swag['info']['description'] = "An app to investigate your power " \
+                                  "consumption habits for BUZZN customers."
+    return jsonify(swag)
+
+
 @app.route('/live', methods=['GET'])
 def live():
+    """ swagger_from_file: ../swagger_files/get_live.yml """
     meter_id = request.args.get('meter_id', default=None, type=str)
     if meter_id is None:
         return NO_METER_ID.to_json(), status.HTTP_400_BAD_REQUEST
