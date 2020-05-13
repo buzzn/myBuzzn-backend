@@ -176,22 +176,26 @@ def individual_consumption_history():
 
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
+
     if user is None:
         return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
     begin = read_begin_parameter()
 
     result = {}
-    power = {}
     energy = {}
 
     try:
         if begin is None:
             readings = get_default_readings(user.meter_id)
+            begin = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
         else:
             readings = get_readings(user.meter_id, begin)
+            begin = datetime.strftime(datetime.datetime.fromtimestamp(begin).strftime(), '%Y-%m-%d')
+
         for key in readings:
-            power[key] = readings[key].get('power')
             energy[key] = readings[key].get('energy')
+
+        power = get_average_power_for_meter_id_and_date(user.meter_id, begin)
 
         # Return result
         result['energy'] = energy
