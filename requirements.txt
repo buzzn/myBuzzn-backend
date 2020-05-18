@@ -10,7 +10,7 @@ flask_sqlalchemy
 flask_socketio
 flask_testing
 flask_swagger
-swagger-ui
+swagger-ui-py
 pylint
 blinker
 redis

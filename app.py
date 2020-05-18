@@ -9,6 +9,7 @@ from flask import render_template, Response, request, session, jsonify
 from flask_api import status
 from flask_socketio import SocketIO, emit
 from flask_swagger import swagger
+from swagger_ui import flask_api_doc
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message
@@ -45,6 +46,8 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
+flask_api_doc(app, config_url='http://mybuzzn-backend-staging.buzzn.net/spec',
+              url_prefix='/api/doc', title='myBuzzn App API')
 
 
 @app.route("/spec")
@@ -54,6 +57,7 @@ def spec():
     swag['info']['title'] = "myBuzzn App API"
     swag['info']['description'] = "An app to investigate your power " \
                                   "consumption habits for BUZZN customers."
+
     return jsonify(swag)
 
 
