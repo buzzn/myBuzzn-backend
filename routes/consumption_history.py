@@ -168,7 +168,7 @@ def create_member_data(member):
 def individual_consumption_history():
     """ Shows the history of consumption of the given time interval in mW and
     the meter readings in μWh.
-    :param int begin: start value as unixtime, default is yesterday at 00:00:00
+    :param int begin: start value as unixtime, default is today at 00:00:00
     :return: (a JSON object with each power consumption/meter reading mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
@@ -182,18 +182,14 @@ def individual_consumption_history():
     begin = read_begin_parameter()
 
     result = {}
-    #energy = {}
 
     try:
         if begin is None:
-            #readings = get_default_readings(user.meter_id)
+
             begin = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
         else:
-            #readings = get_readings(user.meter_id, begin)
             begin = datetime.strftime(datetime.fromtimestamp(begin), '%Y-%m-%d')
 
-        #for key in readings:
-            #energy[key] = readings[key].get('energy')
         energy = get_first_and_last_energy_for_date(user.meter_id, begin)
         power = get_average_power_for_meter_id_and_date(user.meter_id, begin)
 
@@ -212,11 +208,7 @@ def individual_consumption_history():
 @GroupConsumptionHistory.route('/group-consumption-history', methods=['GET'])
 @login_required
 def group_consumption_history():
-    """ Shows the history of consumption of the given time interval in mW.
-    :param int begin: start value as unixtime, default is yesterday at 00:00:00
-    :param str tics: time distance between returned readings with possible
-    values 'raw', 'three_minutes', 'fifteen_minutes', 'one_hour', 'one_day',
-    'one_week', 'one_month', 'one_year' (default is 'one_hour')
+    """ Shows the history of consumption of today in mW.
     :return: (a JSON object with each meter reading/power consumption/power
     production mapped to its timestamp, 200)
     or ({}, 206) if there is no history
