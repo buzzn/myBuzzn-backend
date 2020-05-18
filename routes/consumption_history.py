@@ -182,19 +182,19 @@ def individual_consumption_history():
     begin = read_begin_parameter()
 
     result = {}
-    energy = {}
+    #energy = {}
 
     try:
         if begin is None:
-            readings = get_default_readings(user.meter_id)
+            #readings = get_default_readings(user.meter_id)
             begin = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
         else:
-            readings = get_readings(user.meter_id, begin)
-            begin = datetime.strftime(datetime.datetime.fromtimestamp(begin).strftime(), '%Y-%m-%d')
+            #readings = get_readings(user.meter_id, begin)
+            begin = datetime.strftime(datetime.fromtimestamp(begin), '%Y-%m-%d')
 
-        for key in readings:
-            energy[key] = readings[key].get('energy')
-
+        #for key in readings:
+            #energy[key] = readings[key].get('energy')
+        energy = get_first_and_last_energy_for_date(user.meter_id, begin)
         power = get_average_power_for_meter_id_and_date(user.meter_id, begin)
 
         # Return result
