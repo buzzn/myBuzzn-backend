@@ -46,7 +46,7 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
-flask_api_doc(app, config_url='https://petstore.swagger.io/v2/swagger.json',
+flask_api_doc(app, config_path='swagger_files/swagger.yaml',
               url_prefix='/api/doc', title='myBuzzn App API')
 
 
