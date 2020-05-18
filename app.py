@@ -46,11 +46,11 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
-flask_api_doc(app, config_url='http://mybuzzn-backend-staging.buzzn.net/spec/swagger.json',
+flask_api_doc(app, config_url='http://mybuzzn-backend-staging.buzzn.net/api/doc/swagger.json',
               url_prefix='/api/doc', title='myBuzzn App API')
 
 
-@app.route("/spec/swagger.json")
+@app.route("/api/doc/swagger.json")
 def spec():
     swag = swagger(app, from_file_keyword='swagger_from_file')
     swag['info']['version'] = "1.0"
