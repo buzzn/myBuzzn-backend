@@ -59,7 +59,7 @@ def spec():
 
 @app.route('/live', methods=['GET'])
 def live():
-    """ swagger_from_file: ../swagger_files/get_live.yml """
+    """ swagger_from_file: swagger_files/get_live.yml """
     meter_id = request.args.get('meter_id', default=None, type=str)
     if meter_id is None:
         return NO_METER_ID.to_json(), status.HTTP_400_BAD_REQUEST

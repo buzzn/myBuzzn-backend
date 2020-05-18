@@ -20,7 +20,7 @@ Profile = Blueprint('Profile', __name__)
 @jwt_required
 def profile():
     """Gets all the profile data.
-    swagger_from_file: ../swagger_files/get_profile.yml
+    swagger_from_file: swagger_files/get_profile.yml
     """
     user_id = get_jwt_identity()
     target_user = User.query.filter_by(id=user_id).first()
@@ -69,7 +69,7 @@ def put_profile():
     :param int flatSize: The user's new flat size.
     :param str inhabitants: The flat's new inhabitants of the user.
     :param int name: The user's new name.
-    swagger_from_file: ../swagger_files/put_profile.yml
+    swagger_from_file: swagger_files/put_profile.yml
     """
 
     user_id = get_jwt_identity()

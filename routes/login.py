@@ -44,7 +44,7 @@ def login():
       200: If the login was successful.
       401: If either user name was not found or password does not match.
       404: If the useraccount is not active.
-    swagger_from_file: ../swagger_files/post_login.yml
+    swagger_from_file: swagger_files/post_login.yml
     """
     j = request.get_json(force=True)
     user_requested = j['user'].lower()

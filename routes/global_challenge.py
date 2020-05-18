@@ -97,7 +97,7 @@ def individual_global_challenge():
     :returns: (a JSON object where the saving is mapped to the timestamp, 200) or
     ({}, 206) if there is no value
     :rtype: tuple
-    swagger_from_file: ../swagger_files/get_individual-global-challenge.yml
+    swagger_from_file: swagger_files/get_individual-global-challenge.yml
     """
 
     user_id = get_jwt_identity()
@@ -133,7 +133,7 @@ def community_global_challenge():
     :return: (a JSON object where the saving is mapped to the timestamp, 200)
     or ({}, 206) if there is no value
     :rtype: tuple
-    swagger_from_file: ../swagger_files/get_community-global-challenge.yml
+    swagger_from_file: swagger_files/get_community-global-challenge.yml
     """
 
     result = {}

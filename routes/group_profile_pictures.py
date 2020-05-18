@@ -41,7 +41,7 @@ def get_group_members(user_id):
 def group_profile_pictures():
     """ Get all profile pictures of the user's group, together with their user
     ids.
-    swagger_from_file: ../swagger_files/get_assets_group-profile-pictures.yml
+    swagger_from_file: swagger_files/get_assets_group-profile-pictures.yml
     """
 
     user_id = get_jwt_identity()

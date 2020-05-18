@@ -43,7 +43,7 @@ def per_capita_consumption():
     :returns: (a JSON object where the moving average is mapped to the
     timestamp, 200) or ({}, 206) if there is no value
     :rtype: tuple
-    swagger_from_file: ../swagger_files/get_per-capita-consumption.yml
+    swagger_from_file: swagger_files/get_per-capita-consumption.yml
     """
 
     user_id = get_jwt_identity()
