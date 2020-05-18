@@ -49,7 +49,7 @@ clients = {}
 
 @app.route("/spec")
 def spec():
-    swag = swagger(app)
+    swag = swagger(app, from_file_keyword='swagger_from_file')
     swag['info']['version'] = "1.0"
     swag['info']['title'] = "myBuzzn App API"
     swag['info']['description'] = "An app to investigate your power " \
