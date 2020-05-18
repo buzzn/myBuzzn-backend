@@ -185,7 +185,6 @@ def individual_consumption_history():
 
     try:
         if begin is None:
-
             begin = datetime.strftime(datetime.utcnow(), '%Y-%m-%d')
         else:
             begin = datetime.strftime(datetime.fromtimestamp(begin), '%Y-%m-%d')
