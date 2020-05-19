@@ -23,6 +23,7 @@ class RoleType(Enum):
     """
     LOCAL_POWER_TAKER = 'Local powertaker in a local pool'
     ADMINISTRATOR = 'Administrator'
+    EMPLOYEE = 'Buzzn Employee'
 
 
 class StateType(Enum):
@@ -33,8 +34,18 @@ class StateType(Enum):
     ACTIVE = 'User account is active.'
     DEACTIVATED = 'User account is deactivated'
 
+
+class BaselineStateType(Enum):
+    """Indicates the user's baseline state.
+        """
+    WAITING_FOR_DATA = 'Waiting for the data to calculate the baseline'
+    NO_READINGS_AVAILABLE = 'The data to calculate the baseline is not available'
+    READY = 'The baseline is available'
+
 # Maybe setters should not count as public.
 #pylint: disable=too-many-public-methods
+
+
 class User(db.Model):
     """Represents a user account in the backend.
     """
@@ -84,6 +95,9 @@ class User(db.Model):
     password_reset_token = db.Column(db.String(33), unique=True)
     password_reset_token_expires = db.Column(db.DateTime)
     avatar = db.Column(db.LargeBinary)
+    baseline = db.Column(db.Integer)
+    registration_date = db.Column(db.DateTime)
+    baseline_state = db.Column(db.Enum(BaselineStateType))
 
     # Plain value constructor, too many arguments is ok here
     #pylint: disable=too-many-arguments

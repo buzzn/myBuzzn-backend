@@ -8,7 +8,6 @@ import eventlet
 from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
-from models.user import User
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message
@@ -82,7 +81,10 @@ def connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
-    clients[request.sid] = {'meter_id': session['meter_id']}
+    meter_id = request.args.get('meter_id', default=None, type=str)
+    if meter_id is None:
+        meter_id = session['meter_id']
+    clients[request.sid] = {'meter_id': meter_id}
     emit('live_data', {'data': 'Connected with sid ' +
                                request.sid}, room=request.sid)
 

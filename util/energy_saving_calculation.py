@@ -1,14 +1,11 @@
 from datetime import datetime, time, timedelta
-import json
 import os
 import logging.config
-from dateutil import parser
 import redis
 import pytz
-from models.user import User
 from util.error import exception_message
 from util.database import get_engine
-from util.redis_helpers import get_sorted_keys
+from util.redis_helpers import get_sorted_keys, get_entry_date
 
 
 logger = logging.getLogger(__name__)
@@ -16,12 +13,6 @@ redis_host = os.environ['REDIS_HOST']
 redis_port = os.environ['REDIS_PORT']
 redis_db = os.environ['REDIS_DB']
 redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
-
-
-def get_all_user_meter_ids(session):
-    """ Get all user meter ids from sqlite database. """
-
-    return [meter_id[0] for meter_id in session.query(User.meter_id).all()]
 
 
 def calc_ratio_values(start):
@@ -73,7 +64,6 @@ def get_last_meter_reading_date(meter_id, date):
     """
 
     readings = []
-    data = None
     naive_begin = datetime.combine(date, time(0, 0, 0))
     naive_end = datetime.combine(date, time(23, 59, 59))
     timezone = pytz.timezone('UTC')
@@ -81,22 +71,23 @@ def get_last_meter_reading_date(meter_id, date):
     end = (timezone.localize(naive_end)).timestamp()
 
     for key in get_sorted_keys(redis_client, meter_id):
-        try:
-            data = json.loads(redis_client.get(key))
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-        if data is not None and data.get('type') == 'reading':
-            reading_date = parser.parse(key[len(meter_id)+1:])
-            reading_timestamp = reading_date.timestamp()
-            if begin <= reading_timestamp <= end:
-                readings.append(data.get('values')['energy'])
+
+        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+        if reading_date is None or data is None:
+            continue
+
+        reading_timestamp = reading_date.timestamp()
+
+        if begin <= reading_timestamp <= end:
+            readings.append(data.get('values')['energy'])
 
     if len(readings) > 0:
         return readings[-1]
 
-    logger.info('No last reading available for meter id %s on %s',
-                meter_id, str(date))
+    message = 'No last reading available for meter id {} on {}'.format(
+        meter_id, str(date))
+    logger.info(message)
     return None
 
 
@@ -116,8 +107,9 @@ def calc_energy_consumption_last_term(meter_id, start):
     first_meter_reading = get_last_meter_reading_date(meter_id, begin)
 
     if last_meter_reading is None or first_meter_reading is None:
-        logger.info('No energy consumption available for %s between %s and %s',
-                    meter_id, str(begin), str(end))
+        message = 'No energy consumption available for {} between {} and {}'.format(
+            meter_id, str(begin), str(end))
+        logger.info(message)
         return None
 
     return last_meter_reading - first_meter_reading
@@ -138,8 +130,9 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     first_meter_reading = get_last_meter_reading_date(meter_id, start)
 
     if last_meter_reading is None or first_meter_reading is None:
-        logger.info('No energy consumption available for %s between %s and %s',
-                    meter_id, str(start), str(end))
+        message = 'No energy consumption available for {} between {} and {}'.format(
+            meter_id, str(start), str(end))
+        logger.info(message)
         return None
 
     return last_meter_reading - first_meter_reading
@@ -164,7 +157,7 @@ def calc_estimated_energy_consumption(meter_id, start):
     if energy_consumption_last_term is None or energy_consumption_ongoing_term is None:
         message = 'No estimated energy consumption available for meter_id {} from {} on'.format(
             meter_id, str(start))
-        logger.error(message)
+        logger.info(message)
         return None
 
     return (1 - ratio_values) * energy_consumption_last_term + energy_consumption_ongoing_term
@@ -190,38 +183,3 @@ def calc_estimated_energy_saving(meter_id, start):
         return None
 
     return energy_consumption_last_term - estimated_energy_consumption
-
-
-def estimate_energy_saving_each_user(start, session):
-    """ Calculate the estimated energy saving for each user.
-    :param datetime.date start: the start date of the given term
-    :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :returns: the estimated energy saving of each user mapped to their meter id in the given term
-    :rtype: dict
-    """
-
-    savings = dict()
-    for meter_id in get_all_user_meter_ids(session):
-        saving = calc_estimated_energy_saving(meter_id, start)
-        savings[meter_id] = saving
-
-    return savings
-
-
-def estimate_energy_saving_all_users(start, session):
-    """ Calculate the estimated energy saving of all users by summing up all
-    last term energy consumptions and subtracting all estimated energy
-    consumptions.
-    :param datetime.date start: the start date of the given term
-    :param sqlalchemy.orm.scoping.scoped_session session: the database session
-    :returns: the estimated energy saving of all users in the given term
-    :rtype: float
-    """
-
-    savings = 0.0
-    for meter_id in get_all_user_meter_ids(session):
-        saving = calc_estimated_energy_saving(meter_id, start)
-        if saving is not None:
-            savings += saving
-
-    return savings

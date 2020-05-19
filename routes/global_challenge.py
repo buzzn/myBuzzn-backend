@@ -4,7 +4,6 @@ from flask_api import status
 from flask_jwt_extended import get_jwt_identity
 from models.user import User
 from models.savings import UserSaving, CommunitySaving
-from models.baseline import BaseLine
 from util.database import db
 from util.error import UNKNOWN_USER, NO_GLOBAL_CHALLENGE, NO_BASELINE, exception_message
 from util.login import login_required
@@ -31,7 +30,8 @@ def get_individual_saving(meter_id):
         for row in db.session.query(UserSaving) \
                 .filter(UserSaving.meter_id == meter_id).\
                 order_by(UserSaving.timestamp.desc()).all():
-            query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
+            query_result.append(
+                (row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
 
         individual_saving = query_result[0]
 
@@ -45,27 +45,17 @@ def get_individual_saving(meter_id):
         return None
 
 
-def get_individual_baseline(meter_id):
+def get_individual_baseline(user_id):
     """ Retrieve the last baseline value for the given meter id from the SQLite
     database.
-    :param str meter_id: the user's meter id
-    :returns: the last baseline value together with its timestamp or None if
-    there are no values
-    :rtype: dict or type(None) if there are no values
+    :param str user_id: the user's id
+    :returns: the user's baseline value
+    :rtype: int or type(None) in case of error
     """
 
     try:
-        # Query last baseline value for the given meter id
-        query_result = []
-        for row in db.session.query(BaseLine) \
-                .filter(BaseLine.meter_id == meter_id).order_by(BaseLine.timestamp.desc()).all():
-            query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.baseline))
-
-        individual_baseline = query_result[0]
-
-        timestamp = individual_baseline[0]
-        baseline = individual_baseline[1]
-        return {timestamp: baseline}
+        user = db.session.query(User).filter_by(id=user_id).first()
+        return user.baseline
 
     except Exception as e:
         message = exception_message(e)
@@ -85,7 +75,8 @@ def get_community_saving():
         query_result = []
         for row in db.session.query(CommunitySaving).\
                 order_by(CommunitySaving.timestamp.desc()).all():
-            query_result.append((row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
+            query_result.append(
+                (row.timestamp.strftime("%Y-%m-%d %H:%M:%S"), row.saving))
 
         community_saving = query_result[0]
 
@@ -120,7 +111,7 @@ def individual_global_challenge():
         if saving is None:
             return NO_GLOBAL_CHALLENGE.to_json(), status.HTTP_206_PARTIAL_CONTENT
 
-        baseline = get_individual_baseline(user.meter_id)
+        baseline = get_individual_baseline(user.id)
         if baseline is None:
             return NO_BASELINE.to_json(), status.HTTP_206_PARTIAL_CONTENT
 

@@ -3,6 +3,7 @@ from flask_migrate import Migrate
 from flask import Flask
 
 from routes.admin import Admin
+from routes.employee import Employee
 from routes.consumption_history import IndividualConsumptionHistory
 from routes.consumption_history import GroupConsumptionHistory
 from routes.disaggregation import IndividualDisaggregation
@@ -13,7 +14,7 @@ from routes.set_password import SetPassword
 from routes.reset_password import ResetPassword
 from routes.login import Login
 from routes.group_profile_pictures import GroupProfilePictures
-from routes.per_capita_consumption import PerCapitaConsumption
+from routes.per_capita_consumption import _PerCapitaConsumption
 
 from util.database import db
 from util.error import UNKNOWN_RESOURCE
@@ -55,8 +56,7 @@ def setup_app(app_config):
     from models.group import Group
     from models.loadprofile import LoadProfileEntry
     from models.savings import UserSaving, CommunitySaving
-    from models.baseline import BaseLine
-    from models.pkv import PKV
+    from models.per_capita_consumption import PerCapitaConsumption
     Migrate(app, db)
 
     # Login stuff
@@ -76,7 +76,8 @@ def setup_app(app_config):
     app.register_blueprint(SetPassword)
     app.register_blueprint(Admin)
     app.register_blueprint(GroupProfilePictures)
-    app.register_blueprint(PerCapitaConsumption)
+    app.register_blueprint(_PerCapitaConsumption)
+    app.register_blueprint(Employee)
 
     # Routes are called by the user, so they are actually used.
     #pylint: disable=unused-variable
