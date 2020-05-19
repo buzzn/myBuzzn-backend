@@ -44,7 +44,7 @@ def setup_app(app_config):
 
         def __init__(self, *args, **kwargs):
             super(JsonDefault, self).__init__(*args, **kwargs)
-            #self.mimetype = 'application/json'
+            self.mimetype = 'application/json'
 
     app.response_class = JsonDefault
 
