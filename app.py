@@ -46,7 +46,7 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
-config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.yml')
+config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.json')
 api_doc(app, config_path=config_path,
         url_prefix='/api/doc', title='myBuzzn App API')
 
