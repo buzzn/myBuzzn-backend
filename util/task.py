@@ -13,8 +13,7 @@ from util.date_helpers import calc_support_year_start, calc_term_boundaries,\
     calc_end, calc_support_week_start, calc_two_days_back
 from util.sqlite_helpers import get_all_meter_ids, write_baselines,\
     write_savings, write_base_values_or_per_capita_consumption
-from util.redis_helpers import get_keys_date_hour_prefix, get_entry_date, \
-    get_sorted_keys_date_prefix
+from util.redis_helpers import get_keys_date_hour_prefix, get_entry_date
 
 
 log_file_path = path.join(path.dirname(
@@ -376,16 +375,6 @@ class Task:
                 write_baselines(session)
                 write_savings(session)
                 write_base_values_or_per_capita_consumption(session)
-
-                for key in get_sorted_keys_date_prefix(self.redis_client, "EASYMETER_60327599",
-                                                       "2020-05-10 "):
-                    data = json.loads(self.redis_client.get(key))
-                    print(f"{key}: {data}")
-
-                for key in get_sorted_keys_date_prefix(self.redis_client, "EASYMETER_60404852",
-                                                       "2020-05-10 "):
-                    data = json.loads(self.redis_client.get(key))
-                    print(f"{key}: {data}")
 
             self.write_last_readings(session)
             self.write_last_disaggregations(session)

@@ -9,7 +9,7 @@ from flask import render_template, Response, request, session, jsonify
 from flask_api import status
 from flask_socketio import SocketIO, emit
 from flask_swagger import swagger
-from swagger_ui import flask_api_doc
+from swagger_ui import api_doc
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message
@@ -46,8 +46,9 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
-flask_api_doc(app, config_path='http://mybuzzn-backend-staging.buzzn.net/spec/swagger.json',
-              url_prefix='/api/doc', title='myBuzzn App API')
+config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.yml')
+api_doc(app, config_path=config_path,
+        url_prefix='/api/doc', title='myBuzzn App API')
 
 
 @app.route("/spec/swagger.json")

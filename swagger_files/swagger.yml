@@ -1,0 +1,963 @@
+swagger: '2.0'
+info:
+  description: An app to investigate your power consumption habits for BUZZN customers.
+  version: 1.0.0
+  title: myBuzzn App
+  contact:
+    email: team@buzzn.net
+tags:
+  - name: user login
+    description: Login and Logout
+  - name: hints
+    description: Operations about hints
+  - name: challenges
+    description: Operation about challenges
+  - name: consumption history
+    description: Operations about consumption history
+  - name: disaggregation
+    description: Operations about disaggregation
+  - name: profile
+    description: Operations about profile
+  - name: group profile pictures
+    description: Operations about group profile pictures
+  - name: global challenge
+    description: Operations about global challenge
+  - name: per capita consumption
+    description: Operations about per capita consumption
+  - name: live data via websocket
+schemes:
+  - http
+paths:
+  /login:
+    post:
+      tags:
+        - user login
+      summary: ''
+      description: ''
+      operationId: login
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: user credentials
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                description: The account's mail address.
+              password:
+                type: string
+                description: The account's password.
+            example:
+              user: user@example.com
+              password: example_password
+      responses:
+        '200':
+          description: Successful login
+          schema:
+            type: object
+            properties:
+              sessionToken:
+                type: string
+                description: The session token.
+        '401':
+          description: Username does not exist or password is incorrect
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /logout:
+    get:
+      tags:
+        - user login
+      summary: ''
+      description: Invalidates the user's session
+      responses:
+        '200':
+          description: User was logged in and the session was invalidated
+  /hints:
+    get:
+      tags:
+        - hints
+      summary: Returns all available hints
+      description: Gets all the hints how to save power available for the user.
+      operationId: getHints
+      produces:
+        - array
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                icon:
+                  type: string
+                headline:
+                  type: string
+                description:
+                  type: string
+  '/hint/mark-read/{id}':
+    post:
+      tags:
+        - hints
+      summary: Marks a hint as read
+      description: Marks the given hint as read by the user.
+      operationId: markHintRead
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          description: The id of the read hint.
+          required: true
+      responses:
+        '200':
+          description: Hint exists and was marked read
+        '400':
+          description: Hint does not exist
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /challenges:
+    get:
+      tags:
+        - challenges
+      summary: List available challenges
+      description: Gets all the challenges available for the user.
+      operationId: getChallenges
+      produces:
+        - array
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: The challenge's id.
+                name:
+                  type: string
+                  description: The challenge's name.
+                description:
+                  type: string
+                  description: The challenge's description.
+                total:
+                  type: integer
+                  description: Counts how often this challenge has been run by the user.
+                succeeded:
+                  type: integer
+                  description: >-
+                    Counts how often this challenge has been completed
+                    successfully by the user. Always < total.
+        '204':
+          description: No challenge available
+  '/challenge/start/{id}':
+    get:
+      tags:
+        - challenges
+      summary: Start a challenge
+      description: Starts the specified challenge.
+      operationId: startChallenge
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          description: The id of the challenge to start
+          required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Challenge id is not valid
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /challenges/status:
+    get:
+      tags:
+        - challenges
+      summary: Get status of running challenge(s)
+      description: Shows the current running challenge.
+      operationId: getChallengesStatus
+      produces:
+        - array
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: The id of the running challenge.
+                progress:
+                  type: number
+                  format: float
+                  description: >-
+                    A value indicating the distance to the target, usually in
+                    kWh.
+                expiresAt:
+                  type: integer
+                  description: Seconds left until the challenge ends.
+                status:
+                  type: string
+                  description: >-
+                    Indicates the challenge's state, i.e. running, failed or
+                    succeeded.
+                  enum:
+                    - running
+                    - failed
+                    - succeeded
+              example:
+                id: 1
+                progress: 0.8
+                expiresAt: 72032
+                status: running
+        '204':
+          description: No challenge is running
+  /challenges/quit:
+    post:
+      tags:
+        - challenges
+      summary: Quit a challenge
+      description: >-
+        This can be used to abort a running challenge or acknowledge the failure
+        or success of an ended challenge.
+      operationId: quitChallenge
+      parameters:
+        - in: body
+          name: body
+          description: The id of the challenge to quit
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+      responses:
+        '200':
+          description: Challenge was quit
+        '404':
+          description: 'No such challenge is running, has failed or succeeded recently'
+  /individual-consumption-history:
+    get:
+      tags:
+        - consumption history
+      summary: User consumption history
+      description:
+        Shows the history of power consumption from the given starting point of
+        a user.
+      operationId: userConsumptionHistory
+      produces:
+        - application/json
+      parameters:
+        - name: begin
+          in: query
+          description:
+            Start time of consumption as unix timestamp. Default is yesterday at
+            00:00:00 am.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            properties:
+              energy:
+                description:
+                  A dictionary (JSON object) with each meter reading (μWh/10)
+                  mapped to its timestamp.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 10:00:04': 2180256872214000
+                  '2020-01-15 10:01:10': 2180256872214000
+              power:
+                description:
+                  A dictionary (JSON object) with each power consumption (mW)
+                  mapped to its timestamp.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 10:00:04': 0
+                  '2020-01-15 10:01:10': 0
+        '206':
+          description: No history available
+  /group-consuption-history:
+    get:
+      tags:
+        - consumption history
+      summary: Group consumption history
+      description: Shows the history of power consumption of a group.
+      operationId: groupConsumptionHistory
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            properties:
+              consumed_energy:
+                description: >-
+                  A dictionary (JSON object) with the first and the latest meter
+                  reading (μWh/10) of the day mapped to their timestamps.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 00:00:04': 2180256872214000
+                  '2020-01-15 10:01:10': 2180256872214000
+              consumed_power:
+                description: >-
+                  A dictionary (JSON object) with each power consumption (mW)
+                  mapped to its timestamp.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 00:00:04': 27279
+                  '2020-01-15 08:10:00': 27153
+                  '2020-01-15 10:01:10': 27200
+              group_users:
+                description: >-
+                  A dictionary (JSON objects) with the first and the latest
+                  meter reading (μWh/10) of the day and power consumption values
+                  (mW) of each group user mapped to their timestamps.
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    energy:
+                      type: object
+                      additionalProperties:
+                        type: integer
+                    power:
+                      type: object
+                      additionalProperties:
+                        type: integer
+                example:
+                  '1':
+                    energy:
+                      '2020-01-15 00:00:04': 2180256872214000
+                      '2020-01-15 10:01:10': 2180256872214000
+                    power:
+                      '2020-01-15 00:00:04': 27279
+                      '2020-01-15 08:10:00': 27153
+                      '2020-01-15 10:01:10': 27200
+                  '2':
+                    energy:
+                      '2020-01-15 00:00:04': 2180256872214000
+                      '2020-01-15 10:01:10': 2180256872214000
+                    power:
+                      '2020-01-15 00:00:04': 27279
+                      '2020-01-15 08:10:00': 27153
+                      '2020-01-15 10:01:10': 27200
+              produced_first_meter_energy:
+                description: >-
+                  A dictionary (JSON object) with the first and the latest meter
+                  reading (μWh/10) of the day mapped to their timestamps.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 00:00:04': 2180256872214000
+                  '2020-01-15 10:01:10': 2180256872214000
+              produced_first_meter_power:
+                description: >-
+                  A dictionary (JSON object) with each power production (mW)
+                  mapped to its timestamp.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 00:00:04': 27279
+                  '2020-01-15 08:10:00': 27153
+                  '2020-01-15 10:01:10': 27200
+              produced_second_meter_energy:
+                description: >-
+                  A dictionary (JSON object) with the first and the latest meter
+                  reading (μWh/10) of the day mapped to their timestamps.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 00:00:04': 2180256872214000
+                  '2020-01-15 10:01:10': 2180256872214000
+              produced_second_meter_power:
+                description: >-
+                  A dictionary (JSON object) with each power production (mW)
+                  mapped to its timestamp.
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  '2020-01-15 00:00:04': 27279
+                  '2020-01-15 08:10:00': 27153
+                  '2020-01-15 10:01:10': 27200
+        '206':
+          description: No history available
+  /individual-disaggregation:
+    get:
+      tags:
+        - disaggregation
+      summary: User disaggregation
+      description: >-
+        Shows the power curve disaggregation from the given starting point for a
+        user.
+      operationId: individualDisaggregation
+      produces:
+        - application/json
+      parameters:
+        - name: begin
+          in: query
+          description: >-
+            Start time of disaggregation as unix timestamp. Default is two days
+            ago at 00:00:00 am.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: integer
+            example:
+              '2020-01-15 10:01:10':
+                Waschmaschine-1: 0
+                Spülmaschine-1: 0
+                Durchlauferhitzer-2: 0
+                Durchlauferhitzer-3: 0
+                Grundlast-1: 2500000
+                Durchlauferhitzer-1: 0
+        '206':
+          description: No history available
+  /group-disaggregation:
+    get:
+      tags:
+        - disaggregation
+      summary: Group disaggregation
+      description: >-
+        Shows the power curve disaggregation from the given starting point for a
+        group.
+      operationId: groupDisaggregation
+      produces:
+        - application/json
+      parameters:
+        - name: begin
+          in: query
+          description: >-
+            Start time of disaggregation as unix timestamp. Default is two days
+            ago at 00:00:00 am.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: integer
+            example:
+              '2020-01-15 10:01:10':
+                Waschmaschine-1: 0
+                Spülmaschine-1: 0
+                Durchlauferhitzer-2: 0
+                Durchlauferhitzer-3: 0
+                Grundlast-1: 2500000
+                Durchlauferhitzer-1: 0
+        '206':
+          description: No history available
+  /profile:
+    get:
+      tags:
+        - profile
+      summary: Lists profile
+      description: Gets the user's profile.
+      operationId: getProfile
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'Successful '
+          schema:
+            type: object
+            properties:
+              id:
+                $ref: '#/definitions/User/properties/id'
+              name:
+                $ref: '#/definitions/User/properties/name'
+              firstName:
+                $ref: '#/definitions/User/properties/first_name'
+              nick:
+                $ref: '#/definitions/User/properties/nick'
+              flatSize:
+                $ref: '#/definitions/User/properties/flat_size'
+              inhabitants:
+                $ref: '#/definitions/User/properties/inhabitants'
+              groupAddress:
+                $ref: '#/definitions/Group/properties/name'
+              mail:
+                $ref: '#/definitions/User/properties/mail'
+              avatar:
+                $ref: '#/definitions/User/properties/avatar'
+              meterId:
+                $ref: '#/definitions/User/properties/meter_id'
+              registration_date:
+                $ref: '#/definitions/User/properties/registration_date'
+              baseline_state:
+                $ref: '#/definitions/User/properties/baseline_state'
+    put:
+      tags:
+        - profile
+      summary: Updates profile
+      description: Sets the user's profile stats.
+      operationId: updateProfile
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: profile stats to update
+          schema:
+            type: object
+            properties:
+              flatSize:
+                type: number
+                format: float
+              inhabitants:
+                type: integer
+              nick:
+                type: string
+              avatar:
+                type: string
+      responses:
+        '200':
+          description: Validation passed
+        '400':
+          description: Validation failed
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /set-password:
+    post:
+      tags:
+        - profile
+      summary: Sets password
+      description: Sets an initial password. Does not require the user to be logged in.
+      operationId: setPassword
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: password to set and user token
+          schema:
+            type: object
+            properties:
+              password:
+                type: string
+              token:
+                type: string
+      responses:
+        '200':
+          description: Password passes the validation
+        '400':
+          description: Password fails the validation or the token is invalid
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /update-password:
+    post:
+      tags:
+        - profile
+      summary: Update password
+      description: Sets a new password.
+      operationId: updatePassword
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: password to set
+          schema:
+            type: object
+            properties:
+              password:
+                type: string
+      responses:
+        '200':
+          description: New password passes the validation
+        '400':
+          description: New password fails the validation.
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /assets/group-profile-pictures:
+    get:
+      tags:
+        - group profile pictures
+      summary: Shows group profile pictures
+      description: Shows the profile pictures of the user's group.
+      operationId: showGroupProfilePictures
+      produces:
+        - array
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  $ref: '#/definitions/User/properties/id'
+                avatar:
+                  $ref: '#/definitions/User/properties/avatar'
+        '206':
+          description: group member query/avatar query fails
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+        '400':
+          description: group member query/avatar query fails
+          schema:
+            type: object
+            properties:
+              errorName:
+                type: string
+              errorDescription:
+                type: string
+  /individual-global-challenge:
+    get:
+      tags:
+        - global challenge
+      summary: Individual global challenge
+      description:
+        Shows the individual saving prognosis for today in µWh/10 and the
+        individual baseline in µWh/10.
+      operationId: individualGlobalChallenge
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            properties:
+              saving:
+                type: object
+                additionalProperties:
+                  type: number
+                  format: float
+              baseline:
+                $ref: '#/definitions/User/properties/baseline'
+            example:
+              saving:
+                '2020-01-15 10:01:10': 3148577026610.7812
+              baseline: 53011346257574
+        '206':
+          description: No history available
+  /community-global-challenge:
+    get:
+      tags:
+        - global challenge
+      summary: Community global challenge
+      description: Shows the community saving prognosis for today in µWh/10.
+      operationId: communityGlobalChallenge
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: number
+              format: float
+            example:
+              '2020-02-13 16:20:21': 85184267259376.5
+        '206':
+          description: No history available
+  /per-capita-consumption:
+    get:
+      tags:
+        - per capita consumption
+      summary: Per capita consumption
+      description: >-
+        Shows the annualized moving average of the user's per capita consumption
+        for today in kWh.
+      operationId: showPerCapitaConsumption
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: integer
+            example:
+              '2020-03-10 17:08:24': 396932
+        '206':
+          description: No value available
+  /live:
+    get:
+      tags:
+        - live data via websocket
+      summary: ''
+      description: ''
+      operationId: liveData
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: user's meter_id
+          required: true
+          schema:
+            type: object
+            properties:
+              meter_id:
+                type: string
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              group_production:
+                type: integer
+              group_users:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      $ref: '#/definitions/User/properties/id'
+                    meter_id:
+                      $ref: '#/definitions/User/properties/meter_id'
+                    consumption:
+                      type: integer
+                    power:
+                      type: integer
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The user's id.
+      gender:
+        type: string
+        description: The user's gender
+        enum:
+          - MALE
+          - FEMALE
+      first_name:
+        type: string
+        description: The user's first name.
+        maxLength: 33
+      name:
+        type: string
+        description: The user's name.
+        maxLength: 33
+      nick:
+        type: string
+        maxLength: 33
+        description: The user's nick name.
+      mail:
+        type: string
+        maxLength: 33
+        description: The user's mail address.
+      activation_token:
+        type: string
+        maxLength: 33
+        description: The user's activation token
+      password:
+        type: string
+        maxLength: 333
+        description: The user's password
+      state:
+        type: string
+        description: The user account's state in its lifecycle
+        enum:
+          - ACTIVATION_PENDING
+          - PASSWORT_RESET_PENDING
+          - ACTIVE
+          - DEACTIVATED
+      role:
+        type: string
+        description: >-
+          The role of a user account. This may privilege the user for specific
+          actions.
+        enum:
+          - LOCAL_POWER_TAKER
+          - ADMINISTRATOR
+      meter_id:
+        type: string
+        description: The id of the user's meter.
+        maxLength: 32
+      inhabitants:
+        type: integer
+        description: The number of people living in the flat.
+      flat_size:
+        type: number
+        format: float
+        description: The user's flat size in m^2.
+      group_id:
+        $ref: '#/definitions/Group/properties/id'
+      password_reset_token:
+        type: string
+        maxLength: 33
+      password_reset_token_expires:
+        type: string
+        format: date-time
+      avatar:
+        type: string
+        format: binary
+        description: The user's avatar encoded in base64.
+      baseline:
+        type: integer
+        description: The user's baseline.
+      baseline_state:
+        type: string
+        description: the user's baseline state
+        enum:
+          - READY
+          - WAITING_FOR_DATA
+          - NO_READINGS_AVAILABLE
+      registration_date:
+        type: string
+        format: date-time
+        description: The user's registration date.
+  UserSaving:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        format: date-time
+      meter_id:
+        $ref: '#/definitions/User/properties/meter_id'
+      saving:
+        type: number
+        format: float
+  CommunitySaving:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        format: date-time
+      saving:
+        type: number
+        format: float
+  PerCapitaConsumption:
+    type: object
+    properties:
+      date:
+        type: string
+        format: date-time
+      meter_id:
+        $ref: '#/definitions/User/properties/meter_id'
+      consumption:
+        type: number
+        format: float
+      consumption_cumulated:
+        type: number
+        format: float
+      inhabitants:
+        $ref: '#/definitions/User/properties/inhabitants'
+      per_capita_consumption:
+        type: number
+        format: float
+      per_capita_consumption_cumulated:
+        type: number
+        format: float
+      days:
+        type: integer
+      moving_average:
+        type: number
+        format: float
+      moving_average_annualized:
+        type: integer
+  LoadProfileEntry:
+    type: object
+    properties:
+      date:
+        type: string
+        maxLength: 33
+      time:
+        type: string
+        maxLength: 33
+      energy:
+        type: integer
+  Group:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+        maxLength: 100
+      group_meter_id:
+        type: string
+        maxLength: 32
+      group_production_meter_id_first:
+        type: string
+        maxLength: 32
+      group_production_meter_id_second:
+        type: string
+        maxLength: 32
