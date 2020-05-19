@@ -1,6 +1,9 @@
+from os import path
+
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask import Flask
+from swagger_ui import api_doc
 
 from routes.admin import Admin
 from routes.employee import Employee
@@ -36,6 +39,10 @@ def setup_app(app_config):
     # explanation: http://www.redotheweb.com/2015/11/09/api-security.html
     app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     app.config['JWT_CSRF_CHECK_FORM'] = True
+
+    config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.json')
+    api_doc(app, config_path=config_path,
+            url_prefix='/api/doc', title='myBuzzn App API')
 
     class JsonDefault(app.response_class):
         """This is a backend talking json, so json should be the default
