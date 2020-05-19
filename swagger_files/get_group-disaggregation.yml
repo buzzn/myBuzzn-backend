@@ -19,9 +19,8 @@ parameters:
     type: integer
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: successful_group_disaggregation
       type: object
       additionalProperties:
         type: object

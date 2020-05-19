@@ -116,9 +116,8 @@ produces:
   - array
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: successful_group_profile_pictures
       type: array
       items:
         type: object
@@ -130,7 +129,6 @@ responses:
   '206':
     description: group member query/avatar query fails
     schema:
-      id: partial_content_group_profile_pictures
       type: object
       properties:
         errorName:
@@ -140,7 +138,6 @@ responses:
   '400':
     description: group member query/avatar query fails
     schema:
-      id: failed_group_profile_pictures
       type: object
       properties:
         errorName:

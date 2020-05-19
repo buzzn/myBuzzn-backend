@@ -12,7 +12,6 @@ parameters:
     name: body
     description: profile stats to update
     schema:
-      id: user_stats
       type: object
       properties:
         flatSize:
@@ -26,11 +25,10 @@ parameters:
           type: string
 responses:
   '200':
-    description: Validation passed
+    description: validation passed
   '400':
-    description: Validation failed
+    description: validation failed
     schema:
-      id: failed_put_profile
       type: object
       properties:
         errorName:

@@ -1,6 +1,3 @@
-# from os import path
-# from swagger_ui import api_doc
-from flask_swagger_ui import get_swaggerui_blueprint
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask import Flask
@@ -47,7 +44,7 @@ def setup_app(app_config):
 
         def __init__(self, *args, **kwargs):
             super(JsonDefault, self).__init__(*args, **kwargs)
-            self.mimetype = 'application/json'
+            #self.mimetype = 'application/json'
 
     app.response_class = JsonDefault
 
@@ -66,16 +63,6 @@ def setup_app(app_config):
     # Login stuff
     JWTManager(app)
 
-    SWAGGER_URL = '/swagger'
-    API_URL = '/static/swagger.json'
-    SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
-        SWAGGER_URL,
-        API_URL,
-        config={
-            'app_name': "Seans-Python-Flask-REST-Boilerplate"
-        }
-    )
-    app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
     # Routes are called by the user, there are actually used.
     # Register routes
     app.register_blueprint(IndividualConsumptionHistory)

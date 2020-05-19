@@ -11,9 +11,8 @@ produces:
   - application/json
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: successful_individual_global_challenge
       type: object
       properties:
         saving:

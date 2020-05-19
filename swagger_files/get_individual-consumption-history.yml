@@ -19,9 +19,8 @@ parameters:
     type: integer
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: sucessful_individual_consuption_history
       type: object
       properties:
         energy:

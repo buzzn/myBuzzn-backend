@@ -9,9 +9,8 @@ produces:
   - application/json
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: successful_get_profile
       type: object
       properties:
         id:

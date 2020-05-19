@@ -9,7 +9,7 @@ from flask import render_template, Response, request, session, jsonify
 from flask_api import status
 from flask_socketio import SocketIO, emit
 from flask_swagger import swagger
-# from swagger_ui import api_doc
+from swagger_ui import api_doc
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message
@@ -46,17 +46,14 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
+swag = swagger(app, from_file_keyword='swagger_from_file')
+swag['info']['version'] = "1.0"
+swag['info']['title'] = "myBuzzn App API"
+swag['info']['description'] = "An app to investigate your power " \
+                              "consumption habits for BUZZN customers."
 
-
-@app.route("/spec/swagger.json")
-def spec():
-    swag = swagger(app, from_file_keyword='swagger_from_file')
-    swag['info']['version'] = "1.0"
-    swag['info']['title'] = "myBuzzn App API"
-    swag['info']['description'] = "An app to investigate your power " \
-                                  "consumption habits for BUZZN customers."
-
-    return jsonify(swag)
+with open('swagger_files/swagger.json', 'w') as swagger_json:
+    json.dump(swag, swagger_json, indent=4)
 
 
 @app.route('/live', methods=['GET'])
@@ -116,8 +113,8 @@ def run_server():
 
 
 if __name__ == "__main__":
-    #config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.json')
-    #api_doc(app, config_path=config_path,
-    #        url_prefix='/api/doc', title='myBuzzn App API')
+    config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.json')
+    api_doc(app, config_path=config_path,
+            url_prefix='/api/doc', title='myBuzzn App API')
 
     socketio.run(app, debug=True)

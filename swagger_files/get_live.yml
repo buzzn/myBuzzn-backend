@@ -20,7 +20,7 @@ parameters:
           type: string
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
       type: object
       properties:

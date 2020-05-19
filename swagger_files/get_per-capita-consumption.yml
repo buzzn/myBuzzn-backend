@@ -11,9 +11,8 @@ produces:
   - application/json
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: successful_per_capita_consumption
       type: object
       additionalProperties:
         type: integer

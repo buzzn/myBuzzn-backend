@@ -15,7 +15,6 @@ parameters:
     description: user credentials
     required: true
     schema:
-      id: user_credentials
       type: object
       properties:
         user:
@@ -29,18 +28,16 @@ parameters:
         password: example_password
 responses:
   '200':
-    description: Successful login
+    description: successful login
     schema:
-      id: successful_login
       type: object
       properties:
         sessionToken:
           type: string
           description: The session token.
   '401':
-    description: Username does not exist or password is incorrect
+    description: username does not exist or password is incorrect
     schema:
-      id: failed_login
       type: object
       properties:
         errorName:

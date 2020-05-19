@@ -9,9 +9,8 @@ produces:
   - application/json
 responses:
   '200':
-    description: Successful operation
+    description: successful operation
     schema:
-      id: sucessful_group_consumption_history
       type: object
       properties:
         consumed_energy:
