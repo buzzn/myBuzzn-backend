@@ -1,5 +1,5 @@
 from os import path
-
+from flask_swagger_ui import get_swaggerui_blueprint
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask import Flask
@@ -30,6 +30,7 @@ def setup_app(app_config):
     :return: The created app, ready to run.
     """
     app = Flask(__name__)
+
     app.config.from_object(app_config)
     # Look for jwt token in the headers and the cookies, the headers are used
     # by the app; the cookies by the admin UI.
@@ -39,10 +40,6 @@ def setup_app(app_config):
     # explanation: http://www.redotheweb.com/2015/11/09/api-security.html
     app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     app.config['JWT_CSRF_CHECK_FORM'] = True
-
-    config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.json')
-    api_doc(app, config_path=config_path,
-            url_prefix='/api/doc', title='myBuzzn App API')
 
     class JsonDefault(app.response_class):
         """This is a backend talking json, so json should be the default
@@ -69,6 +66,16 @@ def setup_app(app_config):
     # Login stuff
     JWTManager(app)
 
+    SWAGGER_URL = '/swagger'
+    API_URL = '/static/swagger.json'
+    SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={
+            'app_name': "Seans-Python-Flask-REST-Boilerplate"
+        }
+    )
+    app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
     # Routes are called by the user, there are actually used.
     # Register routes
     app.register_blueprint(IndividualConsumptionHistory)
