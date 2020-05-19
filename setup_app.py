@@ -1,9 +1,9 @@
-from os import path
+# from os import path
+# from swagger_ui import api_doc
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask import Flask
-from swagger_ui import api_doc
 
 from routes.admin import Admin
 from routes.employee import Employee
