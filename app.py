@@ -5,7 +5,7 @@ from os import path
 import logging.config
 from threading import Lock
 import eventlet
-from flask import render_template, Response, request, session, jsonify
+from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
 from flask_swagger import swagger
