@@ -91,9 +91,9 @@ def do_password(token):
     if not target_user.check_password_length(requested_password):
         return Response(render_template('password/request.html',
                                         passwordResetToken=token,
-                                        message='Passwort zu kurz. Das '
-                                                'Passwort muss mindestens {} '
-                                                'Zeichen haben').format(PASSWORD_MAX_LENGTH))
+                                        message=('Passwort zu kurz. Das '
+                                                 'Passwort muss mindestens {} '
+                                                 'Zeichen haben').format(PASSWORD_MAX_LENGTH)))
 
     target_user.set_password(requested_password)
     target_user.state = StateType.ACTIVE
