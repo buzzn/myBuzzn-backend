@@ -38,16 +38,6 @@ def setup_app(app_config):
     app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     app.config['JWT_CSRF_CHECK_FORM'] = True
 
-    class JsonDefault(app.response_class):
-        """This is a backend talking json, so json should be the default
-        mimetype. """
-
-        def __init__(self, *args, **kwargs):
-            super(JsonDefault, self).__init__(*args, **kwargs)
-            self.mimetype = 'application/json'
-
-    app.response_class = JsonDefault
-
     # Models
     db.init_app(app)
 

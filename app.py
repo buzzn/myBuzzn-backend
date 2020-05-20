@@ -109,12 +109,20 @@ def run_server():
     """Starts the app on port 5000.
        This api call can used to start the app from another python script.
     """
+    swagger_config_path = path.join(path.dirname(path.abspath(__file__)),
+                                    'swagger_files/swagger.json')
+    api_doc(app, config_path=swagger_config_path,
+            url_prefix='/api/doc', title='myBuzzn App API')
+    logger.info("Swagger API configured.")
+
     socketio.run(app, port=5000)
 
 
 if __name__ == "__main__":
-    config_path = path.join(path.dirname(path.abspath(__file__)), 'swagger_files/swagger.json')
+    config_path = path.join(path.dirname(path.abspath(__file__)),
+                            'swagger_files/swagger.json')
     api_doc(app, config_path=config_path,
             url_prefix='/api/doc', title='myBuzzn App API')
+    logger.info("Swagger API configured.")
 
     socketio.run(app, debug=True)

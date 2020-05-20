@@ -10,6 +10,6 @@ class ErrorHandlerTestCase(BuzznTestCase):
     def test_unknown_route(self):
         response = self.client.get('/bam')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json['name'], UNKNOWN_RESOURCE.name)
-        self.assertEqual(response.json['description'],
+        self.assertEqual(response.get_json(force=True)['name'], UNKNOWN_RESOURCE.name)
+        self.assertEqual(response.get_json(force=True)['description'],
                          UNKNOWN_RESOURCE.description)

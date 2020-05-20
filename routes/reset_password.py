@@ -1,6 +1,6 @@
+import json
 
-
-from flask import render_template, Blueprint, Response, request
+from flask import render_template, Blueprint, Response, request, jsonify
 from flask import current_app as app
 from flask_api import status
 
@@ -31,10 +31,10 @@ def request_password_reset_token():
     target_user = User.query.filter_by(mail=user_requested).first()
 
     if target_user is None:
-        return Errors.UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return jsonify(json.loads(Errors.UNKNOWN_USER.to_json())), status.HTTP_400_BAD_REQUEST
 
     if target_user.state == StateType.DEACTIVATED:
-        return Errors.DEACTIVATED_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return jsonify(json.loads(Errors.DEACTIVATED_USER.to_json())), status.HTTP_400_BAD_REQUEST
 
     target_user.generate_password_request_token()
 
