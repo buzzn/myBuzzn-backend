@@ -79,7 +79,7 @@ def do_password(token):
                                                  'angefordert haben und nehmen sie '
                                                  'immer die aktuelle.')))
 
-    if target_user.state == StateType.PASSWORT_RESET_PENDING:
+    if target_user.state != StateType.PASSWORT_RESET_PENDING:
         return Response(render_template('password/failure.html',
                                         message='User has no pending password reset.'))
 
@@ -96,6 +96,7 @@ def do_password(token):
                                                 'Zeichen haben').format(PASSWORD_MAX_LENGTH))
 
     target_user.set_password(requested_password)
+    target_user.state = StateType.ACTIVE
     db.session.commit()
 
     return Response(render_template('password/success.html'))
