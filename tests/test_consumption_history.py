@@ -4,7 +4,7 @@ from unittest import mock
 from flask_api import status
 from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
-from tests.string_constants import CONSUMPTION, EMPTY_GROUP_CONSUMPTION,\
+from tests.string_constants import EMPTY_GROUP_CONSUMPTION,\
     EMPTY_RESPONSE, EMPTY_RESPONSE_BYTES, GROUP_CONSUMPTION, INDIVIDUAL_CONSUMPTION, \
     FIRST_LAST_ENERGY, AVERAGE_POWER
 from util.database import db
@@ -15,8 +15,12 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_default_readings', return_value=CONSUMPTION)
-    def test_individual_consumption_history(self, get_default_readings):
+    @mock.patch('routes.consumption_history.get_average_power_for_meter_id_and_date',
+                return_value=AVERAGE_POWER)
+    @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
+                return_value=FIRST_LAST_ENERGY)
+    def test_individual_consumption_history(self, get_average_power_for_meter_id_and_date,
+                                            get_first_and_last_energy_for_date):
         """ Unit tests for individual_consumption_history(). """
 
         # Check if route exists
@@ -37,8 +41,12 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
             response.data.decode('utf-8')), INDIVIDUAL_CONSUMPTION)
 
     # pylint: disable=unused-argument
-    @mock.patch('routes.consumption_history.get_default_readings', return_value=EMPTY_RESPONSE)
-    def test_parameters(self, get_default_readings):
+    @mock.patch('routes.consumption_history.get_average_power_for_meter_id_and_date',
+                return_value=EMPTY_RESPONSE)
+    @mock.patch('routes.consumption_history.get_first_and_last_energy_for_date',
+                return_value=EMPTY_RESPONSE)
+    def test_parameters(self, get_average_power_for_meter_id_and_date,
+                        get_first_and_last_energy_for_date):
         """ Check handling of erroneous parameters. """
 
         login_request = self.client.post('/login',
