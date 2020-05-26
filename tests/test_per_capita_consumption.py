@@ -2,7 +2,6 @@ import ast
 import json
 from flask_api import status
 from models.per_capita_consumption import PerCapitaConsumption
-from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from util.database import db
 from routes.per_capita_consumption import get_moving_average_annualized
@@ -14,20 +13,12 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
 
     def setUp(self):
         """ Create test user and test PerCapitaConsumprion values in the database. """
-
-        db.drop_all()
-        db.create_all()
-        self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
-                              'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
-        self.test_user.inhabitants = 2
-        self.test_user.set_password('some_password')
-        self.test_user.state = StateType.ACTIVE
-        db.session.add(self.test_user)
+        super().setUp()
 
         self.base_values = PerCapitaConsumption(
-            DAY_ZERO, self.test_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
+            DAY_ZERO, self.test_case_user.meter_id, 0.0, 0.0, 2, 0.0, 0.0, 0, 0.0, 0)
         self.per_capita_consumption_day_one = PerCapitaConsumption(DAY_ONE,
-                                                                   self.test_user.meter_id,
+                                                                   self.test_case_user.meter_id,
                                                                    2.1749714, 2.1749714, 2,
                                                                    1.0874857, 1.0874857, 1,
                                                                    1.0874857, 397)
@@ -38,7 +29,7 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
     def test_get_moving_average_annualized(self):
         """ Unit tests for function get_moving_average_annualized(). """
 
-        result = get_moving_average_annualized(self.test_user.meter_id)
+        result = get_moving_average_annualized(self.test_case_user.meter_id)
 
         # Check result type
         self.assertIsInstance(result, dict)
