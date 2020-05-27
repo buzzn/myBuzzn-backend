@@ -2,10 +2,9 @@ from datetime import datetime, time, timedelta
 import os
 import logging.config
 import redis
-import pytz
 from util.error import exception_message
 from util.database import get_engine
-from util.redis_helpers import get_sorted_keys, get_entry_date
+from util.redis_helpers import get_last_meter_reading_date
 
 
 logger = logging.getLogger(__name__)
@@ -50,47 +49,6 @@ def calc_ratio_values(start):
 
     return ratio_values
 
-
-def get_last_meter_reading_date(meter_id, date):
-    """ Return the last reading for the given meter id on the given day which
-    is stored in the redis database. As we were using unix timestamps as
-    basis for our dates all along, there is no need to convert the given,
-    timezone-unaware date to UTC.
-    : param str meter_id: the meter id for which to get the value
-    : param datetime.date date: the date for which to get the value
-    : returns: the last reading for the given meter id on the given date or
-    None if there are no values
-    : rtype: float or type(None)
-    """
-
-    readings = []
-    naive_begin = datetime.combine(date, time(0, 0, 0))
-    naive_end = datetime.combine(date, time(23, 59, 59))
-    timezone = pytz.timezone('UTC')
-    begin = (timezone.localize(naive_begin)).timestamp()
-    end = (timezone.localize(naive_end)).timestamp()
-
-    for key in get_sorted_keys(redis_client, meter_id):
-
-        reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
-
-        if reading_date is None or data is None:
-            continue
-
-        reading_timestamp = reading_date.timestamp()
-
-        if begin <= reading_timestamp <= end:
-            readings.append(data.get('values')['energy'])
-
-    if len(readings) > 0:
-        return readings[-1]
-
-    message = 'No last reading available for meter id {} on {}'.format(
-        meter_id, str(date))
-    logger.info(message)
-    return None
-
-
 def calc_energy_consumption_last_term(meter_id, start):
     """ Calculate the last meter reading minus the first meter reading of the
     previous term for a given meter id.
@@ -103,8 +61,10 @@ def calc_energy_consumption_last_term(meter_id, start):
 
     begin = (datetime(start.year - 1, start.month, start.day)).date()
     end = start - timedelta(days=1)
-    last_meter_reading = get_last_meter_reading_date(meter_id, end)
-    first_meter_reading = get_last_meter_reading_date(meter_id, begin)
+    last_meter_reading = get_last_meter_reading_date(redis_client, meter_id,
+                                                     datetime.strftime(end, '%Y-%m-%d'))
+    first_meter_reading = get_last_meter_reading_date(redis_client, meter_id,
+                                                      datetime.strftime(begin, '%Y-%m-%d'))
 
     if last_meter_reading is None or first_meter_reading is None:
         message = 'No energy consumption available for {} between {} and {}'.format(
@@ -126,8 +86,10 @@ def calc_energy_consumption_ongoing_term(meter_id, start):
     """
 
     end = datetime.utcnow().date()
-    last_meter_reading = get_last_meter_reading_date(meter_id, end)
-    first_meter_reading = get_last_meter_reading_date(meter_id, start)
+    last_meter_reading = get_last_meter_reading_date(redis_client, meter_id,
+                                                     datetime.strftime(end, '%Y-%m-%d'))
+    first_meter_reading = get_last_meter_reading_date(redis_client, meter_id,
+                                                      datetime.strftime(start, '%Y-%m-%d'))
 
     if last_meter_reading is None or first_meter_reading is None:
         message = 'No energy consumption available for {} between {} and {}'.format(

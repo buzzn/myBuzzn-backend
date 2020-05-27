@@ -53,6 +53,13 @@ AVERAGE_POWER = {'2020-01-15 10:15:00': 224550.0,
 FIRST_LAST_ENERGY = {'2020-01-15 10:00:04': 2180256872214000,
                      '2020-01-15 10:47:10': 2180256872214000}
 
+FIRST_METER_READING_DATE = {"type": "reading",
+                            "values": {"power": 126430, "power3": 13330, "energyOut": 0,
+                                       "power1": 26980, "energy": 119918203617000, "power2": 86120},
+                            "time": "2020-04-28 06:56:00"}
+
+FIRST_ENERGY_DATE = 119918203617000
+
 EMPTY_RESPONSE = {}
 
 EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
