@@ -48,7 +48,7 @@ def group_profile_pictures():
     try:
         result = get_group_members(user_id)
         if result is None:
-            return NO_USERS.to_json(), status.HTTP_400_BAD_REQUEST
+            return NO_USERS.make_json_response(status.HTTP_400_BAD_REQUEST)
         return jsonify(result), status.HTTP_200_OK
 
     except Exception as e:

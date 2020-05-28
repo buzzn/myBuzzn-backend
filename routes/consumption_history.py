@@ -179,7 +179,7 @@ def individual_consumption_history():
     user = db.session.query(User).filter_by(id=user_id).first()
 
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
     begin = read_begin_parameter()
 
     result = {}
@@ -219,10 +219,10 @@ def group_consumption_history():
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
     group = db.session.query(Group).filter_by(id=user.group_id).first()
     if group is None:
-        return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_GROUP.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     group_users = {}
 

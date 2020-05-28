@@ -50,14 +50,14 @@ def per_capita_consumption():
     user = db.session.query(User).filter_by(id=user_id).first()
 
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     result = {}
 
     try:
         result = get_moving_average_annualized(user.meter_id)
         if result is None:
-            return NO_PER_CAPITA_CONSUMPTION.to_json(), status.HTTP_206_PARTIAL_CONTENT
+            return NO_PER_CAPITA_CONSUMPTION.make_json_response(status.HTTP_206_PARTIAL_CONTENT)
 
         return jsonify(result), status.HTTP_200_OK
 

@@ -61,7 +61,7 @@ def live():
     """ swagger_from_file: swagger_files/get_live.yml """
     meter_id = request.args.get('meter_id', default=None, type=str)
     if meter_id is None:
-        return NO_METER_ID.to_json(), status.HTTP_400_BAD_REQUEST
+        return NO_METER_ID.make_json_response(status.HTTP_400_BAD_REQUEST)
     session['meter_id'] = meter_id
     return Response(render_template('live.html'))
 

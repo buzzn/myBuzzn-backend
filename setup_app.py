@@ -74,7 +74,6 @@ def setup_app(app_config):
     #pylint: disable=unused-variable
     @app.errorhandler(404)
     def not_found(error):
-        return (UNKNOWN_RESOURCE.to_json(),
-                error.code)
+        return UNKNOWN_RESOURCE.make_json_response(error.code)
 
     return app

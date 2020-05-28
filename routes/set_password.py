@@ -1,6 +1,5 @@
 from datetime import datetime
-import json
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_api import status
 
 from models.user import User, StateType
@@ -39,17 +38,16 @@ def set_password():
     targetUser = User.query.filter_by(mail=user_requested).first()
 
     if targetUser is None:
-        return jsonify(json.loads(Errors.UNKNOWN_USER.to_json())), status.HTTP_400_BAD_REQUEST
+        return Errors.UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if targetUser.activation_token != token:
-        return jsonify(json.loads(Errors.WRONG_TOKEN.to_json())), status.HTTP_400_BAD_REQUEST
+        return Errors.WRONG_TOKEN.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if targetUser.state != StateType.ACTIVATION_PENDING:
-        return jsonify(json.loads(Errors.NO_ACTIVATION_PENDING.to_json())), \
-               status.HTTP_400_BAD_REQUEST
+        return Errors.NO_ACTIVATION_PENDING.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if len(password_requested) < 8:
-        return jsonify(json.loads(Errors.PASSWORD_TOO_SHORT.to_json())), status.HTTP_400_BAD_REQUEST
+        return Errors.PASSWORD_TOO_SHORT.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     targetUser.registration_date = datetime.utcnow()
     targetUser.password = password_requested

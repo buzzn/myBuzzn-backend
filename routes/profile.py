@@ -1,5 +1,4 @@
 import base64
-import json
 from io import BytesIO
 from PIL import Image
 
@@ -26,7 +25,7 @@ def profile():
     target_user = User.query.filter_by(id=user_id).first()
 
     if target_user is None:
-        return jsonify(json.loads(UNKNOWN_USER.to_json())), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     target_profile = {k: v for k, v in target_user.__dict__.items() if k in (
         'id', 'name', 'nick', 'mail', 'inhabitants'
@@ -76,7 +75,7 @@ def put_profile():
     target_user = User.query.filter_by(id=user_id).first()
 
     if target_user is None:
-        return jsonify(json.loads(UNKNOWN_USER.to_json())), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     j = request.get_json(force=True)
 
