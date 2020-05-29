@@ -22,7 +22,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
                          'b4234cd4bed143a6b9bd09e347e17d34', 1)
         test_user.flat_size = 60.0
         test_user.inhabitants = 2
-        test_user.set_password('some_password')
+        test_user.set_password('some_password1')
         test_user.state = StateType.ACTIVE
         db.session.add(test_user)
         test_user2 = User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
@@ -42,7 +42,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
                              'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
-                                                    'password': 'some_password'}))
+                                                    'password': 'some_password1'}))
 
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')

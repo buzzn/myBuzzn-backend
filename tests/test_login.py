@@ -13,7 +13,7 @@ class LoginTestCase(BuzznTestCase):
         """
         response = self.client.post('/login',
                                     data=json.dumps({'user': 'test@test.net',
-                                                     'password': 'some_password'}))
+                                                     'password': 'some_password1'}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -31,7 +31,7 @@ class LoginTestCase(BuzznTestCase):
         """
         response = self.client.post('/login',
                                     data=json.dumps({'user': 'other_user@Some.net',
-                                                     'password': 'some_password'}))
+                                                     'password': 'some_password1'}))
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -42,6 +42,6 @@ class LoginTestCase(BuzznTestCase):
         db.session.commit()
         response = self.client.post('/login',
                                     data=json.dumps({'user': 'test@test.net',
-                                                     'password': 'some_password'}))
+                                                     'password': 'some_password1'}))
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

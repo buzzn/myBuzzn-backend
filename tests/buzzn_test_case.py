@@ -37,7 +37,7 @@ class BuzznTestCase(TestCase):
                                    'EASYMETER_60404854', 1)
         self.test_case_user.flat_size = 60.0
         self.test_case_user.inhabitants = 2
-        self.test_case_user.set_password('some_password')
+        self.test_case_user.set_password('some_password1')
         self.test_case_user.state = StateType.ACTIVE
         self.test_case_user.baseline_state = BaselineStateType.READY
         db.session.add(self.test_case_user)

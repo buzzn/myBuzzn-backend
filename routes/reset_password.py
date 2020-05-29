@@ -2,7 +2,7 @@ from flask import render_template, Blueprint, Response, request
 from flask import current_app as app
 from flask_api import status
 
-from models.user import User, StateType, PASSWORD_MAX_LENGTH
+from models.user import User, StateType, PASSWORD_MIN_LENGTH
 from util.database import db
 from util.error import Error
 from util.translation import get_opening_greeting
@@ -91,7 +91,13 @@ def do_password(token):
                                         passwordResetToken=token,
                                         message=('Passwort zu kurz. Das '
                                                  'Passwort muss mindestens {} '
-                                                 'Zeichen haben').format(PASSWORD_MAX_LENGTH)))
+                                                 'Zeichen haben').format(PASSWORD_MIN_LENGTH)))
+
+    if not target_user.check_password_format(requested_password):
+        return Response(render_template('password/request.html',
+                                        passwordResetToken=token,
+                                        message='Falsches Passwort Format. Das '
+                                                'Passwort muss mindestens eine Ziffer enthalten.'))
 
     target_user.set_password(requested_password)
     target_user.state = StateType.ACTIVE
