@@ -69,9 +69,9 @@ FIRST_METER_READING_DATE = {"type": "reading",
                                        "power1": 26980, "energy": 198360858657000, "power2": 86120},
                             "time": "2020-04-28 06:56:00"}
 
-FIRST_ENERGY_DATE = 198360858657000
+FIRST_ENERGY_DATE = 198360858657000.00
 
-LAST_ENERGY_DATE = 198382608371000
+LAST_ENERGY_DATE = 198382608371000.00
 
 EMPTY_RESPONSE = {}
 
@@ -250,9 +250,8 @@ SORTED_KEYS_ESTIMATION = [SORTED_KEYS_ALL_TERMS[0],
 SQLALCHEMY_RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
 
 USER_CONSUMPTION_DAY_ONE = [
-    b'{"type": "reading", "values": {"energy": 198360858657000}}',
-    b'{"type": "reading", "values": {"energy": 198370000000000}}',
-    b'{"type": "reading", "values": {"energy": 198382608371000}}']
+    b'{"type": "reading", "values": {"energy": 198382608371000}}',
+    b'{"type": "reading", "values": {"energy": 198360858657000}}']
 
 USER_CONSUMPTION_DAY_ONE_TWICE = USER_CONSUMPTION_DAY_ONE +\
     USER_CONSUMPTION_DAY_ONE

@@ -6,7 +6,7 @@ from models.user import User, GenderType, StateType
 from tests.buzzn_test_case import BuzznTestCase
 from tests.string_constants import BASE_VALUES, DAY_ONE, SORTED_KEYS_DAY_ONE, DAY_TWO, DAY_ZERO,\
     PCC_DAY_ONE, PCC_DAY_TWO, SORTED_KEYS_DAY_TWO, \
-    USER_CONSUMPTION_DAY_ONE_TWICE, USER_CONSUMPTION_DAY_TWO_TWICE, FIRST_ENERGY_DATE, \
+    USER_CONSUMPTION_DAY_ONE, USER_CONSUMPTION_DAY_TWO_TWICE, FIRST_ENERGY_DATE, \
     LAST_ENERGY_DATE
 from util.database import db
 from util.per_capita_consumption_calculation import define_base_values, \
@@ -104,11 +104,11 @@ class PerCapitaConsumptionCalculationTestCase(BuzznTestCase):
 
     # pylint: disable=unused-argument
     #@mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
-    #@mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_TWICE)
-    @mock.patch('util.redis_helpers.get_last_meter_reading_date', return_value=LAST_ENERGY_DATE)
-    @mock.patch('util.redis_helpers.get_first_meter_reading_date', return_value=FIRST_ENERGY_DATE)
-    def test_calc_per_capita_consumption(self, get_last_meter_reading_date,
-                                         get_first_meter_reading_date):
+    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE)
+    #@mock.patch('util.redis_helpers.get_last_meter_reading_date', return_value=LAST_ENERGY_DATE)
+    #@mock.patch('util.redis_helpers.get_first_meter_reading_date', return_value=FIRST_ENERGY_DATE)
+    def test_calc_per_capita_consumption(self, _get):
+        # get_last_meter_reading_date, get_first_meter_reading_date
         """ Unit tests for function calc_per_capita_consumption(). """
 
         start = DAY_ONE
