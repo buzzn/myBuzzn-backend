@@ -78,7 +78,7 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
     """
     key_date_first = f"{meter_id}_{date}_first"
     redis_key_date_first = redis_client.get(key_date_first)
-
+    logger.error(f"redis key {date} first is {redis_key_date_first}")
     if redis_key_date_first is not None:
 
         try:
@@ -93,6 +93,7 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
     else:
         logger.info("No key %s_last_%s available. Iteration needed.", meter_id, date)
         readings = []
+        date = datetime.strptime(date, '%Y-%m-%d')
         naive_begin = datetime.combine(date, time(0, 0, 0))
         naive_end = datetime.combine(date, time(23, 59, 59))
         timezone = pytz.timezone('UTC')
@@ -129,13 +130,13 @@ def get_last_meter_reading_date(redis_client, meter_id, date):
     None if there are no values
     : rtype: float or type(None)
     """
-    key_date_first = f"{meter_id}_{date}_last"
-    redis_key_date_first = redis_client.get(key_date_first)
-
-    if redis_key_date_first is not None:
+    key_date_last = f"{meter_id}_{date}_last"
+    redis_key_date_last = redis_client.get(key_date_last)
+    logger.error(f"redis key {date} last is {redis_key_date_last}")
+    if redis_key_date_last is not None:
 
         try:
-            data = json.loads(redis_key_date_first)
+            data = json.loads(redis_key_date_last)
 
         except Exception as e:
             message = exception_message(e)
@@ -146,6 +147,7 @@ def get_last_meter_reading_date(redis_client, meter_id, date):
     else:
         logger.info("No key %s_last_%s available. Iteration needed.", meter_id, date)
         readings = []
+        date = datetime.strptime(date, '%Y-%m-%d')
         naive_begin = datetime.combine(date, time(0, 0, 0))
         naive_end = datetime.combine(date, time(23, 59, 59))
         timezone = pytz.timezone('UTC')

@@ -159,6 +159,7 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
 
     # Retrieve data for the day before from the SQLite database
     data_day_before = get_data_day_before(date, meter_id, session)
+    logger.error(f"data day before is {data_day_before}")
 
     if data_day_before is None:
         message = 'There is no data for the day before {} in the database for meter_id {}'.format(
