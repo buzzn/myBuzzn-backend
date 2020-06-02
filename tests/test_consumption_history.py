@@ -26,7 +26,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
         # Check if route exists
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'test@test.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
         response = self.client.get('/individual-consumption-history',
                                    headers={'Authorization': 'Bearer {}'.
                                                              format(login_request.json
@@ -51,7 +51,7 @@ class IndividualConsumptionHistoryTestCase(BuzznTestCase):
 
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'test@test.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
         response_timestamp_format = self.client.get('/individual-consumption-history?begin=123.123',
                                                     headers={'Authorization':
                                                              'Bearer {}'.
@@ -109,7 +109,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
         # Check if route exists
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'test@test.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
         response = self.client.get('/group-consumption-history', headers={
             'Authorization': 'Bearer {}'.format(login_request.json["sessionToken"])})
 
@@ -132,7 +132,7 @@ class GroupConsumptionHistoryTestCase(BuzznTestCase):
 
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'test@test.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
         response_timestamp_format = self.client.get('/group-consumption-history?begin=123.123',
                                                     headers={'Authorization':
                                                              'Bearer {}'.

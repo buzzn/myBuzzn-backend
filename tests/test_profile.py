@@ -23,7 +23,7 @@ class ProfileTestCase(BuzznTestCase):
         self.target_user = User(GenderType.MALE, "Some", "User",
                                 "user@some.net", "SomeToken", "SomeMeterId",
                                 users_group.id)
-        self.target_user.set_password("some_password")
+        self.target_user.set_password("some_password1")
         self.target_user.nick = "SomeNick"
         self.target_user.name = "SomeName"
         self.target_user.first_name = "SomeFirstName"
@@ -37,7 +37,7 @@ class ProfileTestCase(BuzznTestCase):
         """
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'User@Some.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
 
         response = self.client.get(
             '/profile',
@@ -57,7 +57,7 @@ class ProfileTestCase(BuzznTestCase):
         user_no_group = User(GenderType.MALE, "Someother", "User2",
                              "user2@someother.net", "SomenewToken", "Meterid",
                              None)
-        user_no_group.set_password("some_password")
+        user_no_group.set_password("some_password1")
         user_no_group.state = StateType.ACTIVE
         user_no_group.baseline_state = BaselineStateType.READY
         db.session.add(user_no_group)
@@ -66,7 +66,7 @@ class ProfileTestCase(BuzznTestCase):
         login_request = self.client.post('/login',
                                          data=json.dumps(
                                              {'user': 'user2@someother.net',
-                                              'password': 'some_password'}))
+                                              'password': 'some_password1'}))
 
         response = self.client.get(
             '/profile',
@@ -82,7 +82,7 @@ class ProfileTestCase(BuzznTestCase):
 
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'User@Some.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
 
         response = self.client.put(
             '/profile',
@@ -100,7 +100,7 @@ class ProfileTestCase(BuzznTestCase):
         """ Expect inhabitants change if a new value is provided. """
 
         login_request = self.client.post('/login', data=json.dumps({'user': 'User@Some.net',
-                                                                    'password': 'some_password'}))
+                                                                    'password': 'some_password1'}))
 
         response = self.client.put(
             '/profile', headers={'Authorization': 'Bearer {}'.format(
@@ -117,7 +117,7 @@ class ProfileTestCase(BuzznTestCase):
         """ Expect nick change if a new value is provided. """
 
         login_request = self.client.post('/login', data=json.dumps({'user': 'User@Some.net',
-                                                                    'password': 'some_password'}))
+                                                                    'password': 'some_password1'}))
 
         response = self.client.put(
             '/profile', headers={'Authorization': 'Bearer {}'.format(
@@ -134,7 +134,7 @@ class ProfileTestCase(BuzznTestCase):
         """ Expect avatar change if a new value is provided. """
 
         login_request = self.client.post('/login', data=json.dumps({'user': 'User@Some.net',
-                                                                    'password': 'some_password'}))
+                                                                    'password': 'some_password1'}))
 
         response = self.client.put(
             '/profile', headers={'Authorization': 'Bearer {}'.format(

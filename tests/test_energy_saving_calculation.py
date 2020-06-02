@@ -26,7 +26,7 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
                             'TestToken3', '117154df05874f41bfdaebcae6abfe98', 1))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
-                                                    'password': 'some_password'}))
+                                                    'password': 'some_password1'}))
 
     # pylint: disable=unused-argument
     @mock.patch('sqlalchemy.engine.result.ResultProxy.first',

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 import logging
 import os
 import redis
@@ -6,7 +6,7 @@ import pytz
 from sqlalchemy import extract
 from models.per_capita_consumption import PerCapitaConsumption
 from util.error import exception_message
-from util.redis_helpers import get_first_meter_reading_date, get_last_meter_reading_date
+from util.redis_helpers import get_last_meter_reading_date, get_first_meter_reading_date
 
 
 # logging
@@ -73,6 +73,7 @@ def get_data_day_before(dt, meter_id, session):
         message = exception_message(e)
         logger.error(message)
         return None
+
 
 def define_base_values(inhabitants, date):
     """ Define the base values for a user on a given date.
@@ -156,16 +157,6 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
     timezone = pytz.timezone('UTC')
     date = timezone.localize(date)
 
-    # Calculate consumption := last meter reading of date - first meter reading
-    # of date in kWh
-    consumption_mywh_last = get_last_meter_reading_date(redis_client, meter_id,
-                                                        datetime.strftime(date, '%Y-%m-%d'))
-    consumption_mywh_first = get_first_meter_reading_date(redis_client, meter_id,
-                                                          datetime.strftime(date, '%Y-%m-%d'))
-    if consumption_mywh_last is None or consumption_mywh_first is None:
-        return None
-    consumption = (consumption_mywh_last - consumption_mywh_first)/1e10
-
     # Retrieve data for the day before from the SQLite database
     data_day_before = get_data_day_before(date, meter_id, session)
 
@@ -174,6 +165,34 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
             date, meter_id)
         logger.info(message)
         return None
+
+    # Calculate consumption := last meter reading of date - first meter reading
+    # of date in kWh
+    consumption_mywh_last = get_last_meter_reading_date(redis_client, meter_id,
+                                                        datetime.strftime(date, '%Y-%m-%d'))
+    # if the last reading of the date does not exit, take the reading closest to it
+    if consumption_mywh_last is None:
+        consumption_mywh_last = get_first_meter_reading_date(redis_client, meter_id,
+                                                             datetime.strftime(date +
+                                                                               timedelta(days=1),
+                                                                               '%Y-%m-%d'))
+
+    consumption_mywh_first = get_first_meter_reading_date(redis_client, meter_id,
+                                                          datetime.strftime(date, '%Y-%m-%d'))
+    # if the first reading of the date does not exit, take the reading closest to it
+    if consumption_mywh_first is None:
+        consumption_mywh_first = get_last_meter_reading_date(redis_client, meter_id,
+                                                             datetime.strftime(date -
+                                                                               timedelta(days=1),
+                                                                               '%Y-%m-%d'))
+
+    # if the first and last reading do not exist,
+    # set the consumption so that the moving average does not change in relation to the previous day
+    if consumption_mywh_last is None or consumption_mywh_first is None:
+        consumption = data_day_before.moving_average * inhabitants
+
+    else:
+        consumption = (consumption_mywh_last - consumption_mywh_first)/1e10
 
     return build_data_package(data_day_before, consumption, inhabitants, date)
 

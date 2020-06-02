@@ -21,7 +21,7 @@ class TaskTestCase(BuzznTestCase):
                               'TestToken', 'dca0ec32454e4bdd9ed719fbc9fb75d6', 1)
         self.test_user.flat_size = 60.0
         self.test_user.inhabitants = 2
-        self.test_user.set_password('some_password')
+        self.test_user.set_password('some_password1')
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
         self.test_user2 = User(GenderType.FEMALE, 'judith', 'greif', 'judith@buzzn.net',
@@ -36,7 +36,7 @@ class TaskTestCase(BuzznTestCase):
                              'e2a7468f0cf64b7ca3f3d1350b893c6d'))
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
-                                                    'password': 'some_password'}))
+                                                    'password': 'some_password1'}))
         self.task = Task()
 
     def test_check_and_nullify_power_value(self):

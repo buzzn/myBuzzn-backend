@@ -7,7 +7,7 @@ from flask import current_app as app
 from sqlalchemy import ForeignKey
 from util.database import db
 
-PASSWORD_MAX_LENGTH = 7
+PASSWORD_MIN_LENGTH = 8
 
 
 class GenderType(Enum):
@@ -73,10 +73,20 @@ class User(db.Model):
         """Checks whether the given password matches the password length
             condition.
         :param str new_password: password to check in plaintext
-        :returns: True if the given password is too long, False otherwise.
+        :returns: True if the given password is long enough, False otherwise.
         :rtype: bool
         """
-        return len(new_password) > PASSWORD_MAX_LENGTH
+        return len(new_password) >= PASSWORD_MIN_LENGTH
+
+    @staticmethod
+    def check_password_format(new_password):
+        """Checks whether the given password matches the password format
+            condition.
+        :param str new_password: password to check in plaintext
+        :returns: True if the given password contains at least one number, False otherwise.
+        :rtype: bool
+        """
+        return any(char.isdigit() for char in new_password)
 
     id = db.Column(db.Integer, primary_key=True)
     gender = db.Column(db.Enum(GenderType))

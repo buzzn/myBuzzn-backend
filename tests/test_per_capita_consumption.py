@@ -20,7 +20,7 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
         self.test_user = User(GenderType.MALE, 'Some', 'User', 'test@test.net',
                               'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
         self.test_user.inhabitants = 2
-        self.test_user.set_password('some_password')
+        self.test_user.set_password('some_password1')
         self.test_user.state = StateType.ACTIVE
         db.session.add(self.test_user)
 
@@ -54,7 +54,7 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
         login_request = self.client.post('/login', data=json.dumps({'user':
                                                                     'test@test.net',
                                                                     'password':
-                                                                    'some_password'}))
+                                                                    'some_password1'}))
         response = self.client.get('/per-capita-consumption',
                                    headers={'Authorization': 'Bearer {}'.
                                                              format(login_request.json
