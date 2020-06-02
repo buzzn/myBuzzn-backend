@@ -17,6 +17,8 @@ class Errors:
                                   'There is no activation pending for this user.')
     PASSWORD_TOO_SHORT = Error('Password too short',
                                'Provide a longer password and try again')
+    WRONG_PASSWORD_FORMAT = Error('Wrong password format',
+                                  'The password must contain at least one number')
 
 
 @SetPassword.route('/set-password', methods=['POST'])
@@ -46,8 +48,11 @@ def set_password():
     if targetUser.state != StateType.ACTIVATION_PENDING:
         return Errors.NO_ACTIVATION_PENDING.to_json(), status.HTTP_400_BAD_REQUEST
 
-    if len(password_requested) < 8:
+    if not targetUser.check_password_length(password_requested):
         return Errors.PASSWORD_TOO_SHORT.to_json(), status.HTTP_400_BAD_REQUEST
+
+    if not targetUser.check_password_format(password_requested):
+        return Errors.WRONG_PASSWORD_FORMAT.to_json(), status.HTTP_400_BAD_REQUEST
 
     targetUser.registration_date = datetime.utcnow()
     targetUser.password = password_requested

@@ -28,7 +28,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
                               'TestToken', '52d7c87f8c26433dbd095048ad30c8cf', 1)
         self.test_user.flat_size = 60.0
         self.test_user.inhabitants = 2
-        self.test_user.set_password('some_password')
+        self.test_user.set_password('some_password1')
         self.test_user.state = StateType.ACTIVE
         self.test_user.baseline = 19361634120995
         test_first_timestamp = datetime(2020, 2, 13, 9, 57, 3)
@@ -50,7 +50,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
         db.session.add(test_second_community_saving)
         db.session.commit()
         self.client.post('/login', data=json.dumps({'user': 'test@test.net',
-                                                    'password': 'some_password'}))
+                                                    'password': 'some_password1'}))
 
     # pylint: disable=unused-argument
     @mock.patch('redis.Redis.scan_iter',
@@ -143,7 +143,7 @@ class GlobalChallengeTestCase(BuzznTestCase):
         login_request = self.client.post('/login', data=json.dumps({'user':
                                                                     'test@test.net',
                                                                     'password':
-                                                                    'some_password'}))
+                                                                    'some_password1'}))
         response = self.client.get('/individual-global-challenge',
                                    headers={'Authorization': 'Bearer {}'.
                                                              format(login_request.

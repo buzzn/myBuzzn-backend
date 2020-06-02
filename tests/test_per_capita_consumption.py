@@ -45,7 +45,7 @@ class PerCapitaConsumptionTestCase(BuzznTestCase):
         login_request = self.client.post('/login', data=json.dumps({'user':
                                                                     'test@test.net',
                                                                     'password':
-                                                                    'some_password'}))
+                                                                    'some_password1'}))
         response = self.client.get('/per-capita-consumption',
                                    headers={'Authorization': 'Bearer {}'.
                                                              format(login_request.json
