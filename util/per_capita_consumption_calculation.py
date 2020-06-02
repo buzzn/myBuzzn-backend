@@ -196,14 +196,6 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
     timezone = pytz.timezone('UTC')
     date = timezone.localize(date)
 
-    # Calculate consumption := last meter reading of date - first meter reading
-    # of date in kWh
-    consumption_mywh_last = get_last_meter_reading_date(meter_id, date)
-    consumption_mywh_first = get_first_meter_reading_date(meter_id, date)
-    if consumption_mywh_last is None or consumption_mywh_first is None:
-        return None
-    consumption = (consumption_mywh_last - consumption_mywh_first)/1e10
-
     # Retrieve data for the day before from the SQLite database
     data_day_before = get_data_day_before(date, meter_id, session)
 
@@ -212,6 +204,26 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
             date, meter_id)
         logger.info(message)
         return None
+
+    # Calculate consumption := last meter reading of date - first meter reading
+    # of date in kWh
+    consumption_mywh_last = get_last_meter_reading_date(meter_id, date)
+    # if the last reading of the date does not exit, take the reading closest to it
+    if consumption_mywh_last is None:
+        consumption_mywh_last = get_first_meter_reading_date(meter_id, (date + timedelta(day=1)))
+
+    consumption_mywh_first = get_first_meter_reading_date(meter_id, date)
+    # if the first reading of the date does not exit, take the reading closest to it
+    if consumption_mywh_first is None:
+        consumption_mywh_first = get_last_meter_reading_date(meter_id, (date - timedelta(day=1)))
+
+    # if the first and last reading do not exist,
+    # set the consumption so that the moving average does not change in relation to the previous day
+    if consumption_mywh_last is None or consumption_mywh_first is None:
+        consumption = data_day_before.moving_average * inhabitants
+
+    else:
+        consumption = (consumption_mywh_last - consumption_mywh_first)/1e10
 
     return build_data_package(data_day_before, consumption, inhabitants, date)
 
