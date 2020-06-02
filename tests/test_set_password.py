@@ -24,7 +24,7 @@ class SetPasswordTest(BuzznTestCase):
         response = self.client.post(
             '/set-password', data=json.dumps({'user': 'Other_User@Some.net',
                                               'token': 'SomeOtherToken',
-                                              'password': 'SomePassword'}))
+                                              'password': 'SomePassword1'}))
         self.assertEqual(response.status_code,
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json, Errors.UNKNOWN_USER.__dict__)
@@ -35,7 +35,7 @@ class SetPasswordTest(BuzznTestCase):
         response = self.client.post('/set-password', data=json.dumps({
             'user': 'User@Some.net',
             'token': 'Wrong token',
-            'password': 'SomePassword'
+            'password': 'SomePassword1'
         }))
         self.assertEqual(response.status_code,
                          status.HTTP_400_BAD_REQUEST)
@@ -46,7 +46,7 @@ class SetPasswordTest(BuzznTestCase):
         response = self.client.post('/set-password', data=json.dumps({
             'user': 'User@Some.net',
             'token': 'SomeToken',
-            'password': 'SomePassword'
+            'password': 'SomePassword1'
         }))
 
         # First time should be alright
@@ -57,11 +57,33 @@ class SetPasswordTest(BuzznTestCase):
         response = self.client.post('/set-password', data=json.dumps({
             'user': 'User@Some.net',
             'token': 'SomeToken',
-            'password': 'SomePassword'
+            'password': 'SomePassword1'
         }))
         self.assertEqual(response.status_code,
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json, Errors.NO_ACTIVATION_PENDING.__dict__)
+
+    def test_password_too_short(self):
+        """Expect an error if the password is too short."""
+        response = self.client.post('/set-password', data=json.dumps({
+            'user': 'User@Some.net',
+            'token': 'SomeToken',
+            'password': 'Some1'
+        }))
+        self.assertEqual(response.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json, Errors.PASSWORD_TOO_SHORT.__dict__)
+
+    def test_wrong_password_format(self):
+        """Expect an error if the password has wrong format."""
+        response = self.client.post('/set-password', data=json.dumps({
+            'user': 'User@Some.net',
+            'token': 'SomeToken',
+            'password': 'SomePassword'
+        }))
+        self.assertEqual(response.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json, Errors.WRONG_PASSWORD_FORMAT.__dict__)
 
     def test_correct_data_should_set_password(self):
         """Check whether correctly provided parameters do activate an account
@@ -69,7 +91,7 @@ class SetPasswordTest(BuzznTestCase):
         response = self.client.post('/set-password', data=json.dumps({
             'user': 'User@Some.net',
             'token': 'SomeToken',
-            'password': 'SomePassword'
+            'password': 'SomePassword1'
         }))
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
