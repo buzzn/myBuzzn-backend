@@ -30,7 +30,7 @@ class GroupProfilePictures(BuzznTestCase):
         db.session.commit()
         login_request = self.client.post('/login',
                                          data=json.dumps({'user': 'test@test.net',
-                                                          'password': 'some_password'}))
+                                                          'password': 'some_password1'}))
         self.client.put('/profile',
                         headers={'Authorization': 'Bearer {}'.format(
                             login_request.json["sessionToken"])},
@@ -85,7 +85,7 @@ class GroupProfilePictures(BuzznTestCase):
         login_request = self.client.post('/login', data=json.dumps({'user':
                                                                     'test@test.net',
                                                                     'password':
-                                                                    'some_password'}))
+                                                                    'some_password1'}))
         response = self.client.get('/assets/group-profile-pictures',
                                    headers={'Authorization': 'Bearer {}'.
                                                              format(login_request.json
