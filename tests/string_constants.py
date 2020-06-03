@@ -260,9 +260,7 @@ SQLALCHEMY_RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
 
 USER_CONSUMPTION_DAY_ONE_ITERATION = [
     None,
-    b'{"type": "reading", "values": {"energy": 198360858657000}}',
-    b'{"type": "reading", "values": {"energy": 198370000000000}}',
-    b'{"type": "reading", "values": {"energy": 198382608371000}}']
+    b'{"type": "reading", "values": {"energy": 198360858657000}}']
 
 USER_CONSUMPTION_DAY_ONE = [
     b'{"type": "reading", "values": {"energy": 198382608371000}}',

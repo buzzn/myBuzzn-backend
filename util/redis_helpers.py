@@ -80,44 +80,27 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
     key_date_first = f"{meter_id}_{date}_first"
     redis_key_date_first = redis_client.get(key_date_first)
 
-    if redis_key_date_first is not None:
+    if redis_key_date_first is None:
+        logger.info("No key %s_%s_first available. Iteration needed.", meter_id, date)
+        sorted_keys_date = get_sorted_keys_date_prefix(redis_client, meter_id, date)
 
-        try:
-            data = json.loads(redis_key_date_first)
+        if len(sorted_keys_date) == 0:
+            logger.info('No first reading available for meter id %s on %s', meter_id, str(date))
+            return None
 
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-        else:
-            return data.get('values').get('energy')
+        reading_date, data = get_entry_date(redis_client, meter_id, sorted_keys_date[0], 'reading')
+        data["time"] = reading_date.timestamp()
+        redis_client.set(key_date_first, json.dumps(data))
+        return data.get('values').get('energy')
 
+    try:
+        data = json.loads(redis_key_date_first)
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
     else:
-        logger.info("No key %s_first_%s available. Iteration needed.", meter_id, date)
-        readings = []
-        date = datetime.strptime(date, '%Y-%m-%d')
-        naive_begin = datetime.combine(date, time(0, 0, 0))
-        naive_end = datetime.combine(date, time(23, 59, 59))
-        timezone = pytz.timezone('UTC')
-        begin = (timezone.localize(naive_begin)).timestamp()
-        end = (timezone.localize(naive_end)).timestamp()
-
-        for key in get_sorted_keys(redis_client, meter_id):
-
-            reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
-
-            if reading_date is None or data is None:
-                continue
-
-            reading_timestamp = reading_date.timestamp()
-            if begin <= reading_timestamp <= end:
-                readings.append(data.get('values')['energy'])
-
-        if len(readings) > 0:
-            return readings[0]
-
-        logger.info('No first reading available for meter id %s on %s',
-                    meter_id, str(date))
-        return None
+        return data.get('values').get('energy')
 
 
 # pylint: disable=too-many-locals
@@ -147,7 +130,7 @@ def get_last_meter_reading_date(redis_client, meter_id, date):
             return data.get('values').get('energy')
 
     else:
-        logger.info("No key %s_last_%s available. Iteration needed.", meter_id, date)
+        logger.info("No key %s_%s_last available. Iteration needed.", meter_id, date)
         readings = []
         date = datetime.strptime(date, '%Y-%m-%d')
         naive_begin = datetime.combine(date, time(0, 0, 0))
@@ -167,6 +150,10 @@ def get_last_meter_reading_date(redis_client, meter_id, date):
 
             if begin <= reading_timestamp <= end:
                 readings.append(data.get('values')['energy'])
+
+            #if redis_client.get(key_date_last) is None:
+             #   data["time"] = reading_timestamp
+              #  redis_client.set(key_date_last, json.dumps(data))
 
         if len(readings) > 0:
             return readings[-1]
