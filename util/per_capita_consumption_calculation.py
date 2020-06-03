@@ -210,12 +210,12 @@ def calc_per_capita_consumption(meter_id, inhabitants, date, session):
     consumption_mywh_last = get_last_meter_reading_date(meter_id, date)
     # if the last reading of the date does not exit, take the reading closest to it
     if consumption_mywh_last is None:
-        consumption_mywh_last = get_first_meter_reading_date(meter_id, (date + timedelta(day=1)))
+        consumption_mywh_last = get_first_meter_reading_date(meter_id, (date + timedelta(days=1)))
 
     consumption_mywh_first = get_first_meter_reading_date(meter_id, date)
     # if the first reading of the date does not exit, take the reading closest to it
     if consumption_mywh_first is None:
-        consumption_mywh_first = get_last_meter_reading_date(meter_id, (date - timedelta(day=1)))
+        consumption_mywh_first = get_last_meter_reading_date(meter_id, (date - timedelta(days=1)))
 
     # if the first and last reading do not exist,
     # set the consumption so that the moving average does not change in relation to the previous day
