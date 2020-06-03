@@ -64,14 +64,19 @@ FIRST_LAST_METER_READING_DATE = [{"type": "reading",
                                                  86120},
                                   "time": "2020-04-28 06:56:00"}]
 
-FIRST_METER_READING_DATE = {"type": "reading",
-                            "values": {"power": 126430, "power3": 13330, "energyOut": 0,
-                                       "power1": 26980, "energy": 198360858657000, "power2": 86120},
-                            "time": "2020-04-28 06:56:00"}
+FIRST_METER_READING_DATE1 = {"type": "reading",
+                             "values": {"power": 126430, "power3": 13330, "energyOut": 0,
+                                        "power1": 26980, "energy": 198360858657000,
+                                        "power2": 86120},
+                             "time": "2020-04-28 06:56:00"}
 
-FIRST_ENERGY_DATE = 198360858657000.00
+FIRST_METER_READING_DATE = '{"type": "reading", "values": {"energy": 198360858657000.00}}'
 
-LAST_ENERGY_DATE = 198382608371000.00
+FIRST_ENERGY_DATE = 198360858657000
+
+LAST_METER_READING_DATE = '{"type": "reading", "values": {"energy": 198382608371000.00}}'
+
+LAST_ENERGY_DATE = 198382608371000
 
 EMPTY_RESPONSE = {}
 
@@ -249,6 +254,12 @@ SORTED_KEYS_ESTIMATION = [SORTED_KEYS_ALL_TERMS[0],
 
 SQLALCHEMY_RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
 
+USER_CONSUMPTION_DAY_ONE_ITERATION = [
+    None,
+    b'{"type": "reading", "values": {"energy": 198360858657000}}',
+    b'{"type": "reading", "values": {"energy": 198370000000000}}',
+    b'{"type": "reading", "values": {"energy": 198382608371000}}']
+
 USER_CONSUMPTION_DAY_ONE = [
     b'{"type": "reading", "values": {"energy": 198382608371000}}',
     b'{"type": "reading", "values": {"energy": 198360858657000}}']
@@ -257,9 +268,8 @@ USER_CONSUMPTION_DAY_ONE_TWICE = USER_CONSUMPTION_DAY_ONE +\
     USER_CONSUMPTION_DAY_ONE
 
 USER_CONSUMPTION_DAY_TWO = [
-    b'{"type": "reading", "values": {"energy": 198385000000000}}',
-    b'{"type": "reading", "values": {"energy": 198390000000000}}',
-    b'{"type": "reading", "values": {"energy": 198400000000000}}']
+    b'{"type": "reading", "values": {"energy": 198400000000000}}',
+    b'{"type": "reading", "values": {"energy": 198385000000000}}']
 
 USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
     USER_CONSUMPTION_DAY_TWO

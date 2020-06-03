@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 import os
 import logging.config
 import redis
@@ -48,6 +48,7 @@ def calc_ratio_values(start):
         logger.error(message)
 
     return ratio_values
+
 
 def calc_energy_consumption_last_term(meter_id, start):
     """ Calculate the last meter reading minus the first meter reading of the
