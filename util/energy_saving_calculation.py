@@ -112,10 +112,8 @@ def calc_estimated_energy_consumption(meter_id, start):
     """
 
     ratio_values = calc_ratio_values(start)
-    energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
-                                                                     start)
-    energy_consumption_ongoing_term = calc_energy_consumption_ongoing_term(
-        meter_id, start)
+    energy_consumption_last_term = calc_energy_consumption_last_term(meter_id, start)
+    energy_consumption_ongoing_term = calc_energy_consumption_ongoing_term(meter_id, start)
 
     if energy_consumption_last_term is None or energy_consumption_ongoing_term is None:
         message = 'No estimated energy consumption available for meter_id {} from {} on'.format(
@@ -135,10 +133,8 @@ def calc_estimated_energy_saving(meter_id, start):
     :rtype: float or None if there are no values
     """
 
-    energy_consumption_last_term = calc_energy_consumption_last_term(meter_id,
-                                                                     start)
-    estimated_energy_consumption = calc_estimated_energy_consumption(
-        meter_id, start)
+    energy_consumption_last_term = calc_energy_consumption_last_term(meter_id, start)
+    estimated_energy_consumption = calc_estimated_energy_consumption(meter_id, start)
     if energy_consumption_last_term is None or estimated_energy_consumption is None:
         message = 'No estimated energy saving available for meter_id {} from {} on'.format(
             meter_id, str(start))

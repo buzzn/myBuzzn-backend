@@ -223,9 +223,13 @@ READINGS_LAST_TERM = [
     b'{"type": "reading", "values": {"energy": 1512027005000000}}',
     b'{"type": "reading", "values": {"energy": 1512027002819000}}']
 
+ENERGY_CONSUMPTION_LAST_TERM = 2181000
+
 READINGS_ONGOING_TERM = [
     b'{"type": "reading", "values": {"energy": 1512027009000000}}',
     b'{"type": "reading", "values": {"energy": 1512027005000100}}']
+
+ENERGY_CONSUMPTION_ONGOING_TERM = 3999900
 
 SORTED_KEYS = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00',
                b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00',

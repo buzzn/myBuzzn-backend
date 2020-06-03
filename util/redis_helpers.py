@@ -92,7 +92,7 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
             return data.get('values').get('energy')
 
     else:
-        logger.error("No key %s_last_%s available. Iteration needed.", meter_id, date)
+        logger.info("No key %s_first_%s available. Iteration needed.", meter_id, date)
         readings = []
         date = datetime.strptime(date, '%Y-%m-%d')
         naive_begin = datetime.combine(date, time(0, 0, 0))
