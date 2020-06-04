@@ -254,11 +254,13 @@ SQLALCHEMY_RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
 
 USER_CONSUMPTION_DAY_ONE_ITERATION_FIRST = [
     None,
+    b'{"type": "disaggregation", "values": {"Durchlauferhitzer-1": 0, "Grundlast-1": 50000000}}',
     b'{"type": "reading", "values": {"energy": 198360858657000}}']
 
 USER_CONSUMPTION_DAY_ONE_ITERATION_LAST = [
     None,
-    b'{"type": "reading", "values": {"energy": 198382608371000}}']
+    b'{"type": "reading", "values": {"energy": 198382608371000}}',
+    b'{"type": "disaggregation", "values": {"Durchlauferhitzer-1": 0, "Grundlast-1": 50000000}}']
 
 USER_CONSUMPTION_DAY_ONE = [
     b'{"type": "reading", "values": {"energy": 198382608371000}}',
