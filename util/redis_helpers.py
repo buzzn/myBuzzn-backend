@@ -63,6 +63,28 @@ def get_entry_date(redis_client, meter_id, key, entry_type):
     return None, None
 
 
+def get_last_reading(redis_client, meter_id):
+    """ Return the last meter reading stored in the redis db.
+    :param str meter_id: the meter id for which to get the values
+    """
+
+    data = redis_client.get(meter_id + '_last')
+
+    if data in ({}, []):
+        logger.info("No key %s_last available. Iteration needed.", meter_id)
+        result = dict()
+        for key in reversed(get_sorted_keys(redis_client, meter_id)):
+            data = redis_client.get(key)
+            if json.loads(data).get('type') == 'reading':
+                result = json.loads(data)
+                break
+
+    else:
+        result = json.loads(data)
+
+    return result
+
+
 # pylint: disable=too-many-locals
 def get_first_meter_reading_date(redis_client, meter_id, date):
     """ Return the first reading for the given meter id on the given day which
@@ -88,7 +110,8 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
 
         for key in sorted_keys_date:
             reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
-
+            print(reading_date)
+            print(data)
             if reading_date is None or data is None:
                 continue
 
