@@ -110,8 +110,7 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
 
         for key in sorted_keys_date:
             reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
-            print(reading_date)
-            print(data)
+
             if reading_date is None or data is None:
                 continue
 
