@@ -5,8 +5,8 @@ import redis
 from tests.buzzn_test_case import BuzznTestCase
 from models.user import User, GenderType, StateType
 from tests.string_constants import FIRST_METER_READING_DATE, DAY_ONE, FIRST_ENERGY_DATE, \
-    USER_CONSUMPTION_DAY_ONE_ITERATION, SORTED_KEYS_DAY_ONE, LAST_ENERGY_DATE, \
-    LAST_METER_READING_DATE
+    USER_CONSUMPTION_DAY_ONE_ITERATION_FIRST, USER_CONSUMPTION_DAY_ONE_ITERATION_LAST, \
+    SORTED_KEYS_DAY_ONE, LAST_ENERGY_DATE, LAST_METER_READING_DATE
 from util.database import db
 from util.redis_helpers import get_first_meter_reading_date, get_last_meter_reading_date
 
@@ -41,7 +41,7 @@ class RedisHelpersTestCase(BuzznTestCase):
         self.assertEqual(result, FIRST_ENERGY_DATE)
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_ITERATION)
+    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_ITERATION_FIRST)
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
     def test_get_first_meter_reading_date_no_first_key(self, get, scan_iter):
         """ Unit tests for function get_first_meter_reading_date() if iteration is needed. """
@@ -64,7 +64,7 @@ class RedisHelpersTestCase(BuzznTestCase):
         self.assertEqual(result, LAST_ENERGY_DATE)
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_ITERATION)
+    @mock.patch('redis.Redis.get', side_effect=USER_CONSUMPTION_DAY_ONE_ITERATION_LAST)
     @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS_DAY_ONE)
     def test_get_last_meter_reading_date_no_last_key(self, get, scan_iter):
         """ Unit tests for function get_last_meter_reading_date() if iteration is needed. """

@@ -1,7 +1,5 @@
-from datetime import datetime, time
 import json
 import logging.config
-import pytz
 from dateutil import parser
 from util.error import exception_message
 
@@ -105,12 +103,12 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
 
 # pylint: disable=too-many-locals
 def get_last_meter_reading_date(redis_client, meter_id, date):
-    """ Return the last reading for the given meter id on the given day which
+    """ Return the first reading for the given meter id on the given day which
     is stored in the redis database. As we were using unix timestamps as
-    basis for our dates all along, there is no need to convert the given,
+    basis for our dates all along, there is no need to convert the stored,
     timezone-unaware date to UTC.
     : param str meter_id: the meter id for which to get the value
-    : param datetime.date date: the date for which to get the value
+    : param str date: the date for which to get the value
     : returns: the last reading for the given meter id on the given date or
     None if there are no values
     : rtype: float or type(None)
@@ -118,47 +116,24 @@ def get_last_meter_reading_date(redis_client, meter_id, date):
     key_date_last = f"{meter_id}_{date}_last"
     redis_key_date_last = redis_client.get(key_date_last)
 
-    if redis_key_date_last is not None:
-
-        try:
-            data = json.loads(redis_key_date_last)
-
-        except Exception as e:
-            message = exception_message(e)
-            logger.error(message)
-        else:
-            return data.get('values').get('energy')
-
-    else:
+    if redis_key_date_last is None:
         logger.info("No key %s_%s_last available. Iteration needed.", meter_id, date)
-        readings = []
-        date = datetime.strptime(date, '%Y-%m-%d')
-        naive_begin = datetime.combine(date, time(0, 0, 0))
-        naive_end = datetime.combine(date, time(23, 59, 59))
-        timezone = pytz.timezone('UTC')
-        begin = (timezone.localize(naive_begin)).timestamp()
-        end = (timezone.localize(naive_end)).timestamp()
+        sorted_keys_date = get_sorted_keys_date_prefix(redis_client, meter_id, date)
 
-        for key in get_sorted_keys(redis_client, meter_id):
+        if len(sorted_keys_date) == 0:
+            logger.info('No last reading available for meter id %s on %s', meter_id, str(date))
+            return None
 
-            reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+        reading_date, data = get_entry_date(redis_client, meter_id, sorted_keys_date[-1], 'reading')
+        data["time"] = reading_date.timestamp()
+        redis_client.set(key_date_last, json.dumps(data))
+        return data.get('values').get('energy')
 
-            if reading_date is None or data is None:
-                continue
+    try:
+        data = json.loads(redis_key_date_last)
 
-            reading_timestamp = reading_date.timestamp()
-
-            if begin <= reading_timestamp <= end:
-                readings.append(data.get('values')['energy'])
-
-            #if redis_client.get(key_date_last) is None:
-             #   data["time"] = reading_timestamp
-              #  redis_client.set(key_date_last, json.dumps(data))
-
-        if len(readings) > 0:
-            return readings[-1]
-
-        message = 'No last reading available for meter id {} on {}'.format(
-            meter_id, str(date))
-        logger.info(message)
-        return None
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+    else:
+        return data.get('values').get('energy')
