@@ -67,7 +67,7 @@ class WebsocketProvider:
         return sorted_keys
 
     def get_last_reading(self, meter_id):
-        """ Return the first meter reading stored in the redis db.
+        """ Return the last meter reading stored in the redis db.
         :param str meter_id: the meter id for which to get the values
         """
 

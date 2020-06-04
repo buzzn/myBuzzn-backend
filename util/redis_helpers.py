@@ -86,10 +86,15 @@ def get_first_meter_reading_date(redis_client, meter_id, date):
             logger.info('No first reading available for meter id %s on %s', meter_id, str(date))
             return None
 
-        reading_date, data = get_entry_date(redis_client, meter_id, sorted_keys_date[0], 'reading')
-        data["time"] = reading_date.timestamp()
-        redis_client.set(key_date_first, json.dumps(data))
-        return data.get('values').get('energy')
+        for key in sorted_keys_date:
+            reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+            if reading_date is None or data is None:
+                continue
+
+            data["time"] = reading_date.timestamp()
+            redis_client.set(key_date_first, json.dumps(data))
+            return data.get('values').get('energy')
 
     try:
         data = json.loads(redis_key_date_first)
@@ -124,10 +129,15 @@ def get_last_meter_reading_date(redis_client, meter_id, date):
             logger.info('No last reading available for meter id %s on %s', meter_id, str(date))
             return None
 
-        reading_date, data = get_entry_date(redis_client, meter_id, sorted_keys_date[-1], 'reading')
-        data["time"] = reading_date.timestamp()
-        redis_client.set(key_date_last, json.dumps(data))
-        return data.get('values').get('energy')
+        for key in reversed(sorted_keys_date):
+            reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+            if reading_date is None or data is None:
+                continue
+
+            data["time"] = reading_date.timestamp()
+            redis_client.set(key_date_last, json.dumps(data))
+            return data.get('values').get('energy')
 
     try:
         data = json.loads(redis_key_date_last)

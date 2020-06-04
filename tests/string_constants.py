@@ -64,12 +64,6 @@ FIRST_LAST_METER_READING_DATE = [{"type": "reading",
                                                  86120},
                                   "time": "2020-04-28 06:56:00"}]
 
-FIRST_METER_READING_DATE1 = {"type": "reading",
-                             "values": {"power": 126430, "power3": 13330, "energyOut": 0,
-                                        "power1": 26980, "energy": 198360858657000,
-                                        "power2": 86120},
-                             "time": "2020-04-28 06:56:00"}
-
 FIRST_METER_READING_DATE = '{"type": "reading", "values": {"energy": 198360858657000.00}}'
 
 FIRST_ENERGY_DATE = 198360858657000
