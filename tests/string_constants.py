@@ -102,13 +102,11 @@ GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000
                                                      '2020-01-15 10:30:00': 232000.0,
                                                      '2020-01-15 10:45:00': 227630.0}}
 
-GROUP_LAST_READING = {'type': 'reading',
-                      'values': {'energyOut': 2189063000, 'energy2': 0,
-                                 'energy1': 0, 'voltage1': 231000,
-                                 'voltage2': 231900, 'voltage3': 231500,
-                                 'energyOut1': 0, 'power': 21520,
-                                 'energyOut2': 0, 'power3': 0, 'power1': 1700,
-                                 'energy': 2466839634000, 'power2': 19820}}
+GROUP_LAST_READING = '{"type": "reading", ' \
+                     '"values": {"energyOut": 2189063000, "energy2": 0, "energy1": 0, ' \
+                     '"voltage1": 231000, "voltage2": 231900, "voltage3": 231500, ' \
+                     '"energyOut1": 0, "power": 21520, "energyOut2": 0, "power3": 0, ' \
+                     '"power1": 1700, "energy": 2466839634000, "power2": 19820}}'
 
 GROUP_MEMBERS = [{'id': 1, 'meter_id': ALL_USER_METER_IDS[0],
                   'inhabitants': 2},
@@ -120,10 +118,9 @@ GROUP_MEMBERS = [{'id': 1, 'meter_id': ALL_USER_METER_IDS[0],
 GROUP_PRODUCTION_METER_IDS = (
     '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
 
-GROUPMEMBER1_LAST_READING = {'type': 'reading',
-                             'values': {'power': 20032100, 'power3': -2730,
-                                        'energyOut': 0, 'power1': -173960,
-                                        'energy': 3603609657330000, 'power2': -5900}}
+GROUPMEMBER1_LAST_READING = '{"type": "reading", ' \
+                            '"values": {"power": 20032100, "power3": -2730, "energyOut": 0, ' \
+                            '"power1": -173960, "energy": 3603609657330000, "power2": -5900}}'
 
 GROUPMEMBER1_WEBSOCKET_DATA = {'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                                'consumption': 3603609657330000, 'power': 20032100}
