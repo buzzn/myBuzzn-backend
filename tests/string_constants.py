@@ -76,6 +76,8 @@ EMPTY_RESPONSE = {}
 
 EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
 
+EMPTY_RESPONSE_ARRAY = []
+
 GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000,
                                          '2020-01-15 10:47:10': 2180256872214000},
                      'consumed_power': {'2020-01-15 10:15:00': 224550.0,
@@ -182,6 +184,11 @@ KEY3_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
 
 KEY3_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
     DAY_TWO.strftime('%Y-%m-%d') + ' 12:40:00'
+
+KEY_LAST = '52d7c87f8c26433dbd095048ad30c8cf_last'
+
+DATE_KEY1_DAY_ONE = datetime.strptime(DAY_ONE.strftime('%Y-%m-%d') + ' 12:02:00',
+                                      '%Y-%m-%d %H:%M:%S')
 
 LAST_READING_ONGOING_TERM = bytes(
     '52d7c87f8c26433dbd095048ad30c8cf_' + datetime.today().
