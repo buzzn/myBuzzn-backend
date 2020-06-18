@@ -3,12 +3,11 @@ from datetime import datetime
 import json
 from models.user import User, GenderType
 from tests.buzzn_test_case import BuzznTestCase
-from tests.string_constants import ALL_USER_METER_IDS, READINGS,\
+from tests.string_constants import ALL_USER_METER_IDS,\
     READINGS_ALL_TERMS, READINGS_ESTIMATION, READINGS_LAST_TERM, READINGS_ONGOING_TERM, \
-    SORTED_KEYS, SORTED_KEYS_ALL_TERMS, SORTED_KEYS_ESTIMATION, SORTED_KEYS_LAST_TERM, \
-    SORTED_KEYS_ONGOING_TERM, SQLALCHEMY_RETURN_VALUES
+    ENERGY_CONSUMPTION_LAST_TERM, ENERGY_CONSUMPTION_ONGOING_TERM, SQLALCHEMY_RETURN_VALUES
 from util.database import db
-from util.energy_saving_calculation import calc_ratio_values, get_last_meter_reading_date,\
+from util.energy_saving_calculation import calc_ratio_values,\
     calc_energy_consumption_last_term, calc_energy_consumption_ongoing_term,\
     calc_estimated_energy_consumption, calc_estimated_energy_saving
 
@@ -44,22 +43,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         self.assertTrue(1.0 >= result >= 0.0)
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter', return_value=SORTED_KEYS)
-    @mock.patch('redis.Redis.get', side_effect=READINGS)
-    def test_get_last_meter_reading_date(self, scan_iter, get):
-        """ Unit tests for function get_last_meter_reading_date() """
-
-        start = datetime(2020, 2, 7).date()
-        result = get_last_meter_reading_date(ALL_USER_METER_IDS[1], start)
-
-        # Check result types
-        self.assertIsInstance(result, (int, type(None)))
-
-    # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter',
-                side_effect=SORTED_KEYS_LAST_TERM)
     @mock.patch('redis.Redis.get', side_effect=READINGS_LAST_TERM)
-    def test_calc_energy_consumption_last_term(self, scan_iter, get):
+    def test_calc_energy_consumption_last_term(self, get):
         """ Unit tests for function calc_energy_consumption_last_term() """
 
         start = datetime(2020, 3, 12).date()
@@ -68,12 +53,12 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
         # Check result type
         self.assertIsInstance(result, (int, type(None)))
+        # Check result value
+        self.assertEqual(result, ENERGY_CONSUMPTION_LAST_TERM)
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter',
-                side_effect=SORTED_KEYS_ONGOING_TERM)
     @mock.patch('redis.Redis.get', side_effect=READINGS_ONGOING_TERM)
-    def test_calc_energy_consumption_ongoing_term(self, scan_iter, get):
+    def test_calc_energy_consumption_ongoing_term(self, get):
         """ Unit tests for function calc_energy_consumption_ongoing_term() """
 
         start = datetime(2019, 3, 12).date()
@@ -82,12 +67,12 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
 
         # Check result type
         self.assertIsInstance(result, (int, type(None)))
+        # Check result value
+        self.assertEqual(result, ENERGY_CONSUMPTION_ONGOING_TERM)
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter',
-                side_effect=SORTED_KEYS_ALL_TERMS)
     @mock.patch('redis.Redis.get', side_effect=READINGS_ALL_TERMS)
-    def test_calc_estimated_energy_consumption(self, scan_iter, get):
+    def test_calc_estimated_energy_consumption(self, get):
         """ Unit tests for function calc_estimated_energy_consumption() """
 
         start = datetime(2019, 3, 12).date()
@@ -98,10 +83,8 @@ class EnergySavingCalculationTestCase(BuzznTestCase):
         self.assertIsInstance(result, (float, type(None)))
 
     # pylint: disable=unused-argument
-    @mock.patch('redis.Redis.scan_iter',
-                side_effect=SORTED_KEYS_ESTIMATION)
     @mock.patch('redis.Redis.get', side_effect=READINGS_ESTIMATION)
-    def test_calc_estimated_energy_saving(self, scan_iter, get):
+    def test_calc_estimated_energy_saving(self, get):
         """ Unit tests for function calc_estimated_energy_saving() """
 
         start = datetime(2019, 3, 12).date()

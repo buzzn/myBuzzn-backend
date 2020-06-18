@@ -231,7 +231,7 @@ class Task:
                     # The unique key consists of meter id, separator '_' and UTC timestamp
                     data = dict(type='disaggregation',
                                 values=disaggregation[timestamp])
-                    self.redis_client.set(meter_id + '_last_disaggregation', json.dumps(data))
+
                     self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
@@ -273,6 +273,7 @@ class Task:
                     data = dict(type='disaggregation',
                                 values=disaggregation[timestamp])
 
+                    self.redis_client.set(meter_id + '_last_disaggregation', json.dumps(data))
                     self.redis_client.set(key, json.dumps(data))
 
             except Exception as e:
@@ -372,12 +373,14 @@ class Task:
                                              last_data_flush >
                                              timedelta(hours=24)):
                 self.populate_redis()
+                self.write_last_readings(session)
+                self.write_last_disaggregations(session)
                 write_baselines(session)
                 write_savings(session)
                 write_base_values_or_per_capita_consumption(session)
-
-            self.write_last_readings(session)
-            self.write_last_disaggregations(session)
+            else:
+                self.write_last_readings(session)
+                self.write_last_disaggregations(session)
 
             if (datetime.utcnow() - end_next_interval) > timedelta(0):
                 self.calculate_average_power(session)

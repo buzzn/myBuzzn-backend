@@ -88,7 +88,7 @@ def get_default_readings(meter_id):
 def get_first_and_last_energy_for_date(meter_id, date):
     """ Returns first and last energy consumption for a given meter_id of today
     :param str meter_id: the meter id for which to get the values
-    :param datetime date: the date for which to get the values
+    :param str date: the date for which to get the values
     :return: the first and last energy consumption of date mapped to their timestamps
     :rtype: dict
     """

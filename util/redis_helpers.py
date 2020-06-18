@@ -55,9 +55,117 @@ def get_entry_date(redis_client, meter_id, key, entry_type):
     except Exception as e:
         message = exception_message(e)
         logger.error(message)
-
-    if data is not None and data.get('type') == entry_type:
-        entry_date = parser.parse(key[len(meter_id) + 1:])
-        return entry_date, data
+    else:
+        if data is not None and data.get('type') == entry_type:
+            entry_date = parser.parse(key[len(meter_id) + 1:])
+            return entry_date, data
 
     return None, None
+
+
+def get_last_reading(redis_client, meter_id):
+    """ Return the last meter reading stored in the redis db.
+    :param str meter_id: the meter id for which to get the values
+    """
+
+    data = redis_client.get(meter_id + '_last')
+
+    if data in ({}, []):
+        logger.info("No key %s_last available. Iteration needed.", meter_id)
+        result = dict()
+        for key in reversed(get_sorted_keys(redis_client, meter_id)):
+            data = redis_client.get(key)
+            if json.loads(data).get('type') == 'reading':
+                result = json.loads(data)
+                break
+
+    else:
+        result = json.loads(data)
+
+    return result
+
+
+# pylint: disable=too-many-locals
+def get_first_meter_reading_date(redis_client, meter_id, date):
+    """ Return the first reading for the given meter id on the given day which
+    is stored in the redis database. As we were using unix timestamps as
+    basis for our dates all along, there is no need to convert the stored,
+    timezone-unaware date to UTC.
+    : param str meter_id: the meter id for which to get the value
+    : param str date: the date for which to get the value
+    : returns: the last reading for the given meter id on the given date or
+    None if there are no values
+    : rtype: float or type(None)
+    """
+    key_date_first = f"{meter_id}_{date}_first"
+    redis_key_date_first = redis_client.get(key_date_first)
+
+    if redis_key_date_first is None:
+        logger.info("No key %s_%s_first available. Iteration needed.", meter_id, date)
+        sorted_keys_date = get_sorted_keys_date_prefix(redis_client, meter_id, date)
+
+        if len(sorted_keys_date) == 0:
+            logger.info('No first reading available for meter id %s on %s', meter_id, str(date))
+            return None
+
+        for key in sorted_keys_date:
+            reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+            if reading_date is None or data is None:
+                continue
+
+            data["time"] = reading_date.timestamp()
+            redis_client.set(key_date_first, json.dumps(data))
+            return data.get('values').get('energy')
+
+    try:
+        data = json.loads(redis_key_date_first)
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+    else:
+        return data.get('values').get('energy')
+
+
+# pylint: disable=too-many-locals
+def get_last_meter_reading_date(redis_client, meter_id, date):
+    """ Return the first reading for the given meter id on the given day which
+    is stored in the redis database. As we were using unix timestamps as
+    basis for our dates all along, there is no need to convert the stored,
+    timezone-unaware date to UTC.
+    : param str meter_id: the meter id for which to get the value
+    : param str date: the date for which to get the value
+    : returns: the last reading for the given meter id on the given date or
+    None if there are no values
+    : rtype: float or type(None)
+    """
+    key_date_last = f"{meter_id}_{date}_last"
+    redis_key_date_last = redis_client.get(key_date_last)
+
+    if redis_key_date_last is None:
+        logger.info("No key %s_%s_last available. Iteration needed.", meter_id, date)
+        sorted_keys_date = get_sorted_keys_date_prefix(redis_client, meter_id, date)
+
+        if len(sorted_keys_date) == 0:
+            logger.info('No last reading available for meter id %s on %s', meter_id, str(date))
+            return None
+
+        for key in reversed(sorted_keys_date):
+            reading_date, data = get_entry_date(redis_client, meter_id, key, 'reading')
+
+            if reading_date is None or data is None:
+                continue
+
+            data["time"] = reading_date.timestamp()
+            redis_client.set(key_date_last, json.dumps(data))
+            return data.get('values').get('energy')
+
+    try:
+        data = json.loads(redis_key_date_last)
+
+    except Exception as e:
+        message = exception_message(e)
+        logger.error(message)
+    else:
+        return data.get('values').get('energy')
