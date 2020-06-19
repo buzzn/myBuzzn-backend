@@ -43,20 +43,21 @@ def per_capita_consumption():
     :returns: (a JSON object where the moving average is mapped to the
     timestamp, 200) or ({}, 206) if there is no value
     :rtype: tuple
+    swagger_from_file: swagger_files/get_per-capita-consumption.yml
     """
 
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
 
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     result = {}
 
     try:
         result = get_moving_average_annualized(user.meter_id)
         if result is None:
-            return NO_PER_CAPITA_CONSUMPTION.to_json(), status.HTTP_206_PARTIAL_CONTENT
+            return NO_PER_CAPITA_CONSUMPTION.make_json_response(status.HTTP_206_PARTIAL_CONTENT)
 
         return jsonify(result), status.HTTP_200_OK
 

@@ -1,0 +1,44 @@
+Live data via websocket
+---
+tags:
+  - live data via websocket
+summary: ''
+description: ''
+operationId: liveData
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: user's meter_id
+    required: true
+    schema:
+      id: user_meter_id
+      type: object
+      properties:
+        meter_id:
+          type: string
+responses:
+  '200':
+    description: successful operation
+    schema:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        group_production:
+          type: integer
+        group_users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                $ref: '#/definitions/User/properties/id'
+              meter_id:
+                $ref: '#/definitions/User/properties/meter_id'
+              consumption:
+                type: integer
+              power:
+                type: integer

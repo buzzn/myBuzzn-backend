@@ -1,0 +1,30 @@
+Shows the individual saving prognosis for today in µWh/10 and the individual baseline in µWh/10.
+---
+tags:
+  - global challenge
+summary: Individual global challenge
+description:
+  Shows the individual saving prognosis for today in µWh/10 and the
+  individual baseline in µWh/10.
+operationId: individualGlobalChallenge
+produces:
+  - application/json
+responses:
+  '200':
+    description: successful operation
+    schema:
+      type: object
+      properties:
+        saving:
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+        baseline:
+          $ref: '#/definitions/User/properties/baseline'
+      example:
+        saving:
+          '2020-01-15 10:01:10': 3148577026610.7812
+        baseline: 53011346257574
+  '206':
+    description: No history available

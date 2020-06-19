@@ -108,12 +108,13 @@ def individual_disaggregation():
     :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: swagger_files/get_individual-disaggregation.yml
     """
 
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     begin = read_begin_parameter()
     result = {}
@@ -143,13 +144,15 @@ def group_disaggregation():
     :return: (a JSON object with each disaggregation value mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: swagger_files/get_group-disaggregation.yml
     """
 
     user, group = get_parameters()
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
     if group is None:
-        return UNKNOWN_GROUP.to_json(), status.HTTP_BAD_REQUEST
+        return UNKNOWN_GROUP.make_json_response(status.HTTP_400_BAD_REQUEST)
+
     begin = read_begin_parameter()
     result = {}
 

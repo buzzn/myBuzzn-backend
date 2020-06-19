@@ -1,0 +1,39 @@
+Gets the user's profile.
+---
+tags:
+  - profile
+summary: Lists profile
+description: Gets the user's profile.
+operationId: getProfile
+produces:
+  - application/json
+responses:
+  '200':
+    description: successful operation
+    schema:
+      type: object
+      properties:
+        id:
+          $ref: '#/definitions/User/properties/id'
+        name:
+          $ref: '#/definitions/User/properties/name'
+        firstName:
+          $ref: '#/definitions/User/properties/first_name'
+        nick:
+          $ref: '#/definitions/User/properties/nick'
+        flatSize:
+          $ref: '#/definitions/User/properties/flat_size'
+        inhabitants:
+          $ref: '#/definitions/User/properties/inhabitants'
+        groupAddress:
+          $ref: '#/definitions/Group/properties/name'
+        mail:
+          $ref: '#/definitions/User/properties/mail'
+        avatar:
+          $ref: '#/definitions/User/properties/avatar'
+        meterId:
+          $ref: '#/definitions/User/properties/meter_id'
+        registration_date:
+          $ref: '#/definitions/User/properties/registration_date'
+        baseline_state:
+          $ref: '#/definitions/User/properties/baseline_state'

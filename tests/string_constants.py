@@ -53,9 +53,30 @@ AVERAGE_POWER = {'2020-01-15 10:15:00': 224550.0,
 FIRST_LAST_ENERGY = {'2020-01-15 10:00:04': 2180256872214000,
                      '2020-01-15 10:47:10': 2180256872214000}
 
+FIRST_LAST_METER_READING_DATE = [{"type": "reading",
+                                  "values": {"power": 126430, "power3": 13330, "energyOut": 0,
+                                             "power1": 26980, "energy": 198360858657000, "power2":
+                                                 86120},
+                                  "time": "2020-04-28 06:56:00"},
+                                 {"type": "reading",
+                                  "values": {"power": 126430, "power3": 13330, "energyOut": 0,
+                                             "power1": 26980, "energy": 198382608371000, "power2":
+                                                 86120},
+                                  "time": "2020-04-28 06:56:00"}]
+
+FIRST_METER_READING_DATE = '{"type": "reading", "values": {"energy": 198360858657000.00}}'
+
+FIRST_ENERGY_DATE = 198360858657000
+
+LAST_METER_READING_DATE = '{"type": "reading", "values": {"energy": 198382608371000.00}}'
+
+LAST_ENERGY_DATE = 198382608371000
+
 EMPTY_RESPONSE = {}
 
 EMPTY_RESPONSE_BYTES = {'energy': {}, 'power': {}}
+
+EMPTY_RESPONSE_ARRAY = []
 
 GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000,
                                          '2020-01-15 10:47:10': 2180256872214000},
@@ -83,13 +104,11 @@ GROUP_CONSUMPTION = {'consumed_energy': {'2020-01-15 10:00:04': 2180256872214000
                                                      '2020-01-15 10:30:00': 232000.0,
                                                      '2020-01-15 10:45:00': 227630.0}}
 
-GROUP_LAST_READING = {'type': 'reading',
-                      'values': {'energyOut': 2189063000, 'energy2': 0,
-                                 'energy1': 0, 'voltage1': 231000,
-                                 'voltage2': 231900, 'voltage3': 231500,
-                                 'energyOut1': 0, 'power': 21520,
-                                 'energyOut2': 0, 'power3': 0, 'power1': 1700,
-                                 'energy': 2466839634000, 'power2': 19820}}
+GROUP_LAST_READING = '{"type": "reading", ' \
+                     '"values": {"energyOut": 2189063000, "energy2": 0, "energy1": 0, ' \
+                     '"voltage1": 231000, "voltage2": 231900, "voltage3": 231500, ' \
+                     '"energyOut1": 0, "power": 21520, "energyOut2": 0, "power3": 0, ' \
+                     '"power1": 1700, "energy": 2466839634000, "power2": 19820}}'
 
 GROUP_MEMBERS = [{'id': 1, 'meter_id': ALL_USER_METER_IDS[0],
                   'inhabitants': 2},
@@ -101,10 +120,9 @@ GROUP_MEMBERS = [{'id': 1, 'meter_id': ALL_USER_METER_IDS[0],
 GROUP_PRODUCTION_METER_IDS = (
     '5e769d5b83934bccae11a8fa95e0dc5f', 'e2a7468f0cf64b7ca3f3d1350b893c6d')
 
-GROUPMEMBER1_LAST_READING = {'type': 'reading',
-                             'values': {'power': 20032100, 'power3': -2730,
-                                        'energyOut': 0, 'power1': -173960,
-                                        'energy': 3603609657330000, 'power2': -5900}}
+GROUPMEMBER1_LAST_READING = '{"type": "reading", ' \
+                            '"values": {"power": 20032100, "power3": -2730, "energyOut": 0, ' \
+                            '"power1": -173960, "energy": 3603609657330000, "power2": -5900}}'
 
 GROUPMEMBER1_WEBSOCKET_DATA = {'id': 1, 'meter_id': 'b4234cd4bed143a6b9bd09e347e17d34',
                                'consumption': 3603609657330000, 'power': 20032100}
@@ -164,6 +182,11 @@ KEY3_DAY_ONE = '52d7c87f8c26433dbd095048ad30c8cf_' + \
 KEY3_DAY_TWO = '52d7c87f8c26433dbd095048ad30c8cf_' + \
     DAY_TWO.strftime('%Y-%m-%d') + ' 12:40:00'
 
+KEY_LAST = '52d7c87f8c26433dbd095048ad30c8cf_last'
+
+DATE_KEY1_DAY_ONE = datetime.strptime(DAY_ONE.strftime('%Y-%m-%d') + ' 12:02:00',
+                                      '%Y-%m-%d %H:%M:%S')
+
 LAST_READING_ONGOING_TERM = bytes(
     '52d7c87f8c26433dbd095048ad30c8cf_' + datetime.today().
     strftime('%Y-%m-%d %H:%M:%S'), encoding='utf-8')
@@ -198,9 +221,13 @@ READINGS_LAST_TERM = [
     b'{"type": "reading", "values": {"energy": 1512027005000000}}',
     b'{"type": "reading", "values": {"energy": 1512027002819000}}']
 
+ENERGY_CONSUMPTION_LAST_TERM = 2181000
+
 READINGS_ONGOING_TERM = [
     b'{"type": "reading", "values": {"energy": 1512027009000000}}',
     b'{"type": "reading", "values": {"energy": 1512027005000100}}']
+
+ENERGY_CONSUMPTION_ONGOING_TERM = 3999900
 
 SORTED_KEYS = [b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 00:00:00',
                b'52d7c87f8c26433dbd095048ad30c8cf_2020-02-07 01:00:00',
@@ -229,18 +256,26 @@ SORTED_KEYS_ESTIMATION = [SORTED_KEYS_ALL_TERMS[0],
 
 SQLALCHEMY_RETURN_VALUES = [(1002846.2290000044,), (896919.8780000011,)]
 
-USER_CONSUMPTION_DAY_ONE = [
-    b'{"type": "reading", "values": {"energy": 198360858657000}}',
-    b'{"type": "reading", "values": {"energy": 198370000000000}}',
+USER_CONSUMPTION_DAY_ONE_ITERATION_FIRST = [
+    None,
+    b'{"type": "disaggregation", "values": {"Durchlauferhitzer-1": 0, "Grundlast-1": 50000000}}',
+    b'{"type": "reading", "values": {"energy": 198360858657000}}']
+
+USER_CONSUMPTION_DAY_ONE_ITERATION_LAST = [
+    None,
+    b'{"type": "disaggregation", "values": {"Durchlauferhitzer-1": 0, "Grundlast-1": 50000000}}',
     b'{"type": "reading", "values": {"energy": 198382608371000}}']
+
+USER_CONSUMPTION_DAY_ONE = [
+    b'{"type": "reading", "values": {"energy": 198382608371000}}',
+    b'{"type": "reading", "values": {"energy": 198360858657000}}']
 
 USER_CONSUMPTION_DAY_ONE_TWICE = USER_CONSUMPTION_DAY_ONE +\
     USER_CONSUMPTION_DAY_ONE
 
 USER_CONSUMPTION_DAY_TWO = [
-    b'{"type": "reading", "values": {"energy": 198385000000000}}',
-    b'{"type": "reading", "values": {"energy": 198390000000000}}',
-    b'{"type": "reading", "values": {"energy": 198400000000000}}']
+    b'{"type": "reading", "values": {"energy": 198400000000000}}',
+    b'{"type": "reading", "values": {"energy": 198385000000000}}']
 
 USER_CONSUMPTION_DAY_TWO_TWICE = USER_CONSUMPTION_DAY_TWO +\
     USER_CONSUMPTION_DAY_TWO

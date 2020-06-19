@@ -1,5 +1,5 @@
 import json
-
+from flask import make_response
 
 class Error:
     """Represents an error which occurred in the application."""
@@ -10,6 +10,11 @@ class Error:
 
     def to_json(self):
         return json.dumps(self.__dict__)
+
+    def make_json_response(self, status):
+        response = make_response(self.__dict__, status)
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
 
 UNKNOWN_RESOURCE = Error('Unknown resource', 'This resource is not available.')

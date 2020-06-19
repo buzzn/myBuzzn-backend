@@ -7,7 +7,7 @@ from models.group import Group
 from models.user import User
 from util.database import db
 from util.error import exception_message
-from util.redis_helpers import get_sorted_keys
+from util.redis_helpers import get_sorted_keys, get_last_reading
 
 
 logger = logging.getLogger(__name__)
@@ -58,27 +58,6 @@ class WebsocketProvider:
             host=redis_host, port=redis_port, db=redis_db)  # connect to server
         self.cached_first_readings = {}
 
-    def get_last_reading(self, meter_id):
-        """ Return the first meter reading stored in the redis db.
-        :param str meter_id: the meter id for which to get the values
-        """
-
-        data = self.redis_client.get(meter_id + '_last')
-
-        if data in ({}, []):
-            logger.info("No key %s_last available. Iteration needed.", meter_id)
-            result = dict()
-            for key in reversed(get_sorted_keys(self.redis_client, meter_id)):
-                data = self.redis_client.get(key)
-                if json.loads(data).get('type') == 'reading':
-                    result = json.loads(data)
-                    break
-
-        else:
-            result = json.loads(data)
-
-        return result
-
     def get_first_reading(self, meter_id):
         """ Return the first meter reading stored in the redis db.
         :param str meter_id: the meter id for which to get the values
@@ -106,7 +85,7 @@ class WebsocketProvider:
 
         member_id = member.get('id')
         member_meter_id = member.get('meter_id')
-        member_reading = self.get_last_reading(member_meter_id)
+        member_reading = get_last_reading(self.redis_client, member_meter_id)
         if len(member_reading) == 0:
             logger.error(
                 'No readings for meter id %s in the database.', member_meter_id)
@@ -137,8 +116,8 @@ class WebsocketProvider:
             group_second_production_meter = group_production_meter_ids[1]
 
             if group_first_production_meter is not None:
-                group_last_reading_first_production_meter = self.get_last_reading(
-                    group_first_production_meter)
+                group_last_reading_first_production_meter = get_last_reading(
+                    self.redis_client, group_first_production_meter)
                 if len(group_last_reading_first_production_meter) == 0:
                     logger.error(
                         'No readings for group first production meter with id \
@@ -154,8 +133,8 @@ class WebsocketProvider:
                 group_production_first_meter = 0.0
 
             if group_second_production_meter is not None:
-                group_last_reading_second_production_meter = self.get_last_reading(
-                    group_second_production_meter)
+                group_last_reading_second_production_meter = get_last_reading(
+                    self.redis_client, group_second_production_meter)
                 if len(group_last_reading_second_production_meter) == 0:
                     logger.error(
                         'No readings for group second production meter with id \

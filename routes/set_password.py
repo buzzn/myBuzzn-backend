@@ -31,6 +31,7 @@ def set_password():
         200: If the account has been activated successfully.
         400: If activation_token does not match or user account is not in state pending.
         404: If the user is not found.
+    swagger_from_file: swagger_files/post_set-password.yml
     """
     j = request.get_json(force=True)
     user_requested = j['user'].lower()
@@ -40,19 +41,19 @@ def set_password():
     targetUser = User.query.filter_by(mail=user_requested).first()
 
     if targetUser is None:
-        return Errors.UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return Errors.UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if targetUser.activation_token != token:
-        return Errors.WRONG_TOKEN.to_json(), status.HTTP_400_BAD_REQUEST
+        return Errors.WRONG_TOKEN.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if targetUser.state != StateType.ACTIVATION_PENDING:
-        return Errors.NO_ACTIVATION_PENDING.to_json(), status.HTTP_400_BAD_REQUEST
+        return Errors.NO_ACTIVATION_PENDING.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if not targetUser.check_password_length(password_requested):
-        return Errors.PASSWORD_TOO_SHORT.to_json(), status.HTTP_400_BAD_REQUEST
+        return Errors.PASSWORD_TOO_SHORT.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     if not targetUser.check_password_format(password_requested):
-        return Errors.WRONG_PASSWORD_FORMAT.to_json(), status.HTTP_400_BAD_REQUEST
+        return Errors.WRONG_PASSWORD_FORMAT.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     targetUser.registration_date = datetime.utcnow()
     targetUser.password = password_requested
