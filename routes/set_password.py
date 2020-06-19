@@ -31,6 +31,7 @@ def set_password():
         200: If the account has been activated successfully.
         400: If activation_token does not match or user account is not in state pending.
         404: If the user is not found.
+    swagger_from_file: swagger_files/post_set-password.yml
     """
     j = request.get_json(force=True)
     user_requested = j['user'].lower()
