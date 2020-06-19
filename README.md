@@ -268,6 +268,8 @@ format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 You can change the path of the logfile in  ```args=('/var/www/mybuzzn-backend.buzzn.net/logs/logfile.log',)``` under ```[handler_fileHandler]``` to what suits your production. When running it locally you can relace it with ```args=('logfile.log',)```.
 
+## API Documentation
+We use swagger for our api documentation. The documentation is available at ```baseurl/api/doc```.
 
 ## Glossary
 |Term|Description|

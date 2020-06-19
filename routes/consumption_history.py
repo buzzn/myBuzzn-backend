@@ -88,7 +88,7 @@ def get_default_readings(meter_id):
 def get_first_and_last_energy_for_date(meter_id, date):
     """ Returns first and last energy consumption for a given meter_id of today
     :param str meter_id: the meter id for which to get the values
-    :param datetime date: the date for which to get the values
+    :param str date: the date for which to get the values
     :return: the first and last energy consumption of date mapped to their timestamps
     :rtype: dict
     """
@@ -172,13 +172,14 @@ def individual_consumption_history():
     :return: (a JSON object with each power consumption/meter reading mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: swagger_files/get_individual-consumption-history.yml
     """
 
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
 
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
     begin = read_begin_parameter()
 
     result = {}
@@ -212,15 +213,16 @@ def group_consumption_history():
     production mapped to its timestamp, 200)
     or ({}, 206) if there is no history
     :rtype: tuple
+    swagger_from_file: swagger_files/get_group-consumption-history.yml
     """
 
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
     group = db.session.query(Group).filter_by(id=user.group_id).first()
     if group is None:
-        return UNKNOWN_GROUP.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_GROUP.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     group_users = {}
 

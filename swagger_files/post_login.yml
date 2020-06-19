@@ -1,0 +1,46 @@
+Performs a login for the given user credentials.
+---
+tags:
+  - user login
+summary: ''
+description: ''
+operationId: login
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: body
+    name: body
+    description: user credentials
+    required: true
+    schema:
+      type: object
+      properties:
+        user:
+          type: string
+          description: The account's mail address.
+        password:
+          type: string
+          description: The account's password.
+      example:
+        user: user@example.com
+        password: example_password
+responses:
+  '200':
+    description: successful login
+    schema:
+      type: object
+      properties:
+        sessionToken:
+          type: string
+          description: The session token.
+  '401':
+    description: username does not exist or password is incorrect
+    schema:
+      type: object
+      properties:
+        errorName:
+          type: string
+        errorDescription:
+          type: string

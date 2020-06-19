@@ -8,6 +8,8 @@ import eventlet
 from flask import render_template, Response, request, session
 from flask_api import status
 from flask_socketio import SocketIO, emit
+from flask_swagger import swagger
+from swagger_ui import api_doc
 from setup_app import setup_app
 from util.database import db
 from util.error import NO_METER_ID, exception_message
@@ -44,13 +46,22 @@ thread_lock = Lock()
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
 wp = WebsocketProvider()
 clients = {}
+swag = swagger(app, from_file_keyword='swagger_from_file')
+swag['info']['version'] = "1.0"
+swag['info']['title'] = "myBuzzn App API"
+swag['info']['description'] = "An app to investigate your power " \
+                              "consumption habits for BUZZN customers."
+
+with open('swagger_files/swagger.json', 'w') as swagger_json:
+    json.dump(swag, swagger_json, indent=4)
 
 
 @app.route('/live', methods=['GET'])
 def live():
+    """ swagger_from_file: swagger_files/get_live.yml """
     meter_id = request.args.get('meter_id', default=None, type=str)
     if meter_id is None:
-        return NO_METER_ID.to_json(), status.HTTP_400_BAD_REQUEST
+        return NO_METER_ID.make_json_response(status.HTTP_400_BAD_REQUEST)
     session['meter_id'] = meter_id
     return Response(render_template('live.html'))
 
@@ -98,8 +109,20 @@ def run_server():
     """Starts the app on port 5000.
        This api call can used to start the app from another python script.
     """
+    swagger_config_path = path.join(path.dirname(path.abspath(__file__)),
+                                    'swagger_files/swagger.json')
+    api_doc(app, config_path=swagger_config_path,
+            url_prefix='/api/doc', title='myBuzzn App API')
+    logger.info("Swagger API configured.")
+
     socketio.run(app, port=5000)
 
 
 if __name__ == "__main__":
+    config_path = path.join(path.dirname(path.abspath(__file__)),
+                            'swagger_files/swagger.json')
+    api_doc(app, config_path=config_path,
+            url_prefix='/api/doc', title='myBuzzn App API')
+    logger.info("Swagger API configured.")
+
     socketio.run(app, debug=True)

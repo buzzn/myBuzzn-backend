@@ -1,0 +1,22 @@
+Shows the annualized moving average of the user's per capita consumption for today in kWh.
+---
+tags:
+  - per capita consumption
+summary: Per capita consumption
+description:
+  Shows the annualized moving average of the user's per capita consumption
+  for today in kWh.
+operationId: showPerCapitaConsumption
+produces:
+  - application/json
+responses:
+  '200':
+    description: successful operation
+    schema:
+      type: object
+      additionalProperties:
+        type: integer
+      example:
+        '2020-03-10 17:08:24': 396932
+  '206':
+    description: No value available

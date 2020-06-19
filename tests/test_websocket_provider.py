@@ -46,8 +46,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
-    @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
-                return_value=GROUPMEMBER1_LAST_READING)
+    @mock.patch('redis.Redis.get', return_value=GROUPMEMBER1_LAST_READING)
     def test_create_member_data(self, socketio, _get_last_reading):
         """ Unit tests for function create_member_data(). """
 
@@ -69,8 +68,7 @@ class WebsocketProviderTestCase(BuzznTestCase):
     # pylint does not understand the required argument from the @mock.patch decorator
     # pylint: disable=unused-argument
     @mock.patch('flask_socketio.SocketIO')
-    @mock.patch('util.websocket_provider.WebsocketProvider.get_last_reading',
-                return_value=GROUP_LAST_READING)
+    @mock.patch('redis.Redis.get', return_value=GROUP_LAST_READING)
     @mock.patch('util.websocket_provider.WebsocketProvider.create_member_data',
                 side_effect=MEMBER_WEBSOCKET_DATA)
     def test_create_data(self, socketio, get_last_reading, _create_member_data):

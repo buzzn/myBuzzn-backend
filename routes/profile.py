@@ -1,10 +1,9 @@
 import base64
-import json
 from io import BytesIO
 from PIL import Image
 
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_api import status
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -20,12 +19,13 @@ Profile = Blueprint('Profile', __name__)
 @jwt_required
 def profile():
     """Gets all the profile data.
+    swagger_from_file: swagger_files/get_profile.yml
     """
     user_id = get_jwt_identity()
     target_user = User.query.filter_by(id=user_id).first()
 
     if target_user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     target_profile = {k: v for k, v in target_user.__dict__.items() if k in (
         'id', 'name', 'nick', 'mail', 'inhabitants'
@@ -58,7 +58,7 @@ def profile():
         target_profile['groupAddress'] = ''
     else:
         target_profile['groupAddress'] = target_group.name
-    return json.dumps(target_profile), status.HTTP_200_OK
+    return jsonify(target_profile), status.HTTP_200_OK
 
 
 @Profile.route('/profile', methods=['PUT'])
@@ -68,13 +68,14 @@ def put_profile():
     :param int flatSize: The user's new flat size.
     :param str inhabitants: The flat's new inhabitants of the user.
     :param int name: The user's new name.
+    swagger_from_file: swagger_files/put_profile.yml
     """
 
     user_id = get_jwt_identity()
     target_user = User.query.filter_by(id=user_id).first()
 
     if target_user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     j = request.get_json(force=True)
 

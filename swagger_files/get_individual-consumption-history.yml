@@ -1,0 +1,47 @@
+Shows the history of power consumption from the given starting point of a user.
+---
+tags:
+  - consumption history
+summary: User consumption history
+description:
+  Shows the history of power consumption from the given starting point of
+  a user.
+operationId: userConsumptionHistory
+produces:
+  - application/json
+parameters:
+  - name: begin
+    in: query
+    description:
+      Start time of consumption as unix timestamp. Default is yesterday at
+      00:00:00 am.
+    required: false
+    type: integer
+responses:
+  '200':
+    description: successful operation
+    schema:
+      type: object
+      properties:
+        energy:
+          description:
+            A dictionary (JSON object) with each meter reading (μWh/10)
+            mapped to its timestamp.
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            '2020-01-15 10:00:04': 2180256872214000
+            '2020-01-15 10:01:10': 2180256872214000
+        power:
+          description:
+            A dictionary (JSON object) with each power consumption (mW)
+            mapped to its timestamp.
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            '2020-01-15 10:00:04': 0
+            '2020-01-15 10:01:10': 0
+  '206':
+    description: No history available

@@ -27,6 +27,7 @@ def setup_app(app_config):
     :return: The created app, ready to run.
     """
     app = Flask(__name__)
+
     app.config.from_object(app_config)
     # Look for jwt token in the headers and the cookies, the headers are used
     # by the app; the cookies by the admin UI.
@@ -36,16 +37,6 @@ def setup_app(app_config):
     # explanation: http://www.redotheweb.com/2015/11/09/api-security.html
     app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     app.config['JWT_CSRF_CHECK_FORM'] = True
-
-    class JsonDefault(app.response_class):
-        """This is a backend talking json, so json should be the default
-        mimetype. """
-
-        def __init__(self, *args, **kwargs):
-            super(JsonDefault, self).__init__(*args, **kwargs)
-            self.mimetype = 'application/json'
-
-    app.response_class = JsonDefault
 
     # Models
     db.init_app(app)
@@ -83,7 +74,6 @@ def setup_app(app_config):
     #pylint: disable=unused-variable
     @app.errorhandler(404)
     def not_found(error):
-        return (UNKNOWN_RESOURCE.to_json(),
-                error.code)
+        return UNKNOWN_RESOURCE.make_json_response(error.code)
 
     return app

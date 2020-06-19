@@ -97,23 +97,24 @@ def individual_global_challenge():
     :returns: (a JSON object where the saving is mapped to the timestamp, 200) or
     ({}, 206) if there is no value
     :rtype: tuple
+    swagger_from_file: swagger_files/get_individual-global-challenge.yml
     """
 
     user_id = get_jwt_identity()
     user = db.session.query(User).filter_by(id=user_id).first()
     if user is None:
-        return UNKNOWN_USER.to_json(), status.HTTP_400_BAD_REQUEST
+        return UNKNOWN_USER.make_json_response(status.HTTP_400_BAD_REQUEST)
 
     result = {}
 
     try:
         saving = get_individual_saving(user.meter_id)
         if saving is None:
-            return NO_GLOBAL_CHALLENGE.to_json(), status.HTTP_206_PARTIAL_CONTENT
+            return NO_GLOBAL_CHALLENGE.make_json_response(status.HTTP_206_PARTIAL_CONTENT)
 
         baseline = get_individual_baseline(user.id)
         if baseline is None:
-            return NO_BASELINE.to_json(), status.HTTP_206_PARTIAL_CONTENT
+            return NO_BASELINE.make_json_response(status.HTTP_206_PARTIAL_CONTENT)
 
         result['saving'] = saving
         result['baseline'] = baseline
@@ -132,6 +133,7 @@ def community_global_challenge():
     :return: (a JSON object where the saving is mapped to the timestamp, 200)
     or ({}, 206) if there is no value
     :rtype: tuple
+    swagger_from_file: swagger_files/get_community-global-challenge.yml
     """
 
     result = {}

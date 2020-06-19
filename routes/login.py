@@ -44,6 +44,7 @@ def login():
       200: If the login was successful.
       401: If either user name was not found or password does not match.
       404: If the useraccount is not active.
+    swagger_from_file: swagger_files/post_login.yml
     """
     j = request.get_json(force=True)
     user_requested = j['user'].lower()
@@ -52,17 +53,18 @@ def login():
     target_user = User.query.filter_by(mail=user_requested).first()
 
     if target_user is None:
-        return (Error('Unknown credentials',
-                      'Try again with proper username/password.').to_json(),
-                status.HTTP_401_UNAUTHORIZED)
+        return Error('Unknown credentials',
+                     'Try again with proper username/password.').make_json_response(
+                         status.HTTP_401_UNAUTHORIZED)
 
     if not target_user.check_password(password_requested):
-        return (Error('Unknown credentials',
-                      'Try again with proper username/password.').to_json(),
-                status.HTTP_401_UNAUTHORIZED)
+        return Error('Unknown credentials',
+                     'Try again with proper username/password.').make_json_response(
+                         status.HTTP_401_UNAUTHORIZED)
 
     if not target_user.state == StateType.ACTIVE:
-        return Error('User not active', 'Can not login.').to_json(), status.HTTP_403_FORBIDDEN
+        return Error('User not active', 'Can not login.').make_json_response(
+            status.HTTP_403_FORBIDDEN)
 
     set_baseline_state(target_user.id)
 
